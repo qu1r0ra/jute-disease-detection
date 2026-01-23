@@ -12,6 +12,7 @@ NUM_WORKERS = 4  # NOTE: Not final.
 # Training Configuration
 MAX_EPOCHS = 100  # NOTE: Not final.
 LEARNING_RATE = 1e-3  # NOTE: Not final.
+PATIENCE = 5
 
 # Dataset Classes
 CLASSES = [
