@@ -40,7 +40,7 @@ class JuteClassifier(LightningModule):
         features = self.feature_extractor(inputs)
         return self.classifier(features)
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int):
         x, y = batch
         y_pred = self(x)
         loss = self.loss(y_pred, y)
@@ -53,7 +53,7 @@ class JuteClassifier(LightningModule):
 
         return loss
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int):
         x, y = batch
         y_pred = self(x)
         loss = self.loss(y_pred, y)
@@ -66,7 +66,7 @@ class JuteClassifier(LightningModule):
 
         return loss
 
-    def test_step(self, batch, batch_idx):
+    def test_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int):
         x, y = batch
         y_pred = self(x)
         loss = self.loss(y_pred, y)
@@ -77,7 +77,7 @@ class JuteClassifier(LightningModule):
 
         return loss
 
-    def predict_step(self, batch, batch_idx):
+    def predict_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int):
         return self(batch)
 
     def configure_optimizers(self):

@@ -1,4 +1,4 @@
-.PHONY: help train test lint format clean setup-colab
+.PHONY: help train cli lint format test clean setup-colab setup-hooks
 
 # Check for uv, fallback to python
 ifeq (, $(shell which uv))
@@ -11,12 +11,13 @@ endif
 
 help:
 	@echo "Available commands:"
-	@echo "  make train        - Run training"
-	@echo "  make lint         - Check code style"
-	@echo "  make format       - Format code"
+	@echo "  make train        - Run manual training"
+	@echo "  make cli          - Run LightningCLI training"
+	@echo "  make lint         - Run linting (ruff check)"
+	@echo "  make format       - Run formatting (ruff format)"
 	@echo "  make test         - Run tests"
-	@echo "  make clean        - Remove temporary files"
-	@echo "  make setup-colab  - Install dependencies for Google Colab"
+	@echo "  make pre-commit   - Run all pre-commit hooks"
+	@echo "  make setup-hooks  - Install pre-commit hooks"
 
 train:
 	$(PYTHON) -m src.jute_disease.engines.train
@@ -25,13 +26,19 @@ cli:
 	$(PYTHON) -m src.jute_disease.engines.cli
 
 lint:
-	$(PYTHON) -m ruff check src
+	$(PYTHON) -m ruff check .
 
 format:
-	$(PYTHON) -m ruff format src
+	$(PYTHON) -m ruff format .
+
+pre-commit:
+	uv tool run pre-commit run --all-files
+
+setup-hooks:
+	uv tool run pre-commit install
 
 test:
-	$(PYTHON) -m src.jute_disease.scripts.test
+	$(PYTHON) -m pytest
 
 predict:
 	$(PYTHON) -m src.jute_disease.scripts.predict
