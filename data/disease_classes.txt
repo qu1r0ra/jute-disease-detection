@@ -3,4 +3,4 @@ Dieback
 Mosaic
 Healthy
 General Damage
-Soft Rot
+Stem Rot
