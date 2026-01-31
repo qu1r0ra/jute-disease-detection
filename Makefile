@@ -1,6 +1,5 @@
 .PHONY: help train cli lint format test clean setup-colab setup-hooks
 
-# Check for uv, fallback to python
 ifeq (, $(shell which uv))
     PYTHON = python3
     PIP = pip3
