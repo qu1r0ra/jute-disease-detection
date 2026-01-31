@@ -8,7 +8,7 @@ trainer:
     class_path: lightning.pytorch.loggers.WandbLogger
     init_args:
       entity: "grade-descent"
-      project: "jute-disease-detection"
+      project: "jute-disease-pest-detection"
       log_model: True
   callbacks:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
@@ -25,9 +25,10 @@ trainer:
 
 model:
   lr: 0.001
+  num_classes: 11
   feature_extractor:
-    class_path: jute_disease.models.backbones.efficientnet.EfficientNet
+    class_path: jute_disease_pest.models.backbones.efficientnet.EfficientNet
 
 data:
   batch_size: 32
-  data_dir: "data"
+  data_dir: "data/ml_split"
