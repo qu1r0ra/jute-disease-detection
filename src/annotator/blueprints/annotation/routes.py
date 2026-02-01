@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, send_from_directory
 from annotator.models import Image, db
 from annotator.utils.common import get_classes
 
-annotation_bp = Blueprint("annotation", __name__)
+annotation_bp = Blueprint("annotation", __name__, template_folder="templates")
 
 
 @annotation_bp.route("/images/<int:image_id>")
@@ -36,7 +36,7 @@ def index() -> str:
     """
     total = Image.query.count()
     labeled = Image.query.filter_by(is_labeled=True).count()
-    return render_template("annotation/index.html", total=total, labeled=labeled)
+    return render_template("index.html", total=total, labeled=labeled)
 
 
 @annotation_bp.route("/annotate")
@@ -54,9 +54,7 @@ def annotate() -> str:
     # NOTE: Trigger model here once trained.
     # predictions = predict_image(image.filepath)
 
-    return render_template(
-        "annotation/annotate.html", image=image, classes=get_classes()
-    )
+    return render_template("annotate.html", image=image, classes=get_classes())
 
 
 @annotation_bp.route("/save_label/<int:image_id>", methods=["POST"])
@@ -83,5 +81,5 @@ def save_label(image_id: int) -> str:
         return "<div class='text-green-500 font-bold'>Annotation completed.</div>"
 
     return render_template(
-        "annotation/partials/image_card.html", image=next_image, classes=get_classes()
+        "partials/image_card.html", image=next_image, classes=get_classes()
     )
