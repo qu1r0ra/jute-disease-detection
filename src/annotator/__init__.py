@@ -1,7 +1,8 @@
 from flask import Flask
 
+from annotator.blueprints.analysis import analysis_bp
+from annotator.blueprints.annotation import annotation_bp
 from annotator.models import db
-from annotator.routes import main_bp
 
 
 def create_app():
@@ -11,7 +12,8 @@ def create_app():
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
     db.init_app(app)
-    app.register_blueprint(main_bp)
+    app.register_blueprint(annotation_bp)
+    app.register_blueprint(analysis_bp, url_prefix="/analysis")
     with app.app_context():
         db.create_all()
     return app
