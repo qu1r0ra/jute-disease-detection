@@ -21,7 +21,7 @@ def index_unlabeled_images(directory: str) -> None:
         count = 0
         for root, _, files in os.walk(directory):
             for file in files:
-                if file.endswith(IMAGE_EXTENSIONS):
+                if file.endswith(tuple(IMAGE_EXTENSIONS)):
                     path = os.path.join(root, file)
                     if not Image.query.filter_by(filepath=path).first():
                         img = Image(filename=file, filepath=os.path.abspath(path))

@@ -30,13 +30,15 @@ def train():
     else:
         wandb.login()
 
-    wandb_logger = WandbLogger(entity="grade-descent", project="jute-disease-detection")
-
+    wandb_logger = WandbLogger(
+        entity="grade-descent", project="jute-disease-pest-detection"
+    )
     datamodule = JuteDataModule(data_dir=str(DATA_DIR), batch_size=BATCH_SIZE)
     feature_extractor = DemoModel()
     model = JuteClassifier(feature_extractor=feature_extractor, lr=LEARNING_RATE)
 
     trainer = Trainer(
+        accelerator="gpu",
         strategy="ddp",
         precision="16-mixed",
         logger=wandb_logger,

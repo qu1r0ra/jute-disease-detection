@@ -9,13 +9,20 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 # TODO: Double-check logging for completeness
 class JuteClassifier(LightningModule):
     def __init__(
-        self, feature_extractor: nn.Module, num_classes: int = 5, lr: float = 1e-3
+        self,
+        feature_extractor: nn.Module,
+        num_classes: int = 11,
+        lr: float = 1e-3,
+        compile_model: bool = True,
     ):
         super().__init__()
         if not hasattr(feature_extractor, "out_features"):
             raise ValueError("Feature extractor must have an 'out_features' attribute")
 
         self.feature_extractor = feature_extractor
+        if compile_model and hasattr(torch, "compile"):
+            self.feature_extractor = torch.compile(self.feature_extractor)
+
         self.classifier = nn.Linear(
             in_features=feature_extractor.out_features, out_features=num_classes
         )
