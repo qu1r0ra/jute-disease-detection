@@ -16,8 +16,16 @@ from jute_disease_pest.utils.seed import seed_everything
 logger = get_logger(__name__)
 
 
-def split_dataset():
+def split_dataset(force: bool = False):
     seed_everything(DEFAULT_SEED)
+
+    if ML_SPLIT_DIR.exists() and any(ML_SPLIT_DIR.iterdir()) and not force:
+        logger.info(f"Split directory {ML_SPLIT_DIR} already exists. Skipping split.")
+        return
+
+    if force and ML_SPLIT_DIR.exists():
+        logger.warning(f"Force flag set. Removing existing {ML_SPLIT_DIR}...")
+        shutil.rmtree(ML_SPLIT_DIR)
 
     if not BY_CLASS_DIR.exists():
         logger.error(f"Source directory {BY_CLASS_DIR} does not exist.")
