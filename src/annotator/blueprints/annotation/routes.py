@@ -6,10 +6,10 @@ from flask import Blueprint, render_template, request, send_from_directory
 from annotator.models import Image, db
 from annotator.utils.common import get_classes
 
-main_bp = Blueprint("main", __name__)
+annotation_bp = Blueprint("annotation", __name__)
 
 
-@main_bp.route("/images/<int:image_id>")
+@annotation_bp.route("/images/<int:image_id>")
 def serve_image(image_id: int):
     """
     Serve a specific image file from the local filesystem.
@@ -26,7 +26,7 @@ def serve_image(image_id: int):
     return send_from_directory(directory, filename)
 
 
-@main_bp.route("/")
+@annotation_bp.route("/")
 def index() -> str:
     """
     Render the main dashboard with annotation statistics.
@@ -36,10 +36,10 @@ def index() -> str:
     """
     total = Image.query.count()
     labeled = Image.query.filter_by(is_labeled=True).count()
-    return render_template("index.html", total=total, labeled=labeled)
+    return render_template("annotation/index.html", total=total, labeled=labeled)
 
 
-@main_bp.route("/annotate")
+@annotation_bp.route("/annotate")
 def annotate() -> str:
     """
     Render the annotation interface for the next unlabeled image.
@@ -54,10 +54,12 @@ def annotate() -> str:
     # NOTE: Trigger model here once trained.
     # predictions = predict_image(image.filepath)
 
-    return render_template("annotate.html", image=image, classes=get_classes())
+    return render_template(
+        "annotation/annotate.html", image=image, classes=get_classes()
+    )
 
 
-@main_bp.route("/save_label/<int:image_id>", methods=["POST"])
+@annotation_bp.route("/save_label/<int:image_id>", methods=["POST"])
 def save_label(image_id: int) -> str:
     """
     Save the user-provided label for an image and serve the next one via HTMX.
@@ -81,5 +83,5 @@ def save_label(image_id: int) -> str:
         return "<div class='text-green-500 font-bold'>Annotation completed.</div>"
 
     return render_template(
-        "partials/image_card.html", image=next_image, classes=get_classes()
+        "annotation/partials/image_card.html", image=next_image, classes=get_classes()
     )

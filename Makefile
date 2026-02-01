@@ -36,7 +36,7 @@ lint:
 	$(PYTHON) -m ruff check .
 
 format:
-	$(PYTHON) -m ruff format .
+	$(PYTHON) -m ruff check --fix . && $(PYTHON) -m ruff format .
 
 pre-commit:
 	uv tool run pre-commit run --all-files
