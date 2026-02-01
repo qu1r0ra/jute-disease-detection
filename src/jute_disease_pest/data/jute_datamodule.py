@@ -5,7 +5,7 @@ from lightning import LightningDataModule
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from torchvision.datasets import ImageFolder
 
-from jute_disease_pest.data.transforms import train_transform, val_transform
+from jute_disease_pest.data.transforms import train_transforms, val_transforms
 from jute_disease_pest.engines.split import split_dataset
 from jute_disease_pest.utils.constants import (
     BATCH_SIZE,
@@ -32,8 +32,8 @@ class JuteDataModule(LightningDataModule):
 
         self.sampler = None
         self.classes = None
-        self.train_transform = train_transform
-        self.val_transform = val_transform
+        self.train_transforms = train_transforms
+        self.val_transforms = val_transforms
 
         seed_everything(self.seed)
 
@@ -44,11 +44,11 @@ class JuteDataModule(LightningDataModule):
         if stage == "fit" or stage is None:
             self.jute_train = ImageFolder(
                 root=f"{self.data_dir}/train",
-                transform=self.train_transform,
+                transform=self.train_transforms,
             )
             self.jute_val = ImageFolder(
                 root=f"{self.data_dir}/val",
-                transform=self.val_transform,
+                transform=self.val_transforms,
             )
             self.classes = self.jute_train.classes
 
@@ -66,14 +66,14 @@ class JuteDataModule(LightningDataModule):
         if stage == "test":
             self.jute_test = ImageFolder(
                 root=f"{self.data_dir}/test",
-                transform=self.val_transform,
+                transform=self.val_transforms,
             )
             self.classes = self.jute_test.classes
 
         if stage == "predict":
             self.jute_predict = ImageFolder(
                 root=f"{self.data_dir}/test",
-                transform=self.val_transform,
+                transform=self.val_transforms,
             )
 
     def train_dataloader(self):
