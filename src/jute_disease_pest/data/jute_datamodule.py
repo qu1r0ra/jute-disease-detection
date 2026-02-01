@@ -40,7 +40,7 @@ class JuteDataModule(LightningDataModule):
     def prepare_data(self):
         split_dataset()
 
-    def setup(self, stage: str):
+    def setup(self, stage: str | None = None):
         if stage == "fit" or stage is None:
             self.jute_train = ImageFolder(
                 root=f"{self.data_dir}/train",
