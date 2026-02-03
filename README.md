@@ -48,11 +48,11 @@ To reproduce our results, you will need the following installed:
    ```
 
 3. Run through the Jupyter notebooks in `notebooks/reproducibility/` in numerical order:
-   1. `00_Setup.ipynb`
-   2. `01_EDA.ipynb`
+   1. `01_Exploratory_Data_Analysis.ipynb`
+   2. `02_Model_Selection_Training.ipynb`
    3. ...
 
-   Notes
+   _Notes_
    - When running a notebook, select `.venv` in root as the kernel.
    - More instructions can be found in each notebook.
 
