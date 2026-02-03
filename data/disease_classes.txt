@@ -1,6 +1,6 @@
 Cercospora Leaf Spot
 Dieback
-Mosaic
-Healthy
 General Damage
+Healthy
+Mosaic
 Stem Rot
