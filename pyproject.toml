@@ -14,6 +14,7 @@ dependencies = [
     "numpy>=2.4.1",
     "pillow>=12.1.0",
     "pip>=25.3",
+    "pydantic>=2.12.5",
     "python-dotenv>=1.2.1",
     "scikit-learn>=1.8.0",
     "seaborn>=0.13.2",
@@ -27,20 +28,10 @@ dependencies = [
 dev = [
     "mypy>=1.19.1",
     "pre-commit>=4.5.1",
-    "pydantic>=2.12.5",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "ruff>=0.14.14",
 ]
-
-[[tool.uv.index]]
-name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
-explicit = true
-
-[tool.uv.sources]
-torch = [{ index = "pytorch-cpu" }]
-torchvision = [{ index = "pytorch-cpu" }]
 
 [build-system]
 requires = ["hatchling"]

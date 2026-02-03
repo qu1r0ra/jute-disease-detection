@@ -13,7 +13,6 @@ from jute_disease_pest.utils.constants import (
     ML_SPLIT_DIR,
     NUM_WORKERS,
 )
-from jute_disease_pest.utils.seed import seed_everything
 
 
 class JuteDataModule(LightningDataModule):
@@ -34,8 +33,6 @@ class JuteDataModule(LightningDataModule):
         self.classes = None
         self.train_transforms = train_transforms
         self.val_transforms = val_transforms
-
-        seed_everything(self.seed)
 
     def prepare_data(self):
         split_dataset()

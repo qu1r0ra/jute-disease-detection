@@ -17,8 +17,6 @@ logger = get_logger(__name__)
 
 
 def split_dataset(force: bool = False):
-    seed_everything(DEFAULT_SEED)
-
     if ML_SPLIT_DIR.exists() and any(ML_SPLIT_DIR.iterdir()) and not force:
         logger.info(f"Split directory {ML_SPLIT_DIR} already exists. Skipping split.")
         return
@@ -75,4 +73,5 @@ def split_dataset(force: bool = False):
 
 
 if __name__ == "__main__":
+    seed_everything(DEFAULT_SEED)
     split_dataset()

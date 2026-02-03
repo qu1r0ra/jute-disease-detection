@@ -47,7 +47,7 @@ To reproduce our results, you will need the following installed:
    uv sync
    ```
 
-3. Run through the Jupyter notebooks in `notebooks/` in numerical order:
+3. Run through the Jupyter notebooks in `notebooks/reproducibility/` in numerical order:
    1. `00_Setup.ipynb`
    2. `01_EDA.ipynb`
    3. ...
