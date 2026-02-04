@@ -9,8 +9,8 @@ UNLABELED_DIR = DATA_DIR / "unlabeled"
 
 # Image Configuration
 IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG"]
-IMAGE_SIZE = 640
-BATCH_SIZE = 64
+IMAGE_SIZE = 256
+BATCH_SIZE = 256
 NUM_WORKERS = 4
 
 # Training Configuration
