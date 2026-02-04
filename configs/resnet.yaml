@@ -15,7 +15,7 @@ trainer:
         monitor: "val_loss"
         save_top_k: 1
         mode: "min"
-        filename: "mobilevit-{epoch:02d}-{val_loss:.4f}"
+        filename: "resnet-{epoch:02d}-{val_loss:.4f}"
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
         monitor: "val_loss"
@@ -26,10 +26,10 @@ model:
   lr: 0.001
   num_classes: 23
   feature_extractor:
-    class_path: jute_disease_pest.models.dl_backbones.mobilevit.MobileViT
+    class_path: jute_disease_pest.models.dl_backbones.resnet.ResNet
     init_args:
       pretrained: true
 
 data:
-  batch_size: 256
+  batch_size: 64
   data_dir: "data/ml_split"
