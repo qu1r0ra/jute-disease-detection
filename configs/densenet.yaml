@@ -24,7 +24,7 @@ trainer:
 
 model:
   lr: 0.001
-  num_classes: 23
+  num_classes: 6
   feature_extractor:
     class_path: jute_disease_pest.models.dl_backbones.densenet.DenseNet
     init_args:

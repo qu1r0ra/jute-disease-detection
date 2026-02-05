@@ -5,7 +5,7 @@
 
 # Define paths
 DISEASE_CLASSES="data/disease_classes.txt"
-PEST_CLASSES="data/pest_classes.txt"
+# PEST_CLASSES="data/pest_classes.txt"
 DATA_ROOT="data"
 
 echo "Initializing top-level data directories..."
@@ -15,7 +15,7 @@ mkdir -p "$DATA_ROOT/ml_split/val"
 mkdir -p "$DATA_ROOT/ml_split/test"
 
 # Create directories for each class
-cat "$DISEASE_CLASSES" "$PEST_CLASSES" | while read -r line; do
+cat "$DISEASE_CLASSES" | while read -r line; do
   # Skip empty lines
   [ -z "$line" ] && continue
 
