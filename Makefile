@@ -10,7 +10,8 @@ endif
 
 help:
 	@echo "Available commands:"
-	@echo "  make setup-data   - Create dataset folder structure from class files"
+	@echo "  make init-data    - Initialize everything: setup folders, split data, and download external sets"
+	@echo "  make setup-data   - Create target folder structure"
 	@echo "  make split-data   - Split data from by_class into ml_split"
 	@echo "  make train        - Run manual training"
 	@echo "  make cli          - Run LightningCLI training"
@@ -20,17 +21,20 @@ help:
 	@echo "  make pre-commit   - Run all pre-commit hooks"
 	@echo "  make setup-hooks  - Install pre-commit hooks"
 
+init-data:
+	$(PYTHON) -m jute_disease_pest.utils.data init
+
 setup-data:
-	./scripts/create_data_folders.sh
+	$(PYTHON) -m jute_disease_pest.utils.data setup
 
 split-data:
-	$(PYTHON) -m src.jute_disease_pest.engines.split
+	$(PYTHON) -m jute_disease_pest.utils.data split
 
 train:
-	$(PYTHON) -m src.jute_disease_pest.engines.train
+	$(PYTHON) -m jute_disease_pest.engines.train
 
 cli:
-	$(PYTHON) -m src.jute_disease_pest.engines.cli
+	$(PYTHON) -m jute_disease_pest.engines.cli
 
 lint:
 	$(PYTHON) -m ruff check .
@@ -48,7 +52,7 @@ test:
 	$(PYTHON) -m pytest
 
 predict:
-	$(PYTHON) -m src.jute_disease_pest.scripts.predict
+	$(PYTHON) -m jute_disease_pest.engines.predict
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
@@ -56,12 +60,8 @@ clean:
 	find . -type d -name ".ruff_cache" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
 
-setup-colab:
-	$(PIP) install -e .
-	$(PIP) install pytorch-lightning albumentations
-
 run-app:
-	$(PYTHON) -m src.annotator.run
+	$(PYTHON) -m annotator.run
 
 ingest:
-	$(PYTHON) -m src.annotator.utils.indexing
+	$(PYTHON) -m annotator.utils.indexing
