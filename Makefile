@@ -35,7 +35,7 @@ train-dl:
 	bash scripts/train_all_dl.sh
 
 train-dl-check:
-	bash scripts/train_dl_fast_dev.sh
+	bash scripts/train_all_dl_check.sh
 
 test:
 	uv run pytest -v -s

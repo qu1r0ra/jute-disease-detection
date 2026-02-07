@@ -1,10 +1,9 @@
 from lightning.pytorch.cli import LightningCLI
-
-from jute_disease.utils.wandb_utils import setup_wandb
+from dotenv import load_dotenv
 
 
 def main():
-    setup_wandb()
+    load_dotenv()
     LightningCLI(save_config_kwargs={"overwrite": True})
 
 
