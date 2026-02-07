@@ -42,6 +42,9 @@ class JuteClassifier(LightningModule):
         self.test_acc = torchmetrics.Accuracy(
             task="multiclass", num_classes=num_classes
         )
+        self.test_f1 = torchmetrics.F1Score(
+            task="multiclass", num_classes=num_classes, average="macro"
+        )
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         features = self.feature_extractor(inputs)
@@ -79,8 +82,12 @@ class JuteClassifier(LightningModule):
         loss = self.loss(y_pred, y)
 
         self.log("test_loss", loss)
+
         self.test_acc(y_pred, y)
         self.log("test_acc", self.test_acc)
+
+        self.test_f1(y_pred, y)
+        self.log("test_f1", self.test_f1)
 
         return loss
 
