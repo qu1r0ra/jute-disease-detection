@@ -3,18 +3,18 @@ import os
 from dotenv import load_dotenv
 from lightning.pytorch import Trainer
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
-from lightning.pytorch.demos.boring_classes import DemoModel
 from lightning.pytorch.loggers import WandbLogger
 
 import wandb
 from jute_disease.data.jute_datamodule import JuteDataModule
+from jute_disease.models.dl_backbones.mobilevit import MobileViT
 from jute_disease.models.jute_classifier import JuteClassifier
 from jute_disease.utils.constants import (
     BATCH_SIZE,
-    DATA_DIR,
     DEFAULT_SEED,
     LEARNING_RATE,
     MAX_EPOCHS,
+    ML_SPLIT_DIR,
     PATIENCE,
 )
 from jute_disease.utils.seed import seed_everything
@@ -31,13 +31,13 @@ def train():
         wandb.login()
 
     wandb_logger = WandbLogger(entity="grade-descent", project="jute-disease-detection")
-    datamodule = JuteDataModule(data_dir=DATA_DIR, batch_size=BATCH_SIZE)
-    feature_extractor = DemoModel()
+    datamodule = JuteDataModule(data_dir=ML_SPLIT_DIR, batch_size=BATCH_SIZE)
+    feature_extractor = MobileViT()
     model = JuteClassifier(feature_extractor=feature_extractor, lr=LEARNING_RATE)
 
     trainer = Trainer(
-        accelerator="gpu",
-        strategy="ddp",
+        accelerator="auto",
+        devices="auto",
         precision="16-mixed",
         logger=wandb_logger,
         callbacks=[
