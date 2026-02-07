@@ -1,4 +1,4 @@
-.PHONY: help data setup-data split-data train-ml train-dl test lint format clean
+.PHONY: help data setup-data split-data train-ml train-dl train-dl-check test lint format clean
 
 ifeq (, $(shell which uv))
     PYTHON = python3
@@ -10,13 +10,14 @@ endif
 
 help:
 	@echo "Available commands:"
-	@echo "  make data         - Initialize data (download & split)"
-	@echo "  make train-ml     - Run all classical ML experiments"
-	@echo "  make train-dl     - Run all deep learning experiments"
-	@echo "  make test         - Run all tests"
-	@echo "  make lint         - Run linting (ruff check)"
-	@echo "  make format       - Run formatting (ruff format)"
-	@echo "  make clean        - Remove temporary files"
+	@echo "  make data         		- Initialize data (download & split)"
+	@echo "  make train-ml     		- Run all classical ML experiments"
+	@echo "  make train-dl     		- Run all deep learning experiments"
+	@echo "  make train-dl-check 	- Run all DL experiment with fast dev run"
+	@echo "  make test         		- Run all tests"
+	@echo "  make lint         		- Run linting (ruff check)"
+	@echo "  make format       		- Run formatting (ruff format)"
+	@echo "  make clean        		- Remove temporary files"
 
 data:
 	$(PYTHON) -m jute_disease.utils.data init
@@ -33,8 +34,11 @@ train-ml:
 train-dl:
 	bash scripts/train_all_dl.sh
 
+train-dl-check:
+	bash scripts/train_dl_fast_dev.sh
+
 test:
-	uv run pytest -v
+	uv run pytest -v -s
 
 lint:
 	uv run ruff check .
