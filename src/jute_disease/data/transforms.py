@@ -4,7 +4,7 @@ import torch
 from albumentations.pytorch import ToTensorV2
 from PIL.Image import Image
 
-from jute_disease.utils.constants import IMAGE_SIZE
+from jute_disease.utils.constants import DEFAULT_SEED, IMAGE_SIZE
 
 
 class AlbumentationsAdapter:
@@ -65,6 +65,7 @@ train_aug = A.Compose(
             p=0.2,
         ),
     ],
+    is_check_shapes=False,
 )
 
 val_aug = A.Compose(
@@ -77,6 +78,7 @@ val_aug = A.Compose(
             p=1.0,
         ),
     ],
+    is_check_shapes=False,
 )
 
 normalize_and_tensor = A.Compose(
@@ -87,13 +89,24 @@ normalize_and_tensor = A.Compose(
             p=1.0,
         ),
         ToTensorV2(),
-    ]
+    ],
+    is_check_shapes=False,
 )
 
 ml_train_transforms = AlbumentationsAdapter(train_aug)
 ml_val_transforms = AlbumentationsAdapter(val_aug)
 
 dl_train_transforms = AlbumentationsAdapter(
-    A.Compose([train_aug, normalize_and_tensor])
+    A.Compose(
+        [train_aug, normalize_and_tensor],
+        is_check_shapes=False,
+        seed=DEFAULT_SEED,
+    )
 )
-dl_val_transforms = AlbumentationsAdapter(A.Compose([val_aug, normalize_and_tensor]))
+dl_val_transforms = AlbumentationsAdapter(
+    A.Compose(
+        [val_aug, normalize_and_tensor],
+        is_check_shapes=False,
+        seed=DEFAULT_SEED,
+    )
+)
