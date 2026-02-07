@@ -15,7 +15,12 @@ from jute_disease.models.ml.logistic_regression import LogisticRegression
 from jute_disease.models.ml.naive_bayes import MultinomialNaiveBayes
 from jute_disease.models.ml.random_forest import RandomForest
 from jute_disease.models.ml.svm import SupportVectorMachine
-from jute_disease.utils.constants import DEFAULT_SEED, ML_SPLIT_DIR
+from jute_disease.utils.constants import (
+    DEFAULT_SEED,
+    ML_SPLIT_DIR,
+    WANDB_ENTITY,
+    WANDB_PROJECT,
+)
 from jute_disease.utils.feature_extractor import (
     HandcraftedFeatureExtractor,
     RawPixelFeatureExtractor,
@@ -75,8 +80,8 @@ def train_ml():
         wandb.login()
 
     wandb.init(
-        entity="grade-descent",
-        project="jute-disease-detection",
+        entity=WANDB_ENTITY,
+        project=WANDB_PROJECT,
         name=f"ClassicalML-{args.classifier}",
         config={
             "classifier": args.classifier,

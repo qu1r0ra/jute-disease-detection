@@ -16,6 +16,8 @@ from jute_disease.utils.constants import (
     MAX_EPOCHS,
     ML_SPLIT_DIR,
     PATIENCE,
+    WANDB_ENTITY,
+    WANDB_PROJECT,
 )
 from jute_disease.utils.seed import seed_everything
 
@@ -30,7 +32,7 @@ def train():
     else:
         wandb.login()
 
-    wandb_logger = WandbLogger(entity="grade-descent", project="jute-disease-detection")
+    wandb_logger = WandbLogger(entity=WANDB_ENTITY, project=WANDB_PROJECT)
     datamodule = JuteDataModule(data_dir=ML_SPLIT_DIR, batch_size=BATCH_SIZE)
     feature_extractor = MobileViT()
     model = JuteClassifier(feature_extractor=feature_extractor, lr=LEARNING_RATE)

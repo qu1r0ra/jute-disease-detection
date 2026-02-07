@@ -23,3 +23,7 @@ DEFAULT_SEED = SEEDS[0]
 
 # Dataset Configuration
 SPLITS = {"train": 0.7, "val": 0.15, "test": 0.15}
+
+# Weights & Biases Configuration
+WANDB_ENTITY = "grade-descent"
+WANDB_PROJECT = "jute-disease-detection"
