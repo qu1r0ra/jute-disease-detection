@@ -1,7 +1,7 @@
 [project]
 name = "jute-disease-detection"
 version = "0.1.0"
-description = "Deep Learning Exploration for Jute Disease Detection"
+description = "Deep Learning Exploration for Jute Leaf Disease Detection"
 readme = "README.md"
 requires-python = "==3.11.14"
 dependencies = [
