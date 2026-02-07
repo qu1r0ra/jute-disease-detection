@@ -5,14 +5,14 @@ from sklearn.neighbors import KNeighborsClassifier
 from jute_disease.models.ml.base import BaseMLModel
 
 
-class KNN(BaseMLModel):
+class KNearestNeighbors(BaseMLModel):
     def __init__(self, **kwargs):
         super().__init__()
         self.model = KNeighborsClassifier(**kwargs)
 
     def fit(
         self, X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None
-    ) -> "KNN":
+    ) -> "KNearestNeighbors":
         self.model.fit(X, y)
         return self
 

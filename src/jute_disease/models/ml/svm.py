@@ -5,7 +5,7 @@ from sklearn.svm import SVC
 from jute_disease.models.ml.base import BaseMLModel
 
 
-class SVM(BaseMLModel):
+class SupportVectorMachine(BaseMLModel):
     def __init__(self, **kwargs):
         super().__init__()
         if "probability" not in kwargs:
@@ -14,7 +14,7 @@ class SVM(BaseMLModel):
 
     def fit(
         self, X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None
-    ) -> "SVM":
+    ) -> "SupportVectorMachine":
         self.model.fit(X, y, sample_weight=sample_weight)
         return self
 
