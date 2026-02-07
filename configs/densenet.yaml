@@ -1,35 +1,41 @@
+# lightning.pytorch==2.x
+seed_everything: 42
 trainer:
-  max_epochs: 50
   accelerator: auto
-  devices: 1
-  log_every_n_steps: 10
+  devices: auto
+  precision: 16-mixed
+  max_epochs: 100
   logger:
     class_path: lightning.pytorch.loggers.WandbLogger
     init_args:
-      entity: "grade-descent"
-      project: "jute-disease-pest-detection"
-      log_model: True
+      project: jute-disease-detection
+      entity: grade-descent
+      log_model: true
   callbacks:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
-        monitor: "val_loss"
-        save_top_k: 1
-        mode: "min"
+        monitor: val_loss
         filename: "densenet-{epoch:02d}-{val_loss:.4f}"
+        save_top_k: 1
+        mode: min
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
-        monitor: "val_loss"
-        patience: 10
-        mode: "min"
+        monitor: val_loss
+        patience: 5
+        mode: min
 
 model:
-  lr: 0.001
-  num_classes: 6
-  feature_extractor:
-    class_path: jute_disease.models.dl_backbones.densenet.DenseNet
-    init_args:
-      pretrained: true
+  class_path: jute_disease.models.jute_classifier.JuteClassifier
+  init_args:
+    lr: 0.001
+    feature_extractor:
+      class_path: jute_disease.models.dl_backbones.densenet.DenseNet
+      init_args:
+        pretrained: true
 
 data:
-  batch_size: 64
-  data_dir: "data/ml_split"
+  class_path: jute_disease.data.jute_datamodule.JuteDataModule
+  init_args:
+    data_dir: data/ml_split
+    batch_size: 256
+    use_weighted_sampler: false
