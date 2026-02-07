@@ -1,12 +1,12 @@
 import os
 
-import wandb
 from dotenv import load_dotenv
 from lightning.pytorch import Trainer
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.demos.boring_classes import DemoModel
 from lightning.pytorch.loggers import WandbLogger
 
+import wandb
 from jute_disease.data.jute_datamodule import JuteDataModule
 from jute_disease.models.jute_classifier import JuteClassifier
 from jute_disease.utils.constants import (
@@ -30,9 +30,7 @@ def train():
     else:
         wandb.login()
 
-    wandb_logger = WandbLogger(
-        entity="grade-descent", project="jute-disease-pest-detection"
-    )
+    wandb_logger = WandbLogger(entity="grade-descent", project="jute-disease-detection")
     datamodule = JuteDataModule(data_dir=str(DATA_DIR), batch_size=BATCH_SIZE)
     feature_extractor = DemoModel()
     model = JuteClassifier(feature_extractor=feature_extractor, lr=LEARNING_RATE)
