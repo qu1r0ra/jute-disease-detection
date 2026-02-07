@@ -28,6 +28,7 @@ model:
   class_path: jute_disease.models.jute_classifier.JuteClassifier
   init_args:
     lr: 0.001
+    freeze_backbone: true
     feature_extractor:
       class_path: jute_disease.models.dl_backbones.inception.Inception
       init_args:

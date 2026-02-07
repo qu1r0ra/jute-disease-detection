@@ -6,20 +6,25 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
-# TODO: Double-check logging for completeness
 class JuteClassifier(LightningModule):
     def __init__(
         self,
         feature_extractor: nn.Module,
-        num_classes: int = 11,
+        num_classes: int = 6,
         lr: float = 1e-3,
         compile_model: bool = True,
+        freeze_backbone: bool = True,
     ):
         super().__init__()
         if not hasattr(feature_extractor, "out_features"):
             raise ValueError("Feature extractor must have an 'out_features' attribute")
 
         self.feature_extractor = feature_extractor
+
+        if freeze_backbone:
+            for param in self.feature_extractor.parameters():
+                param.requires_grad = False
+
         if compile_model and hasattr(torch, "compile"):
             self.feature_extractor = torch.compile(self.feature_extractor)
 
@@ -95,7 +100,7 @@ class JuteClassifier(LightningModule):
         return self(batch)
 
     def configure_optimizers(self):
-        optimizer = Adam(self.parameters(), lr=self.lr)
+        optimizer = Adam([p for p in self.parameters() if p.requires_grad], lr=self.lr)
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
