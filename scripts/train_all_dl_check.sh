@@ -11,7 +11,7 @@ for config in configs/*.yaml; do
     echo "Verifying ${model_name} (Fast Dev Run)..."
     echo "----------------------------------------------------------------"
 
-    uv run python src/jute_disease/engines/cli.py fit \
+    uv run python src/jute_disease/engines/train.py fit \
         --config "$config" \
         --trainer.fast_dev_run=True \
         --data.num_workers=2 \
