@@ -22,12 +22,16 @@ class JuteDataModule(LightningDataModule):
         batch_size: int = BATCH_SIZE,
         use_weighted_sampler: bool = False,
         seed: int = DEFAULT_SEED,
+        num_workers: int = NUM_WORKERS,
+        pin_memory: bool = True,
     ):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.use_weighted_sampler = use_weighted_sampler
         self.seed = seed
+        self.num_workers = num_workers
+        self.pin_memory = pin_memory
 
         self.sampler = None
         self.classes = None
@@ -79,8 +83,8 @@ class JuteDataModule(LightningDataModule):
             batch_size=self.batch_size,
             shuffle=True if self.sampler is None else False,
             sampler=self.sampler,
-            num_workers=NUM_WORKERS,
-            pin_memory=True,
+            num_workers=self.num_workers,
+            pin_memory=self.pin_memory,
         )
 
     def val_dataloader(self):
@@ -88,8 +92,8 @@ class JuteDataModule(LightningDataModule):
             self.jute_val,
             batch_size=self.batch_size * 2,
             shuffle=False,
-            num_workers=NUM_WORKERS,
-            pin_memory=True,
+            num_workers=self.num_workers,
+            pin_memory=self.pin_memory,
         )
 
     def test_dataloader(self):
@@ -97,8 +101,8 @@ class JuteDataModule(LightningDataModule):
             self.jute_test,
             batch_size=self.batch_size * 2,
             shuffle=False,
-            num_workers=NUM_WORKERS,
-            pin_memory=True,
+            num_workers=self.num_workers,
+            pin_memory=self.pin_memory,
         )
 
     def predict_dataloader(self):
@@ -106,6 +110,6 @@ class JuteDataModule(LightningDataModule):
             self.jute_predict,
             batch_size=self.batch_size * 2,
             shuffle=False,
-            num_workers=NUM_WORKERS,
-            pin_memory=True,
+            num_workers=self.num_workers,
+            pin_memory=self.pin_memory,
         )
