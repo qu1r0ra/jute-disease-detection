@@ -1,11 +1,7 @@
-import os
-
-from dotenv import load_dotenv
 from lightning.pytorch import Trainer
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import WandbLogger
 
-import wandb
 from jute_disease.data.jute_datamodule import JuteDataModule
 from jute_disease.models.dl_backbones.mobilevit import MobileViT
 from jute_disease.models.jute_classifier import JuteClassifier
@@ -20,17 +16,12 @@ from jute_disease.utils.constants import (
     WANDB_PROJECT,
 )
 from jute_disease.utils.seed import seed_everything
+from jute_disease.utils.wandb_utils import setup_wandb
 
 
 def train():
     seed_everything(DEFAULT_SEED)
-    load_dotenv()
-
-    api_key = os.getenv("WANDB_API_KEY")
-    if api_key:
-        wandb.login(key=api_key)
-    else:
-        wandb.login()
+    setup_wandb()
 
     wandb_logger = WandbLogger(entity=WANDB_ENTITY, project=WANDB_PROJECT)
     datamodule = JuteDataModule(data_dir=ML_SPLIT_DIR, batch_size=BATCH_SIZE)

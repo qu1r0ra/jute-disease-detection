@@ -1,12 +1,12 @@
 from lightning.pytorch.cli import LightningCLI
 
-from jute_disease.data.jute_datamodule import JuteDataModule
-from jute_disease.models.jute_classifier import JuteClassifier
+from jute_disease.utils.wandb_utils import setup_wandb
 
 
-def cli_main():
-    _cli = LightningCLI(JuteClassifier, JuteDataModule)
+def main():
+    setup_wandb()
+    LightningCLI(save_config_kwargs={"overwrite": True})
 
 
 if __name__ == "__main__":
-    cli_main()
+    main()

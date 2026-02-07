@@ -1,9 +1,7 @@
 # ruff: noqa: N806
 import argparse
-import os
 
 import numpy as np
-from dotenv import load_dotenv
 from sklearn.metrics import f1_score
 from torchvision.datasets import ImageFolder
 
@@ -28,6 +26,7 @@ from jute_disease.utils.feature_extractor import (
 )
 from jute_disease.utils.logger import get_logger
 from jute_disease.utils.seed import seed_everything
+from jute_disease.utils.wandb_utils import setup_wandb
 
 logger = get_logger(__name__)
 
@@ -71,13 +70,7 @@ def train_ml():
 
     args = parser.parse_args()
     seed_everything(args.seed)
-    load_dotenv()
-
-    api_key = os.getenv("WANDB_API_KEY")
-    if api_key:
-        wandb.login(key=api_key)
-    else:
-        wandb.login()
+    setup_wandb()
 
     wandb.init(
         entity=WANDB_ENTITY,
