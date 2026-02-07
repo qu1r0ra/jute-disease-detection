@@ -13,7 +13,8 @@ help:
 	@echo "  make init-data    - Initialize everything: setup folders, split data, and download external sets"
 	@echo "  make setup-data   - Create target folder structure"
 	@echo "  make split-data   - Split data from by_class into ml_split"
-	@echo "  make train        - Run manual training"
+	@echo "  make train        - Run deep learning training"
+	@echo "  make train-ml     - Run ML classifier comparative training"
 	@echo "  make cli          - Run LightningCLI training"
 	@echo "  make lint         - Run linting (ruff check)"
 	@echo "  make format       - Run formatting (ruff format)"
@@ -22,19 +23,22 @@ help:
 	@echo "  make setup-hooks  - Install pre-commit hooks"
 
 init-data:
-	$(PYTHON) -m jute_disease_pest.utils.data init
+	$(PYTHON) -m jute_disease.utils.data init
 
 setup-data:
-	$(PYTHON) -m jute_disease_pest.utils.data setup
+	$(PYTHON) -m jute_disease.utils.data setup
 
 split-data:
-	$(PYTHON) -m jute_disease_pest.utils.data split
+	$(PYTHON) -m jute_disease.utils.data split
 
 train:
-	$(PYTHON) -m jute_disease_pest.engines.train
+	$(PYTHON) -m jute_disease.engines.train
+
+train-ml:
+	$(PYTHON) -m jute_disease.engines.train_ml
 
 cli:
-	$(PYTHON) -m jute_disease_pest.engines.cli
+	$(PYTHON) -m jute_disease.engines.cli
 
 lint:
 	$(PYTHON) -m ruff check .
@@ -52,7 +56,7 @@ test:
 	$(PYTHON) -m pytest
 
 predict:
-	$(PYTHON) -m jute_disease_pest.engines.predict
+	$(PYTHON) -m jute_disease.engines.predict
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +

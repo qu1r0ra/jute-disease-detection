@@ -6,7 +6,7 @@ from pathlib import Path
 import kagglehub
 from tqdm import tqdm
 
-from jute_disease_pest.utils.constants import (
+from jute_disease.utils.constants import (
     BY_CLASS_DIR,
     DATA_DIR,
     DEFAULT_SEED,
@@ -14,8 +14,8 @@ from jute_disease_pest.utils.constants import (
     ML_SPLIT_DIR,
     SPLITS,
 )
-from jute_disease_pest.utils.logger import get_logger
-from jute_disease_pest.utils.seed import seed_everything
+from jute_disease.utils.logger import get_logger
+from jute_disease.utils.seed import seed_everything
 
 logger = get_logger(__name__)
 

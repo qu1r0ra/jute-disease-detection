@@ -7,9 +7,9 @@ from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.demos.boring_classes import DemoModel
 from lightning.pytorch.loggers import WandbLogger
 
-from jute_disease_pest.data.jute_datamodule import JuteDataModule
-from jute_disease_pest.models.jute_classifier import JuteClassifier
-from jute_disease_pest.utils.constants import (
+from jute_disease.data.jute_datamodule import JuteDataModule
+from jute_disease.models.jute_classifier import JuteClassifier
+from jute_disease.utils.constants import (
     BATCH_SIZE,
     DATA_DIR,
     DEFAULT_SEED,
@@ -17,7 +17,7 @@ from jute_disease_pest.utils.constants import (
     MAX_EPOCHS,
     PATIENCE,
 )
-from jute_disease_pest.utils.seed import seed_everything
+from jute_disease.utils.seed import seed_everything
 
 
 def train():

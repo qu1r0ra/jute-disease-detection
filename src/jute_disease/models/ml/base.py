@@ -5,8 +5,8 @@ from abc import ABC, abstractmethod
 import joblib
 import numpy as np
 
-from jute_disease_pest.utils.constants import ML_MODELS_DIR
-from jute_disease_pest.utils.logger import get_logger
+from jute_disease.utils.constants import ML_MODELS_DIR
+from jute_disease.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

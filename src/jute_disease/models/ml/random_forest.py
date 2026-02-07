@@ -1,20 +1,18 @@
 # ruff: noqa: N803
 import numpy as np
-from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
 
-from jute_disease_pest.models.ml.base import BaseMLModel
+from jute_disease.models.ml.base import BaseMLModel
 
 
-class SVM(BaseMLModel):
+class RandomForest(BaseMLModel):
     def __init__(self, **kwargs):
         super().__init__()
-        if "probability" not in kwargs:
-            kwargs["probability"] = True
-        self.model = SVC(**kwargs)
+        self.model = RandomForestClassifier(**kwargs)
 
     def fit(
         self, X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None
-    ) -> "SVM":
+    ) -> "RandomForest":
         self.model.fit(X, y, sample_weight=sample_weight)
         return self
 

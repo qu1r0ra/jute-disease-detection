@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.backends.cudnn
 
-from jute_disease_pest.utils.logger import get_logger
+from jute_disease.utils.logger import get_logger
 
 logger = get_logger(__name__)
 

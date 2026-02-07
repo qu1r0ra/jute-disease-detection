@@ -1,18 +1,20 @@
 # ruff: noqa: N803
 import numpy as np
-from sklearn.linear_model import LogisticRegression as SKLogisticRegression
+from sklearn.svm import SVC
 
-from jute_disease_pest.models.ml.base import BaseMLModel
+from jute_disease.models.ml.base import BaseMLModel
 
 
-class LogisticRegression(BaseMLModel):
+class SVM(BaseMLModel):
     def __init__(self, **kwargs):
         super().__init__()
-        self.model = SKLogisticRegression(**kwargs)
+        if "probability" not in kwargs:
+            kwargs["probability"] = True
+        self.model = SVC(**kwargs)
 
     def fit(
         self, X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None
-    ) -> "LogisticRegression":
+    ) -> "SVM":
         self.model.fit(X, y, sample_weight=sample_weight)
         return self
 

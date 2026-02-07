@@ -4,7 +4,7 @@ import torch
 from albumentations.pytorch import ToTensorV2
 from PIL.Image import Image
 
-from jute_disease_pest.utils.constants import DEFAULT_SEED, IMAGE_SIZE
+from jute_disease.utils.constants import DEFAULT_SEED, IMAGE_SIZE
 
 
 class AlbumentationsAdapter:
