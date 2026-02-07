@@ -1,5 +1,5 @@
 from annotator import create_app
-from jute_disease_pest.utils.logger import get_logger
+from jute_disease.utils.logger import get_logger
 
 logger = get_logger(__name__)
 app = create_app()

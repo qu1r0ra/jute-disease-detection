@@ -1,7 +1,7 @@
 from lightning.pytorch.cli import LightningCLI
 
-from jute_disease_pest.data.jute_datamodule import JuteDataModule
-from jute_disease_pest.models.jute_classifier import JuteClassifier
+from jute_disease.data.jute_datamodule import JuteDataModule
+from jute_disease.models.jute_classifier import JuteClassifier
 
 
 def cli_main():

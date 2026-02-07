@@ -5,14 +5,14 @@ from lightning import LightningDataModule
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from torchvision.datasets import ImageFolder
 
-from jute_disease_pest.data.transforms import train_transforms, val_transforms
-from jute_disease_pest.utils.constants import (
+from jute_disease.data.transforms import dl_train_transforms, dl_val_transforms
+from jute_disease.utils.constants import (
     BATCH_SIZE,
     DEFAULT_SEED,
     ML_SPLIT_DIR,
     NUM_WORKERS,
 )
-from jute_disease_pest.utils.data import split_dataset
+from jute_disease.utils.data import split_dataset
 
 
 class JuteDataModule(LightningDataModule):
@@ -31,8 +31,8 @@ class JuteDataModule(LightningDataModule):
 
         self.sampler = None
         self.classes = None
-        self.train_transforms = train_transforms
-        self.val_transforms = val_transforms
+        self.train_transforms = dl_train_transforms
+        self.val_transforms = dl_val_transforms
 
     def prepare_data(self):
         split_dataset()

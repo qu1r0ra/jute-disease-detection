@@ -4,7 +4,7 @@ import torch
 from PIL import Image
 from torch.utils.data import Dataset
 
-from jute_disease_pest.utils.constants import IMAGE_SIZE
+from jute_disease.utils.constants import IMAGE_SIZE
 
 
 def denormalize(

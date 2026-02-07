@@ -1,4 +1,4 @@
-from jute_disease_pest.models.jute_classifier import JuteClassifier
+from jute_disease.models.jute_classifier import JuteClassifier
 
 
 # TODO: Finalize once the model structure has been finished.
