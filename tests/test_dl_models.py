@@ -9,6 +9,9 @@ CONFIG_DIR = Path(__file__).resolve().parents[1] / "configs"
 CONFIG_FILES = sorted([str(f) for f in CONFIG_DIR.glob("*.yaml")])
 
 
+@pytest.mark.skipif(
+    os.environ.get("CI") == "true", reason="Skipping slow DL integration test in CI"
+)
 @pytest.mark.parametrize("config_path", CONFIG_FILES)
 def test_dl_fast_dev_run(config_path):
     """
