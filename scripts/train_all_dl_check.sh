@@ -2,16 +2,16 @@
 set -e
 
 echo "Starting DL Fast Dev Run Pipeline..."
-echo "Finding all configs in configs/*.yaml..."
+echo "Finding all configs in configs/baselines/*.yaml..."
 
-for config in configs/*.yaml; do
+for config in configs/baselines/*.yaml; do
     model_name=$(basename "$config" .yaml)
 
     echo "----------------------------------------------------------------"
     echo "Verifying ${model_name} (Fast Dev Run)..."
     echo "----------------------------------------------------------------"
 
-    uv run python src/jute_disease/engines/train.py fit \
+    uv run python src/jute_disease/engines/dl/train.py fit \
         --config "$config" \
         --trainer.fast_dev_run=True \
         --data.num_workers=2 \

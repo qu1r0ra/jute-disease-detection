@@ -39,7 +39,7 @@ train-dl-check:
 	bash scripts/train_all_dl_check.sh
 
 train-dl-check-single:
-	uv run python src/jute_disease/engines/train.py fit \
+	uv run python src/jute_disease/engines/dl/train.py fit \
 		--config configs/baselines/$(MODEL).yaml \
 		--trainer.fast_dev_run=True \
 		--data.num_workers=2 \

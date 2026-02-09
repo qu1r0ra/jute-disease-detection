@@ -25,12 +25,12 @@ trainer:
         mode: min
 
 model:
-  class_path: jute_disease.models.jute_classifier.JuteClassifier
+  class_path: jute_disease.models.dl.jute_classifier.JuteClassifier
   init_args:
     lr: 0.001
     freeze_backbone: true
     feature_extractor:
-      class_path: jute_disease.models.dl_backbones.mobilenet.MobileNet
+      class_path: jute_disease.models.dl.backbones.mobilenet.MobileNet
       init_args:
         pretrained: true
 

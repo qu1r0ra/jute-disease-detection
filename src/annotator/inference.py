@@ -1,4 +1,4 @@
-from jute_disease.models.jute_classifier import JuteClassifier
+from jute_disease.models.dl.backbones.jute_classifier import JuteClassifier
 
 
 # TODO: Finalize once the model structure has been finished.

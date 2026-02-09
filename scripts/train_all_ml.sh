@@ -12,7 +12,7 @@ for feat in "${FEATURE_TYPES[@]}"; do
         echo "Training ${clf} using ${feat} features..."
         echo "----------------------------------------------------------------"
 
-        uv run python src/jute_disease/engines/train_ml.py \
+        uv run python src/jute_disease/engines/ml/train.py \
             --classifier "$clf" \
             --feature_type "$feat" \
             --balanced
