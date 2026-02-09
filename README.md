@@ -1,6 +1,6 @@
 # jute-disease-detection <!-- omit from toc -->
 
-![title](./readme/title.png)
+![title](./assets/readme/title.png)
 
 <!-- Refer to https://shields.io/badges for usage -->
 
