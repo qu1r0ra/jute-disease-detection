@@ -40,7 +40,7 @@ train-dl-check:
 
 train-dl-check-single:
 	uv run python src/jute_disease/engines/train.py fit \
-		--config configs/$(MODEL).yaml \
+		--config configs/baselines/$(MODEL).yaml \
 		--trainer.fast_dev_run=True \
 		--data.num_workers=2 \
 		--data.pin_memory=True \
