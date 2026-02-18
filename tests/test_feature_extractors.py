@@ -2,11 +2,11 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from jute_disease.utils.constants import IMAGE_SIZE
-from jute_disease.utils.feature_extractor import (
+from jute_disease.models.ml.features import (
     HandcraftedFeatureExtractor,
     RawPixelFeatureExtractor,
 )
+from jute_disease.utils.constants import IMAGE_SIZE
 
 
 @pytest.fixture
