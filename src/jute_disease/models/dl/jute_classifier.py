@@ -2,7 +2,7 @@ import torch
 import torchmetrics
 from lightning import LightningModule
 from torch import nn
-from torch.optim import Adam
+from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
@@ -12,6 +12,7 @@ class JuteClassifier(LightningModule):
         feature_extractor: nn.Module,
         num_classes: int = 6,
         lr: float = 1e-3,
+        weight_decay: float = 0.01,
         compile_model: bool = True,
         freeze_backbone: bool = True,
     ):
@@ -35,6 +36,7 @@ class JuteClassifier(LightningModule):
 
         self.num_classes = num_classes
         self.lr = lr
+        self.weight_decay = weight_decay
         self.save_hyperparameters()
 
         self.train_acc = torchmetrics.Accuracy(
@@ -100,7 +102,11 @@ class JuteClassifier(LightningModule):
         return self(batch)
 
     def configure_optimizers(self):
-        optimizer = Adam([p for p in self.parameters() if p.requires_grad], lr=self.lr)
+        optimizer = AdamW(
+            [p for p in self.parameters() if p.requires_grad],
+            lr=self.lr,
+            weight_decay=self.weight_decay,
+        )
         return {
             "optimizer": optimizer,
             "lr_scheduler": {

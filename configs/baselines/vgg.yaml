@@ -30,9 +30,11 @@ model:
     lr: 0.001
     freeze_backbone: true
     feature_extractor:
-      class_path: jute_disease.models.dl.backbones.vgg.VGG
+      class_path: jute_disease.models.dl.timm_backbone.TimmBackbone
       init_args:
+        model_name: vgg19
         pretrained: true
+        out_features: 4096  # vgg19 num_features reports 512 but actual output is 4096
 
 data:
   class_path: jute_disease.data.jute_datamodule.JuteDataModule

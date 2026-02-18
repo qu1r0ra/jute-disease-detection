@@ -30,8 +30,9 @@ model:
     lr: 0.001
     freeze_backbone: true
     feature_extractor:
-      class_path: jute_disease.models.dl.backbones.mobilenet.MobileNet
+      class_path: jute_disease.models.dl.timm_backbone.TimmBackbone
       init_args:
+        model_name: mobilenetv2_100
         pretrained: true
 
 data:

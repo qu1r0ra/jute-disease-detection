@@ -6,9 +6,9 @@ transfer_learning_levels:
   - name: "level_1_imagenet"
     weights_path: "imagenet"
   - name: "level_2_plantvillage"
-    weights_path: "checkpoints/pretrained/mobilevit_plantvillage.ckpt"
+    weights_path: "artifacts/checkpoints/pretrained/mobilevit_plantvillage.ckpt"
   - name: "level_3_plantdoc"
-    weights_path: "checkpoints/pretrained/mobilevit_plantvillage_plantdoc.ckpt"
+    weights_path: "artifacts/checkpoints/pretrained/mobilevit_plantvillage_plantdoc.ckpt"
 
 fixed_params:
   input_resolution: [256, 256]
