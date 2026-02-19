@@ -7,7 +7,7 @@ from lightning.pytorch import Trainer, seed_everything
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import WandbLogger
 
-from jute_disease.data import PretrainDataModule
+from jute_disease.data import DataModule
 from jute_disease.models.dl import Classifier, MobileViT
 from jute_disease.utils import get_logger
 
@@ -31,7 +31,7 @@ def train_pretext_task(
 
     # 1. Setup Data
     logger.info(f"Initializing DataModule for {data_dir}...")
-    dm = PretrainDataModule(data_dir=data_dir, batch_size=batch_size, seed=seed)
+    dm = DataModule(data_dir=data_dir, val_split=0.2, batch_size=batch_size, seed=seed)
     dm.setup()
 
     num_classes = dm.num_classes
