@@ -1,4 +1,4 @@
-.PHONY: help data setup-data split-data train-ml train-dl train-dl-check test lint format clean
+.PHONY: help data setup-data split-data train-ml train-dl train-dl-check test test-all lint format clean
 
 ifeq (, $(shell which uv))
     PYTHON = python3
@@ -18,20 +18,21 @@ help:
 	@echo "  make train-cv     		- Run cross-validation for MobileViT (default 5 folds)"
 	@echo "  make grid-search  		- Run grid search experiment using MobileViT grid config"
 	@echo "  make pretrain     		- Run pre-training script on external data (PlantVillage)"
-	@echo "  make test         		- Run all tests"
+	@echo "  make test         		- Run fast tests (slow tests skipped by default)"
+	@echo "  make test-all     		- Run all tests including slow ones"
 	@echo "  make lint         		- Run linting (ruff check)"
 	@echo "  make format       		- Run formatting (ruff format)"
 	@echo "  make clean        		- Remove temporary files and logs"
 	@echo "  make clean-artifacts  	- Remove all generated artifacts (models, checkpoints)"
 
 data:
-	$(PYTHON) -m jute_disease.utils.jute_data init
+	$(PYTHON) -m jute_disease.utils.data_utils init
 
 setup-data:
-	$(PYTHON) -m jute_disease.utils.jute_data setup
+	$(PYTHON) -m jute_disease.utils.data_utils setup
 
 split-data:
-	$(PYTHON) -m jute_disease.utils.jute_data split
+	$(PYTHON) -m jute_disease.utils.data_utils split
 
 train-ml:
 	$(PYTHON) scripts/train_all_ml.py
@@ -65,6 +66,9 @@ pretrain:
 
 test:
 	uv run pytest -v -s
+
+test-all:
+	uv run pytest -v -s -m ''
 
 lint:
 	uv run ruff check .
