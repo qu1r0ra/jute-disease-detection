@@ -3,13 +3,13 @@ from pathlib import Path
 from shutil import copyfile
 
 import torch
-from lightning.pytorch import Trainer, seed_everything
+from lightning.pytorch import Trainer
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import WandbLogger
 
 from jute_disease.data import DataModule
 from jute_disease.models.dl import Classifier, MobileViT
-from jute_disease.utils import get_logger
+from jute_disease.utils import get_logger, seed_everything
 
 logger = get_logger(__name__)
 
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     train_pretext_task(
         data_dir=args.data_dir,
         output_path=args.output_path,
-        pretrained=True,  # Always init with ImageNet first structure-wise
+        pretrained=True,
         base_backbone_weights=backbone_weights,
         epochs=args.epochs,
         batch_size=args.batch_size,
