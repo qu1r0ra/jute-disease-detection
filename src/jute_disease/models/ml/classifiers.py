@@ -57,8 +57,6 @@ class SklearnClassifier:
         path = str(ML_MODELS_DIR / f"{cls.__name__.lower()}.joblib")
         if not Path(path).exists():
             return None
-
-        # This works for subclasses that provide the sklearn_cls in __init__
         instance = cls()
         instance.model = joblib.load(path)
         return instance

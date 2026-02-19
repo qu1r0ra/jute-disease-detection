@@ -6,7 +6,7 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
-class JuteClassifier(LightningModule):
+class Classifier(LightningModule):
     def __init__(
         self,
         feature_extractor: nn.Module,
