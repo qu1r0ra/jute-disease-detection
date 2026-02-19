@@ -21,7 +21,7 @@ from jute_disease.utils.seed import seed_everything
 logger = get_logger(__name__)
 
 
-def setup_jute_data_directory():
+def setup_data_directory():
     """Create the directory structure for the jute disease dataset."""
     disease_classes_file = DATA_DIR / "disease_classes.txt"
 
@@ -42,7 +42,7 @@ def setup_jute_data_directory():
     logger.info(f"Successfully created folders for {len(classes)} classes.")
 
 
-def split_jute_data(force: bool = False):
+def split_data(force: bool = False):
     """Split the jute dataset into train/val/test sets."""
     if ML_SPLIT_DIR.exists() and any(ML_SPLIT_DIR.iterdir()) and not force:
         logger.info(f"Split directory {ML_SPLIT_DIR} already exists. Skipping split.")
@@ -102,8 +102,8 @@ def split_jute_data(force: bool = False):
 def initialize_data():
     """Run all data initialization tasks."""
     seed_everything(DEFAULT_SEED)
-    setup_jute_data_directory()
-    split_jute_data()
+    setup_data_directory()
+    split_data()
     download_plant_village()
     download_plant_doc()
 
@@ -126,10 +126,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.command == "setup":
-        setup_jute_data_directory()
+        setup_data_directory()
     elif args.command == "split":
         seed_everything(DEFAULT_SEED)
-        split_jute_data(force=args.force)
+        split_data(force=args.force)
     elif args.command == "download":
         download_plant_village()
         download_plant_doc()
