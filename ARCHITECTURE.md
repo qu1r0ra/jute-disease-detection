@@ -1,25 +1,25 @@
 # Project Architecture
 
-This document describes the architectural design and directory structure of the `jute-disease-detection` project.
+This document describes the architectural design and directory structure of the `jute-disease-detection` project. It serves as a guide for developers and contributors to understand the core components and their interactions.
 
 ## Directory Structure Overview
 
 ```text
 .
-├── artifacts/              # Generated models, checkpoints, and logs
-├── configs/                # Lightning CLI configuration files (.yaml)
-├── data/                   # Dataset storage (ignored by git, except structure)
-├── docs/                   # Project documentation
-├── notebooks/              # Jupyter notebooks for EDA and reproducibility
-├── scripts/                # Utility scripts for training and grid search
-├── src/                    # Source code
-│   ├── annotator/          # Flask-based web app for image annotation
+├── artifacts/              # Generated models, checkpoints, logs, and experiment results
+├── configs/                # Lightning CLI configuration files (.yaml) for DL models
+├── data/                   # Dataset storage (by_class/, ml_split/, unlabeled/)
+├── docs/                   # Project documentation and specifications
+├── notebooks/              # Jupyter notebooks for EDA, prototyping, and reproducibility
+├── scripts/                # Utility scripts for batch training, grid search, and validation
+├── src/                    # Source code package
+│   ├── annotator/          # Flask-based web application for image annotation
 │   └── jute_disease/       # Main library package
-│       ├── data/           # LightningDataModules and transforms
-│       ├── engines/        # Training/Inference entry points (CLI)
-│       ├── models/         # Model architectures (DL and ML)
-│       └── utils/          # Shared utilities (constants, logging, seed)
-└── tests/                  # Hierarchical test suite mirroring src/
+│       ├── data/           # LightningDataModules, transforms, and data utilities
+│       ├── engines/        # Training/Inference entry points (DL CLI, ML Training)
+│       ├── models/         # Model definitions (DL: MobileViT, ML: Classifiers)
+│       └── utils/          # Shared utilities (logging, seeding, constants)
+└── tests/                  # Hierarchical test suite mirroring src/ structure
 ```
 
 ## Core Design Principles
@@ -28,32 +28,45 @@ This document describes the architectural design and directory structure of the 
 
 Each subpackage in `src/jute_disease/` (e.g., `models.ml`, `data`, `utils`) uses `__init__.py` to expose a clean, flattened public API.
 
-- **Internal developers** use deep imports to avoid circular dependencies.
-- **External consumers** (engines, scripts, tests) use the clean package-level imports (e.g., `from jute_disease.models.ml import RandomForest`).
+- **Internal developers** use relative imports where appropriate or `from jute_disease.x import y` to avoid circular dependencies.
+- **External consumers** (scripts, tests, notebooks) use the clean package-level imports (e.g., `from jute_disease.models.ml import RandomForest`).
 
 ### 2. Deep Learning Service (Lightning + Timm)
 
 The DL pipeline is built using **PyTorch Lightning** for state-of-the-art reproducibility and boilerplate reduction.
 
-- **LightningModule**: The `Classifier` class handles the training loop, optimization, and metrics.
-- **Backbone System**: Uses a generic `TimmBackbone` to wrap any model from the `timm` library, allowing for easy experimentation with different architectures (ResNet, MobileViT, etc.).
-- **Lightning CLI**: Training is driven by configuration files in `configs/`, promoting "Configuration as Code".
+- **LightningModule (`Classifier`)**: The core class handling the training loop, optimization, logging, and metrics.
+- **Backbone System**: Uses a generic `TimmBackbone` to wrap any model from the `timm` library, allowing for easy experimentation with different architectures (e.g., MobileViT, ResNet). The default backbone is `mobilevit_s`.
+- **Lightning CLI**: Training is driven by configuration files in `configs/`, promoting "Configuration as Code". The CLI supports overrides via command-line arguments.
 
 ### 3. Machine Learning Framework (Scikit-learn Adapters)
 
-Classical ML models are integrated using a custom adapter pattern.
+Classical ML models are integrated using a custom adapter pattern to unify them with the DL workflow.
 
-- **Feature Extractors**: Classes like `HandcraftedFeatureExtractor` convert raw images into numerical vectors (HSV, LBP, HOG).
+- **Feature Extractors**: Classes like `HandcraftedFeatureExtractor` convert raw images into numerical vectors (HSV, LBP, HOG). `RawPixelFeatureExtractor` handles pixel flattening.
 - **Adapters**: The `SklearnClassifier` base class wraps standard scikit-learn estimators to provide a consistent `fit`/`predict`/`save`/`load` interface across the project.
+- **Implmentations**: Currently supports Logistic Regression, SVM, Random Forest, KNN, and Multinomial Naive Bayes.
 
 ### 4. Data Management & Reproducibility
 
-- **Automated Pipeline**: `utils/data_utils.py` handles consistent dataset splitting into `train`, `val`, and `test` sets based on fixed seeds.
-- **Seed Everything**: A centralized `seed_everything` utility ensures deterministic behavior across Python, Numpy, and PyTorch.
+- **DataModule**:
+  - Handles dataset splitting (Train/Val/Test) with fixed seeds.
+  - Supports **K-Fold Cross-Validation** via `set_fold()`.
+  - Implements **Weighted Random Sampling** to handle class imbalance.
+- **Transforms**: Uses **Albumentations** for robust data augmentation and preprocessing.
+- **Seed Everything**: A centralized `seed_everything` utility ensures deterministic behavior across Python, Numpy, specific libraries, and PyTorch.
 
-### 5. Testing Strategy
+### 5. Code Quality & Standards
 
-The suite is divided into:
+- **Type Safety**: The codebase adheres to strict type checking using modern Python 3.10+ syntax (e.g., `list[str] | None`).
+- **Formatting**: Code is formatted and linted using `ruff` to ensure PEP 8 compliance.
+- **Testing**: A comprehensive test suite (`tests/`) covers unit tests (logic verification) and slower integration tests (end-to-end pipeline).
 
-- **Fast Unit Tests**: Target individual functions and classes (under 20s).
-- **Slow Integration Tests**: Smoke-test the full training pipeline using `fast_dev_run` (marked with `@pytest.mark.slow`).
+## Tools & Dependencies
+
+- **uv**: Package management and environment isolation.
+- **PyTorch Lightning**: Deep learning framework.
+- **timm**: Pretrained computer vision models.
+- **Scikit-learn**: Classical machine learning algorithms.
+- **Albumentations**: Fast image augmentation library.
+- **WandB**: Experiment tracking and visualization.

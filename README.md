@@ -28,14 +28,19 @@ A high-level overview of the repository organization:
 
 ```text
 .
-├── configs/          # Training configurations (.yaml) for Lightning CLI
-├── docs/             # Technical documentation and specifications
-├── notebooks/        # Jupyter notebooks for EDA and reproducibility
-├── scripts/          # Helper scripts for batch training and grid search
+├── artifacts/          # Generated checkpoints, models, and logs
+├── configs/            # Training configurations (.yaml) for Lightning CLI
+├── docs/               # Technical documentation
+├── notebooks/          # Jupyter notebooks for EDA and analysis
+├── scripts/            # Automation scripts (batch training, grid search)
 ├── src/
-│   ├── annotator/    # Image annotation tool (Flask)
-│   └── jute_disease/ # Main package (Data, Models, Utils, Engines)
-└── tests/            # Test suite (mirrors src/ structure)
+│   ├── annotator/      # Image annotation tool (Flask)
+│   └── jute_disease/   # Main package
+│       ├── data/       # DataModules, Transforms, Datasets
+│       ├── engines/    # Entry points (DL CLI, ML Training)
+│       ├── models/     # Model architectures (e.g., MobileViT, RF, SVM)
+│       └── utils/      # Logging, Seeding, Constants
+└── tests/              # Comprehensive test suite
 ```
 
 For a detailed look at the internal design, public APIs, and architectural decisions, see [ARCHITECTURE.md](ARCHITECTURE.md).
@@ -60,9 +65,10 @@ To reproduce our results, you will need the following installed:
    git clone https://github.com/qu1r0ra/jute-disease-detection
    ```
 
-2. Navigate to the project root and install all required dependencies:
+2. Navigate to the project root and install all dependencies:
 
    ```bash
+   cd jute-disease-detection
    uv sync
    ```
 
