@@ -21,7 +21,7 @@ from jute_disease.utils.seed import seed_everything
 logger = get_logger(__name__)
 
 
-def setup_data_directory():
+def setup_data_directory() -> None:
     """Create the directory structure for the jute disease dataset."""
     disease_classes_file = DATA_DIR / "disease_classes.txt"
 
@@ -42,7 +42,7 @@ def setup_data_directory():
     logger.info(f"Successfully created folders for {len(classes)} classes.")
 
 
-def split_data(force: bool = False):
+def split_data(force: bool = False) -> None:
     """Split the jute dataset into train/val/test sets."""
     if ML_SPLIT_DIR.exists() and any(ML_SPLIT_DIR.iterdir()) and not force:
         logger.info(f"Split directory {ML_SPLIT_DIR} already exists. Skipping split.")
@@ -99,7 +99,7 @@ def split_data(force: bool = False):
     logger.info("Data splitting complete!")
 
 
-def initialize_data():
+def initialize_data() -> None:
     """Run all data initialization tasks."""
     seed_everything(DEFAULT_SEED)
     setup_data_directory()

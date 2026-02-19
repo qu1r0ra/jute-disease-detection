@@ -5,7 +5,7 @@ from jute_disease.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-def seed_everything(seed: int, workers: bool = True):
+def seed_everything(seed: int, workers: bool = True) -> None:
     """
     Sets the seed for generating random numbers in PyTorch, numpy, and Python's random.
     Using Lightning's implementation for robustness across workers and CUDA.

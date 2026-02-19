@@ -25,7 +25,7 @@ class BaseFeatureExtractor(ABC):
 class HandcraftedFeatureExtractor(BaseFeatureExtractor):
     """Extracts Color (HSV), Texture (LBP, GLCM), and Shape (HOG) features."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.lbp_radius = 3
         self.lbp_n_points = 8 * self.lbp_radius
         self.lbp_method = "uniform"
@@ -99,7 +99,7 @@ class HandcraftedFeatureExtractor(BaseFeatureExtractor):
 class RawPixelFeatureExtractor(BaseFeatureExtractor):
     """Extracts raw pixel values as features."""
 
-    def __init__(self, img_size: int = IMAGE_SIZE):
+    def __init__(self, img_size: int = IMAGE_SIZE) -> None:
         self.img_size = img_size
 
     def extract(self, img: Image.Image | np.ndarray) -> np.ndarray:

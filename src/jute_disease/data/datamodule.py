@@ -40,23 +40,23 @@ class DataModule(LightningDataModule):
         pin_memory: bool = True,
         k_fold: int = 1,
         fold_index: int = 0,
-    ):
+    ) -> None:
         super().__init__()
         self.save_hyperparameters()
         self.data_dir = Path(data_dir)
 
-        self.jute_train = None
-        self.jute_val = None
-        self.jute_test = None
-        self.jute_predict = None
-        self.sampler = None
-        self._classes = None
+        self.jute_train: ImageFolder | Subset | None = None
+        self.jute_val: ImageFolder | Subset | None = None
+        self.jute_test: ImageFolder | None = None
+        self.jute_predict: ImageFolder | None = None
+        self.sampler: WeightedRandomSampler | None = None
+        self._classes: list[str] | None = None
 
         # K-Fold
-        self._splits = None
-        self._pool_labels = None
-        self._train_pool = None
-        self._val_pool = None
+        self._splits: list[tuple[np.ndarray, np.ndarray]] | None = None
+        self._pool_labels: list[int] | None = None
+        self._train_pool: ConcatDataset | None = None
+        self._val_pool: ConcatDataset | None = None
 
     @property
     def train_dir(self) -> Path:
@@ -71,18 +71,18 @@ class DataModule(LightningDataModule):
         return self.data_dir / "test"
 
     @property
-    def classes(self):
+    def classes(self) -> list[str] | None:
         return self._classes
 
     @property
-    def num_classes(self):
+    def num_classes(self) -> int:
         return len(self._classes) if self._classes else 0
 
-    def prepare_data(self):
+    def prepare_data(self) -> None:
         if self.data_dir == ML_SPLIT_DIR:
             split_data()
 
-    def setup(self, stage: str | None = None):
+    def setup(self, stage: str | None = None) -> None:
         if stage == "fit" or stage is None:
             if self.train_dir.exists() and self.val_dir.exists():
                 if self.hparams.k_fold > 1:
@@ -170,7 +170,7 @@ class DataModule(LightningDataModule):
                 root=predict_root, transform=dl_val_transforms
             )
 
-    def set_fold(self, fold_index: int):
+    def set_fold(self, fold_index: int) -> None:
         """Swaps active subsets and updates sampler."""
         if self._splits is None:
             raise RuntimeError("Base splits not initialized. Call setup() first.")
@@ -182,6 +182,14 @@ class DataModule(LightningDataModule):
 
         self.hparams.fold_index = fold_index
         train_idx, val_idx = self._splits[fold_index]
+
+        if (
+            self._train_pool is None
+            or self._val_pool is None
+            or self._pool_labels is None
+        ):
+            raise RuntimeError("Data pool not initialized. Call setup() first.")
+
         self.jute_train = Subset(self._train_pool, train_idx)
         self.jute_val = Subset(self._val_pool, val_idx)
 
@@ -189,7 +197,9 @@ class DataModule(LightningDataModule):
             train_labels = [self._pool_labels[i] for i in train_idx]
             self.sampler = self._create_weighted_sampler(train_labels)
 
-    def _create_weighted_sampler(self, labels: list | np.ndarray):
+    def _create_weighted_sampler(
+        self, labels: list[int] | np.ndarray
+    ) -> WeightedRandomSampler:
         """Helper to create a WeightedRandomSampler to address class imbalance."""
         targets = np.array(labels)
         unique_targets, counts = np.unique(targets, return_counts=True)
@@ -198,7 +208,9 @@ class DataModule(LightningDataModule):
         samples_weight = np.array([weight_map[t] for t in targets])
         return WeightedRandomSampler(samples_weight, len(samples_weight))
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> DataLoader:
+        if self.jute_train is None:
+            raise RuntimeError("train_dataloader called before setup()")
         return DataLoader(
             self.jute_train,
             batch_size=self.hparams.batch_size,
@@ -208,7 +220,9 @@ class DataModule(LightningDataModule):
             pin_memory=self.hparams.pin_memory,
         )
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> DataLoader:
+        if self.jute_val is None:
+            raise RuntimeError("val_dataloader called before setup()")
         return DataLoader(
             self.jute_val,
             batch_size=self.hparams.batch_size * 2,
@@ -217,7 +231,9 @@ class DataModule(LightningDataModule):
             pin_memory=self.hparams.pin_memory,
         )
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> DataLoader:
+        if self.jute_test is None:
+            raise RuntimeError("test_dataloader called before setup()")
         return DataLoader(
             self.jute_test,
             batch_size=self.hparams.batch_size * 2,
@@ -226,7 +242,9 @@ class DataModule(LightningDataModule):
             pin_memory=self.hparams.pin_memory,
         )
 
-    def predict_dataloader(self):
+    def predict_dataloader(self) -> DataLoader:
+        if self.jute_predict is None:
+            raise RuntimeError("predict_dataloader called before setup()")
         return DataLoader(
             self.jute_predict,
             batch_size=self.hparams.batch_size * 2,

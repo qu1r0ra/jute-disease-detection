@@ -12,7 +12,9 @@ from jute_disease.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-def prepare_dataset_subsets(raw_dir: Path, target_dir: Path, subsets: list[str]):
+def prepare_dataset_subsets(
+    raw_dir: Path, target_dir: Path, subsets: list[str]
+) -> None:
     """Consolidate dataset subsets into a single by_class directory."""
     if target_dir.exists() and any(target_dir.iterdir()):
         logger.info(f"Target directory {target_dir} already exists. Skipping prep.")
@@ -45,7 +47,7 @@ def prepare_dataset_subsets(raw_dir: Path, target_dir: Path, subsets: list[str])
 
 def download_and_prepare_kaggle_data(
     dataset_name: str, kaggle_id: str, target_dirname: str, subsets: list[str]
-):
+) -> None:
     """Generic download and prepare function for Kaggle data."""
     target_dir = DATA_DIR / "external" / target_dirname
 
@@ -61,7 +63,7 @@ def download_and_prepare_kaggle_data(
     prepare_dataset_subsets(downloaded_dir, target_dir, subsets)
 
 
-def download_plant_village():
+def download_plant_village() -> None:
     """Download the Plant Village dataset and prepare it."""
     download_and_prepare_kaggle_data(
         "PlantVillage",
@@ -71,7 +73,7 @@ def download_plant_village():
     )
 
 
-def download_plant_doc():
+def download_plant_doc() -> None:
     """Download the PlantDoc dataset and prepare it."""
     download_and_prepare_kaggle_data(
         "PlantDoc",

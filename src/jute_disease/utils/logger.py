@@ -1,11 +1,12 @@
 import logging
 import os
 import sys
+from logging import Logger
 
 from dotenv import load_dotenv
 
 
-def setup_logging(level=logging.INFO):
+def setup_logging(level: int = logging.INFO) -> None:
     """Set up standardized logging configuration."""
     log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
@@ -22,13 +23,13 @@ def setup_logging(level=logging.INFO):
     logging.getLogger("lightning.pytorch").setLevel(logging.WARNING)
 
 
-def get_logger(name, level=logging.INFO):
+def get_logger(name: str, level: int = logging.INFO) -> "Logger":
     """Get a logger with the specified name and ensure logging is set up."""
     setup_logging(level)
     return logging.getLogger(name)
 
 
-def setup_wandb():
+def setup_wandb() -> None:
     """Load environment variables and login to WandB."""
     import wandb
 

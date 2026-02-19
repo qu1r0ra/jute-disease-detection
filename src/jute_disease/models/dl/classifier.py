@@ -15,7 +15,7 @@ class Classifier(LightningModule):
         weight_decay: float = 0.01,
         compile_model: bool = True,
         freeze_backbone: bool = True,
-    ):
+    ) -> None:
         super().__init__()
         if not hasattr(feature_extractor, "out_features"):
             raise ValueError("Feature extractor must have an 'out_features' attribute")
@@ -37,7 +37,7 @@ class Classifier(LightningModule):
         self.num_classes = num_classes
         self.lr = lr
         self.weight_decay = weight_decay
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore=["feature_extractor"])
 
         self.train_acc = torchmetrics.Accuracy(
             task="multiclass", num_classes=num_classes
@@ -57,7 +57,9 @@ class Classifier(LightningModule):
         features = self.feature_extractor(inputs)
         return self.classifier(features)
 
-    def training_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int):
+    def training_step(
+        self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int
+    ) -> torch.Tensor:
         x, y = batch
         y_pred = self(x)
         loss = self.loss(y_pred, y)
@@ -70,7 +72,9 @@ class Classifier(LightningModule):
 
         return loss
 
-    def validation_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int):
+    def validation_step(
+        self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int
+    ) -> torch.Tensor:
         x, y = batch
         y_pred = self(x)
         loss = self.loss(y_pred, y)
@@ -83,7 +87,9 @@ class Classifier(LightningModule):
 
         return loss
 
-    def test_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int):
+    def test_step(
+        self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int
+    ) -> torch.Tensor:
         x, y = batch
         y_pred = self(x)
         loss = self.loss(y_pred, y)
@@ -98,10 +104,12 @@ class Classifier(LightningModule):
 
         return loss
 
-    def predict_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int):
-        return self(batch)
+    def predict_step(
+        self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int
+    ) -> torch.Tensor:
+        return self(batch[0])
 
-    def configure_optimizers(self):
+    def configure_optimizers(self) -> dict[str, object]:
         optimizer = AdamW(
             [p for p in self.parameters() if p.requires_grad],
             lr=self.lr,

@@ -40,7 +40,7 @@ ML_CLASSIFIERS: dict[str, type[SklearnClassifier]] = {
 }
 
 
-def train_ml():
+def train_ml() -> None:
     parser = argparse.ArgumentParser(description="Jute Classical ML Training")
     parser.add_argument(
         "--classifier",
@@ -95,6 +95,7 @@ def train_ml():
     train_ds = ImageFolder(root=ML_SPLIT_DIR / "train", transform=ml_train_transforms)
     val_ds = ImageFolder(root=ML_SPLIT_DIR / "val", transform=ml_val_transforms)
     test_ds = ImageFolder(root=ML_SPLIT_DIR / "test", transform=ml_val_transforms)
+
     X_train, y_train = extract_features(train_ds, extractor=extractor)
     X_val, y_val = extract_features(val_ds, extractor=extractor)
     X_test, y_test = extract_features(test_ds, extractor=extractor)
@@ -114,14 +115,14 @@ def train_ml():
     model.fit(X_train, y_train, sample_weight=sample_weight)
 
     y_val_pred = model.predict(X_val)
-    acc = np.mean(y_val_pred == y_val)
-    f1 = f1_score(y_val, y_val_pred, average="macro")
+    acc = float(np.mean(y_val_pred == y_val))
+    f1 = float(f1_score(y_val, y_val_pred, average="macro"))
     logger.info(f"Validation Accuracy: {acc:.4f}")
     logger.info(f"Validation F1 Macro: {f1:.4f}")
 
     y_test_pred = model.predict(X_test)
-    test_acc = np.mean(y_test_pred == y_test)
-    test_f1 = f1_score(y_test, y_test_pred, average="macro")
+    test_acc = float(np.mean(y_test_pred == y_test))
+    test_f1 = float(f1_score(y_test, y_test_pred, average="macro"))
     logger.info(f"Test Accuracy: {test_acc:.4f}")
     logger.info(f"Test F1 Macro: {test_f1:.4f}")
 
