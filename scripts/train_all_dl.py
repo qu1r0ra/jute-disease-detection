@@ -10,10 +10,11 @@ from jute_disease.utils import get_logger
 logger = get_logger(__name__)
 
 CONFIGS_DIR = Path("configs/baselines")
-TRAIN_SCRIPT = "src/jute_disease/engines/dl/train.py"
+CLI_SCRIPT = "src/jute_disease/engines/dl/cli.py"
 
 
-def run_all_dl(configs_dir: Path = CONFIGS_DIR):
+def run_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
+    """Iterate through all configuration files and execute training."""
     configs = sorted(configs_dir.glob("*.yaml"))
 
     if not configs:
@@ -26,7 +27,7 @@ def run_all_dl(configs_dir: Path = CONFIGS_DIR):
         model_name = config.stem
         logger.info(f"Training {model_name} (config: {config})...")
 
-        cmd = ["uv", "run", "python", TRAIN_SCRIPT, "fit", "--config", str(config)]
+        cmd = ["uv", "run", "python", CLI_SCRIPT, "fit", "--config", str(config)]
 
         result = subprocess.run(cmd)
         if result.returncode != 0:

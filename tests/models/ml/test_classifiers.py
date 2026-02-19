@@ -1,6 +1,8 @@
 """Unit tests for all SklearnClassifier subclasses."""
 
 # ruff: noqa: N803, N806
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -9,12 +11,13 @@ from jute_disease.models.ml import (
     LogisticRegression,
     MultinomialNaiveBayes,
     RandomForest,
+    SklearnClassifier,
     SupportVectorMachine,
 )
 
 
 @pytest.fixture
-def xy():
+def xy() -> tuple[np.ndarray, np.ndarray]:
     """Tiny 2-class dataset with non-negative features (for MNB compatibility)."""
     rng = np.random.default_rng(42)
     X = np.abs(rng.random((30, 8))).astype(np.float32)
@@ -26,7 +29,9 @@ def xy():
     "cls",
     [LogisticRegression, RandomForest, SupportVectorMachine, MultinomialNaiveBayes],
 )
-def test_classifier_fit_predict(cls, xy):
+def test_classifier_fit_predict(
+    cls: type[SklearnClassifier], xy: tuple[np.ndarray, np.ndarray]
+) -> None:
     X, y = xy
     model = cls()
     model.fit(X, y)
@@ -39,7 +44,9 @@ def test_classifier_fit_predict(cls, xy):
     "cls",
     [LogisticRegression, RandomForest, SupportVectorMachine, MultinomialNaiveBayes],
 )
-def test_classifier_predict_proba(cls, xy):
+def test_classifier_predict_proba(
+    cls: type[SklearnClassifier], xy: tuple[np.ndarray, np.ndarray]
+) -> None:
     X, y = xy
     model = cls()
     model.fit(X, y)
@@ -48,7 +55,7 @@ def test_classifier_predict_proba(cls, xy):
     assert np.allclose(proba.sum(axis=1), 1.0, atol=1e-5)
 
 
-def test_knn_fit_predict(xy):
+def test_knn_fit_predict(xy: tuple[np.ndarray, np.ndarray]) -> None:
     X, y = xy
     model = KNearestNeighbors(n_neighbors=3)
     model.fit(X, y)
@@ -56,7 +63,9 @@ def test_knn_fit_predict(xy):
     assert preds.shape == (30,)
 
 
-def test_knn_ignores_sample_weight(xy, caplog):
+def test_knn_ignores_sample_weight(
+    xy: tuple[np.ndarray, np.ndarray], caplog: pytest.LogCaptureFixture
+) -> None:
     """KNN does not support sample_weight — must log a warning, not crash."""
     X, y = xy
     sw = np.ones(30)
@@ -65,7 +74,7 @@ def test_knn_ignores_sample_weight(xy, caplog):
     assert "does not support sample_weight" in caplog.text
 
 
-def test_svm_has_probability_by_default(xy):
+def test_svm_has_probability_by_default(xy: tuple[np.ndarray, np.ndarray]) -> None:
     """SVM must have probability=True so predict_proba works without explicit config."""
     X, y = xy
     model = SupportVectorMachine()
@@ -74,7 +83,7 @@ def test_svm_has_probability_by_default(xy):
     assert proba.shape[1] == 2
 
 
-def test_classifiers_with_sample_weight(xy):
+def test_classifiers_with_sample_weight(xy: tuple[np.ndarray, np.ndarray]) -> None:
     """Classifiers that support sample_weight must accept it without error."""
     X, y = xy
     sw = np.ones(30)
@@ -83,7 +92,9 @@ def test_classifiers_with_sample_weight(xy):
         model.fit(X, y, sample_weight=sw)
 
 
-def test_classifier_save_load(tmp_path, monkeypatch, xy):
+def test_classifier_save_load(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, xy: tuple[np.ndarray, np.ndarray]
+) -> None:
     from jute_disease.models.ml import classifiers
 
     monkeypatch.setattr(classifiers, "ML_MODELS_DIR", tmp_path)

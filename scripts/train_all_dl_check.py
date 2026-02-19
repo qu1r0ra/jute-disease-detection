@@ -10,10 +10,11 @@ from jute_disease.utils import get_logger
 logger = get_logger(__name__)
 
 CONFIGS_DIR = Path("configs/baselines")
-TRAIN_SCRIPT = "src/jute_disease/engines/dl/train.py"
+CLI_SCRIPT = "src/jute_disease/engines/dl/cli.py"
 
 
-def check_all_dl(configs_dir: Path = CONFIGS_DIR):
+def check_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
+    """Run a fast dev run for all models to ensure basic functionality."""
     configs = sorted(configs_dir.glob("*.yaml"))
 
     if not configs:
@@ -22,13 +23,13 @@ def check_all_dl(configs_dir: Path = CONFIGS_DIR):
 
     logger.info(f"Starting DL Fast Dev Run — {len(configs)} configs found.")
 
-    failed = []
+    failed: list[str] = []
     for config in configs:
         model_name = config.stem
         logger.info(f"Verifying {model_name} (fast_dev_run)...")
 
         cmd = [
-            "uv", "run", "python", TRAIN_SCRIPT, "fit",
+            "uv", "run", "python", CLI_SCRIPT, "fit",
             "--config", str(config),
             "--trainer.fast_dev_run=True",
             "--data.num_workers=2",

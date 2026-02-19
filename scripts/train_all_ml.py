@@ -18,20 +18,27 @@ def run_all_ml(
     classifiers: list[str] = CLASSIFIERS,
     feature_types: list[str] = FEATURE_TYPES,
     balanced: bool = True,
-):
+) -> None:
+    """Execute all combinations of classical ML experiments."""
     total = len(classifiers) * len(feature_types)
     logger.info(f"Starting ML Training Pipeline — {total} experiments.")
 
-    failed = []
+    failed: list[str] = []
     for feat in feature_types:
         for clf in classifiers:
             logger.info(f"Training {clf} with {feat} features...")
 
             cmd = [
-                "uv", "run", "python", TRAIN_SCRIPT,
-                "--classifier", clf,
-                "--feature_type", feat,
+                "uv",
+                "run",
+                "python",
+                TRAIN_SCRIPT,
+                "--classifier",
+                clf,
+                "--feature_type",
+                feat,
             ]  # fmt: skip
+
             if balanced:
                 cmd.append("--balanced")
             else:

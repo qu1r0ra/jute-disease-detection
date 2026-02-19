@@ -11,10 +11,11 @@ from jute_disease.utils import get_logger
 
 logger = get_logger(__name__)
 
-TRAIN_SCRIPT = "src/jute_disease/engines/dl/train.py"
+CLI_SCRIPT = "src/jute_disease/engines/dl/cli.py"
 
 
-def run_cross_validation(config: Path, folds: int | None = None):
+def run_cross_validation(config: Path, folds: int | None = None) -> None:
+    """Run K-Fold cross validation by sweep through fold indices."""
     model_name = config.stem
 
     if folds is None:
@@ -31,7 +32,7 @@ def run_cross_validation(config: Path, folds: int | None = None):
         logger.info(f"Running fold {fold_idx}/{folds - 1} for {model_name}...")
 
         cmd = [
-            "uv", "run", "python", TRAIN_SCRIPT, "fit",
+            "uv", "run", "python", CLI_SCRIPT, "fit",
             "--config", str(config),
             f"--data.fold_index={fold_idx}",
             f"--data.k_fold={folds}",
