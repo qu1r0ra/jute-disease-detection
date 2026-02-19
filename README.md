@@ -1,6 +1,6 @@
 # jute-disease-detection <!-- omit from toc -->
 
-![title](./readme/title.png)
+![title](./assets/readme/title.png)
 
 <!-- Refer to https://shields.io/badges for usage -->
 
@@ -12,18 +12,37 @@ An exploration of deep learning on merged jute leaf disease datasets. Created fo
 ## Table of Contents <!-- omit from toc -->
 
 - [1. Introduction](#1-introduction)
-- [2. Running the Project](#2-running-the-project)
-  - [2.1. Prerequisites](#21-prerequisites)
-  - [2.2. Reproducing the Results](#22-reproducing-the-results)
-- [3. References](#3-references)
+- [2. Project Structure](#2-project-structure)
+- [3. Running the Project](#3-running-the-project)
+  - [3.1. Prerequisites](#31-prerequisites)
+  - [3.2. Reproducing the Results](#32-reproducing-the-results)
+- [4. References](#4-references)
 
 ## 1. Introduction
 
 To be written.
 
-## 2. Running the Project
+## 2. Project Structure
 
-### 2.1. Prerequisites
+A high-level overview of the repository organization:
+
+```text
+.
+├── configs/          # Training configurations (.yaml) for Lightning CLI
+├── docs/             # Technical documentation and specifications
+├── notebooks/        # Jupyter notebooks for EDA and reproducibility
+├── scripts/          # Helper scripts for batch training and grid search
+├── src/
+│   ├── annotator/    # Image annotation tool (Flask)
+│   └── jute_disease/ # Main package (Data, Models, Utils, Engines)
+└── tests/            # Test suite (mirrors src/ structure)
+```
+
+For a detailed look at the internal design, public APIs, and architectural decisions, see [ARCHITECTURE.md](ARCHITECTURE.md).
+
+## 3. Running the Project
+
+### 3.1. Prerequisites
 
 To reproduce our results, you will need the following installed:
 
@@ -33,7 +52,7 @@ To reproduce our results, you will need the following installed:
 
 3. **uv:** The package manager we used. Installation instructions can be found at <https://docs.astral.sh/uv/getting-started/installation/>.
 
-### 2.2. Reproducing the Results
+### 3.2. Reproducing the Results
 
 1. Clone this repository:
 
@@ -56,6 +75,6 @@ To reproduce our results, you will need the following installed:
    - When running a notebook, select `.venv` in root as the kernel.
    - More instructions can be found in each notebook.
 
-## 3. References
+## 4. References
 
 [1] Md. M. Islam and Md. R. Sheikh, “A comprehensive image dataset of jute diseases,” _Data in Brief_, vol. 64, p. 112334, Feb. 2026. DOI: [10.1016/j.dib.2025.112334](https://doi.org/10.1016/j.dib.2025.112334).

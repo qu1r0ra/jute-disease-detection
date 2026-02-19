@@ -1,4 +1,4 @@
-from jute_disease.utils.constants import DATA_DIR
+from jute_disease.utils import DATA_DIR
 
 
 def get_classes() -> list[str]:

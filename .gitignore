@@ -1,8 +1,9 @@
 # Miscellaneous
+artifacts/
 config.yaml
 data/*
 !data/*.txt
-dump/
+lightning_logs/
 wandb/
 
 # Byte-compiled / optimized / DLL files

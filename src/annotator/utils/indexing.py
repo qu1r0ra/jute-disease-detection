@@ -2,8 +2,7 @@ import os
 
 from annotator import create_app
 from annotator.models import Image, db
-from jute_disease.utils.constants import IMAGE_EXTENSIONS, UNLABELED_DIR
-from jute_disease.utils.logger import get_logger
+from jute_disease.utils import IMAGE_EXTENSIONS, UNLABELED_DIR, get_logger
 
 logger = get_logger(__name__)
 

@@ -42,7 +42,7 @@ train_aug = A.Compose(
             hole_width_range=(0.05, 0.1),
             p=0.2,
         ),
-        # 6. Domain-Specific and Advanced
+        # 4. Color and Lighting
         A.OneOf(
             [
                 A.RandomBrightnessContrast(p=1.0),
@@ -50,6 +50,7 @@ train_aug = A.Compose(
             ],
             p=0.2,
         ),
+        # 5. Noise
         A.OneOf(
             [
                 A.GaussNoise(p=1.0),
@@ -57,6 +58,7 @@ train_aug = A.Compose(
             ],
             p=0.2,
         ),
+        # 6. Blur
         A.OneOf(
             [
                 A.GaussianBlur(blur_limit=(3, 5), p=1.0),

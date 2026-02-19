@@ -1,5 +1,8 @@
 import logging
+import os
 import sys
+
+from dotenv import load_dotenv
 
 
 def setup_logging(level=logging.INFO):
@@ -23,3 +26,17 @@ def get_logger(name, level=logging.INFO):
     """Get a logger with the specified name and ensure logging is set up."""
     setup_logging(level)
     return logging.getLogger(name)
+
+
+def setup_wandb():
+    """Load environment variables and login to WandB."""
+    import wandb
+
+    load_dotenv()
+    api_key = os.getenv("WANDB_API_KEY")
+    if api_key:
+        wandb.login(key=api_key)
+    elif os.getenv("WANDB_MODE") in ["disabled", "offline"]:
+        pass
+    else:
+        wandb.login()

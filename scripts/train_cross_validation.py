@@ -1,0 +1,72 @@
+"""Run cross-validation training for a single DL model config."""
+
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+
+import yaml
+
+from jute_disease.utils import get_logger
+
+logger = get_logger(__name__)
+
+TRAIN_SCRIPT = "src/jute_disease/engines/dl/train.py"
+
+
+def run_cross_validation(config: Path, folds: int | None = None):
+    model_name = config.stem
+
+    if folds is None:
+        with open(config) as f:
+            cfg = yaml.safe_load(f) or {}
+        folds = cfg.get("data", {}).get("init_args", {}).get("k_fold", 1)
+        logger.info(f"Read k_fold={folds} from config.")
+    else:
+        logger.info(f"Overriding k_fold with CLI argument: {folds}")
+
+    logger.info(f"Starting cross-validation for {model_name} with {folds} folds.")
+
+    for fold_idx in range(folds):
+        logger.info(f"Running fold {fold_idx}/{folds - 1} for {model_name}...")
+
+        cmd = [
+            "uv", "run", "python", TRAIN_SCRIPT, "fit",
+            "--config", str(config),
+            f"--data.fold_index={fold_idx}",
+            f"--data.k_fold={folds}",
+            f"--trainer.logger.init_args.name={model_name}_fold_{fold_idx}",
+            f"--trainer.logger.init_args.group={model_name}_cv",
+            f"--trainer.callbacks.0.init_args.filename={model_name}-fold{fold_idx}-{{epoch:02d}}-{{val_loss:.4f}}",
+            "--trainer.callbacks.0.init_args.monitor=val_loss",
+            "--trainer.callbacks.0.init_args.mode=min",
+            "--trainer.callbacks.0.init_args.save_top_k=1",
+        ]  # fmt: skip
+
+        result = subprocess.run(cmd)
+        if result.returncode != 0:
+            logger.error(f"Fold {fold_idx} failed with exit code {result.returncode}.")
+            sys.exit(result.returncode)
+
+        logger.info(f"Finished fold {fold_idx}.")
+
+    logger.info(f"All {folds} folds completed for {model_name}.")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Run cross-validation training for a DL model.",
+        epilog=(
+            "Example: uv run python scripts/train_cross_validation.py "
+            "configs/baselines/mobilevit.yaml --folds 5"
+        ),
+    )
+    parser.add_argument("config", type=Path, help="Path to the model config YAML.")
+    parser.add_argument(
+        "--folds",
+        type=int,
+        default=None,
+        help="Number of folds. Overrides the k_fold value in the config if provided.",
+    )
+    args = parser.parse_args()
+    run_cross_validation(args.config, args.folds)
