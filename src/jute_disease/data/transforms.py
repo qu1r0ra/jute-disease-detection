@@ -48,7 +48,7 @@ train_aug = A.Compose(
                 A.RandomBrightnessContrast(p=1.0),
                 A.PlanckianJitter(p=1.0),
             ],
-            p=0.2,
+            p=0.4,
         ),
         # 5. Noise
         A.OneOf(
