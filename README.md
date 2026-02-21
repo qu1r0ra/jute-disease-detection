@@ -31,6 +31,8 @@ A high-level overview of the repository organization:
 ├── artifacts/          # Generated checkpoints, models, and logs
 ├── configs/            # Training configurations (.yaml) for Lightning CLI
 ├── docs/               # Technical documentation
+│   ├── agents/         # AI agent-specific directives
+│   └── ARCHITECTURE.md # Core technical design
 ├── notebooks/          # Jupyter notebooks for EDA and analysis
 ├── scripts/            # Automation scripts (batch training, grid search)
 ├── src/
@@ -40,7 +42,8 @@ A high-level overview of the repository organization:
 │       ├── engines/    # Entry points (DL CLI, ML Training)
 │       ├── models/     # Model architectures (e.g., MobileViT, RF, SVM)
 │       └── utils/      # Logging, Seeding, Constants
-└── tests/              # Comprehensive test suite
+├── tests/              # Comprehensive test suite
+└── AGENTS.md           # AI assistant entry point
 ```
 
 For a detailed look at the internal design, public APIs, and architectural decisions, see [ARCHITECTURE.md](docs/ARCHITECTURE.md).

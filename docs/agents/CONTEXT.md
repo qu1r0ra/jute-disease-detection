@@ -1,4 +1,4 @@
-# Jute Disease Detection - AI Context
+# Jute Disease Detection - Context
 
 Welcome! This document provides crucial context, architectural design choices, and strict coding guidelines for AI assistants (Antigravity, Claude, Gemini, etc.) working on the `jute-disease-detection` project.
 
