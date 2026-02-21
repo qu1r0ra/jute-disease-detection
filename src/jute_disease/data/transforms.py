@@ -8,7 +8,7 @@ from jute_disease.utils.constants import DEFAULT_SEED, IMAGE_SIZE
 
 
 class AlbumentationsAdapter:
-    def __init__(self, transform: A.Compose):
+    def __init__(self, transform: A.Compose) -> None:
         self.transform = transform
 
     def __call__(self, img: Image) -> torch.Tensor | np.ndarray:

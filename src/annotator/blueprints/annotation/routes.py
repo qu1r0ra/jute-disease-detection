@@ -1,6 +1,6 @@
 import os
 
-from flask import Blueprint, render_template, request, send_from_directory
+from flask import Blueprint, Response, render_template, request, send_from_directory
 
 # from annotator.inference import predict_image
 from annotator.models import Image, db
@@ -10,7 +10,7 @@ annotation_bp = Blueprint("annotation", __name__, template_folder="templates")
 
 
 @annotation_bp.route("/images/<int:image_id>")
-def serve_image(image_id: int):
+def serve_image(image_id: int) -> Response:
     """
     Serve a specific image file from the local filesystem.
 

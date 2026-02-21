@@ -43,7 +43,7 @@ A high-level overview of the repository organization:
 └── tests/              # Comprehensive test suite
 ```
 
-For a detailed look at the internal design, public APIs, and architectural decisions, see [ARCHITECTURE.md](ARCHITECTURE.md).
+For a detailed look at the internal design, public APIs, and architectural decisions, see [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## 3. Running the Project
 

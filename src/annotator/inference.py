@@ -6,18 +6,20 @@ from jute_disease.models.dl import Classifier
 
 
 class InferenceService:
-    def __init__(self, checkpoint_path=None, class_names=None):
+    def __init__(
+        self, checkpoint_path: str | None = None, class_names: list[str] | None = None
+    ) -> None:
         self.model = None
         self.class_names = class_names
         if checkpoint_path:
             self.load_model(checkpoint_path)
 
-    def load_model(self, checkpoint_path):
+    def load_model(self, checkpoint_path: str) -> None:
         self.model = Classifier.load_from_checkpoint(checkpoint_path)
         self.model.eval()
 
     @torch.no_grad()
-    def predict(self, image_path):
+    def predict(self, image_path: str) -> tuple[str, float]:
         if self.model is None:
             return "No Model Loaded", 0.0
 

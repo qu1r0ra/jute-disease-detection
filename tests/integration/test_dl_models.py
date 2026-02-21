@@ -25,7 +25,7 @@ TRAIN_SCRIPT = (
 
 @pytest.mark.slow
 @pytest.mark.parametrize("config_path", CONFIG_FILES)
-def test_dl_fast_dev_run(config_path):
+def test_dl_fast_dev_run(config_path) -> None:
     """
     Smoke-test each baseline config end-to-end:
     1. Config syntax is valid.

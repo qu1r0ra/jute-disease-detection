@@ -19,7 +19,7 @@ def sample_image() -> Image.Image:
     return Image.fromarray(arr)
 
 
-def test_ml_train_transforms(sample_image: Image.Image):
+def test_ml_train_transforms(sample_image: Image.Image) -> None:
     """Test ML training transforms return correct format."""
     transformed = ml_train_transforms(sample_image)
 
@@ -30,7 +30,7 @@ def test_ml_train_transforms(sample_image: Image.Image):
     assert transformed.max() <= 255
 
 
-def test_ml_val_transforms(sample_image: Image.Image):
+def test_ml_val_transforms(sample_image: Image.Image) -> None:
     """Test ML validation transforms return correct format."""
     transformed = ml_val_transforms(sample_image)
 
@@ -40,7 +40,7 @@ def test_ml_val_transforms(sample_image: Image.Image):
     assert transformed.max() <= 255
 
 
-def test_dl_train_transforms(sample_image: Image.Image):
+def test_dl_train_transforms(sample_image: Image.Image) -> None:
     """Test DL training transforms return normalized tensor."""
     transformed = dl_train_transforms(sample_image)
 
@@ -54,7 +54,7 @@ def test_dl_train_transforms(sample_image: Image.Image):
         pass
 
 
-def test_dl_val_transforms(sample_image: Image.Image):
+def test_dl_val_transforms(sample_image: Image.Image) -> None:
     """Test DL validation transforms return normalized tensor."""
     transformed = dl_val_transforms(sample_image)
 

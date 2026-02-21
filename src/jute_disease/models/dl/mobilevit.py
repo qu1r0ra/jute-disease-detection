@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 class MobileViT(nn.Module):
     def __init__(
         self, pretrained: bool = True, checkpoint_path: Path | None = None, **kwargs
-    ):
+    ) -> None:
         super().__init__()
         self.backbone = timm.create_model(
             "mobilevit_s", pretrained=pretrained, num_classes=0, **kwargs
@@ -22,7 +22,7 @@ class MobileViT(nn.Module):
         if checkpoint_path:
             self._load_custom_checkpoint(checkpoint_path)
 
-    def _load_custom_checkpoint(self, path: Path):
+    def _load_custom_checkpoint(self, path: Path) -> None:
         logger.info(f"Loading custom backbone weights from {path}...")
         checkpoint = torch.load(path, map_location="cpu")
 
