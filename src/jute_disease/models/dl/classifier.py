@@ -53,19 +53,19 @@ class Classifier(LightningModule):
             task="multiclass", num_classes=num_classes, average="macro"
         )
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
-        features = self.feature_extractor(inputs)
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        features = self.feature_extractor(x)
         return self.classifier(features)
 
     def training_step(
         self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int
     ) -> torch.Tensor:
         x, y = batch
-        y_pred = self(x)
-        loss = self.loss(y_pred, y)
+        y_hat = self(x)
+        loss = self.loss(y_hat, y)
 
         self.log("train_loss", loss, prog_bar=True)
-        self.train_acc(y_pred, y)
+        self.train_acc(y_hat, y)
         self.log(
             "train_acc", self.train_acc, prog_bar=True, on_step=False, on_epoch=True
         )
@@ -76,12 +76,12 @@ class Classifier(LightningModule):
         self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int
     ) -> torch.Tensor:
         x, y = batch
-        y_pred = self(x)
-        loss = self.loss(y_pred, y)
+        y_hat = self(x)
+        loss = self.loss(y_hat, y)
 
         self.log("val_loss", loss, prog_bar=True)
-        self.val_acc(y_pred, y)
-        self.val_f1(y_pred, y)
+        self.val_acc(y_hat, y)
+        self.val_f1(y_hat, y)
         self.log("val_acc", self.val_acc, prog_bar=True, on_step=False, on_epoch=True)
         self.log("val_f1", self.val_f1, prog_bar=True, on_step=False, on_epoch=True)
 
@@ -91,15 +91,15 @@ class Classifier(LightningModule):
         self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int
     ) -> torch.Tensor:
         x, y = batch
-        y_pred = self(x)
-        loss = self.loss(y_pred, y)
+        y_hat = self(x)
+        loss = self.loss(y_hat, y)
 
         self.log("test_loss", loss)
 
-        self.test_acc(y_pred, y)
+        self.test_acc(y_hat, y)
         self.log("test_acc", self.test_acc)
 
-        self.test_f1(y_pred, y)
+        self.test_f1(y_hat, y)
         self.log("test_f1", self.test_f1)
 
         return loss
@@ -107,7 +107,8 @@ class Classifier(LightningModule):
     def predict_step(
         self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int
     ) -> torch.Tensor:
-        return self(batch[0])
+        x, _ = batch
+        return self(x)
 
     def configure_optimizers(self) -> dict[str, object]:
         optimizer = AdamW(
