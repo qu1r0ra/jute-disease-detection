@@ -15,7 +15,8 @@ An exploration of deep learning on merged jute leaf disease datasets. Created fo
 - [2. Project Structure](#2-project-structure)
 - [3. Running the Project](#3-running-the-project)
   - [3.1. Prerequisites](#31-prerequisites)
-  - [3.2. Reproducing the Results](#32-reproducing-the-results)
+  - [3.2. CLI Entry Points](#32-cli-entry-points)
+  - [3.3. Reproducing the Results](#33-reproducing-the-results)
 - [4. References](#4-references)
 
 ## 1. Introduction
@@ -42,7 +43,9 @@ A high-level overview of the repository organization:
 │       ├── engines/    # Entry points (DL CLI, ML Training)
 │       ├── models/     # Model architectures (e.g., MobileViT, RF, SVM)
 │       └── utils/      # Logging, Seeding, Constants
-├── tests/              # Comprehensive test suite
+└── tests/              # Structured test suite
+    ├── annotator/      # Tests for the web app
+    └── jute_disease/   # Tests for the core library
 └── AGENTS.md           # AI assistant entry point
 ```
 
@@ -60,7 +63,23 @@ To reproduce our results, you will need the following installed:
 
 3. **uv:** The package manager we used. Installation instructions can be found at <https://docs.astral.sh/uv/getting-started/installation/>.
 
-### 3.2. Reproducing the Results
+### 3.2. CLI Entry Points
+
+This project provides unified CLI entry points for common tasks:
+
+- **`jute-dl`**: Entry point for the Deep Learning engine (Lightning CLI).
+
+  ```bash
+  uv run jute-dl fit --config configs/baselines/mobilevit.yaml
+  ```
+
+- **`jute-ml`**: Entry point for the Machine Learning engine.
+
+  ```bash
+  uv run jute-ml --classifier rf --feature_type handcrafted
+  ```
+
+### 3.3. Reproducing the Results
 
 1. Clone this repository:
 

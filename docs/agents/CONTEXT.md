@@ -36,14 +36,17 @@ Welcome! This document provides crucial context, architectural design choices, a
 Review [`ARCHITECTURE.md`](../ARCHITECTURE.md) for full details, but keep these core concepts in mind:
 
 - **Dual-Engine Setup**:
-  - **Deep Learning (DL)**: Housed in `src/jute_disease/models/dl/`. Driven by PyTorch Lightning's CLI. Models use a wrapper (`Classifier`) around `timm` backbones (`TimmBackbone`). Default is often `mobilevit_s`.
-  - **Machine Learning (ML)**: Housed in `src/jute_disease/models/ml/`. Scikit-learn estimators are wrapped in a generic `SklearnClassifier` adapter. Features are extracted manually (e.g., `HandcraftedFeatureExtractor`, `RawPixelFeatureExtractor`).
+  - **Deep Learning (DL)**: Housed in `src/jute_disease/models/dl/`. Driven by PyTorch Lightning's CLI via the **`jute-dl`** command. Models use a wrapper (`Classifier`) around `timm` backbones (`TimmBackbone`). Default is often `mobilevit_s`.
+  - **Machine Learning (ML)**: Housed in `src/jute_disease/models/ml/`. Driven via the **`jute-ml`** command. Scikit-learn estimators are wrapped in a generic `SklearnClassifier` adapter. Features are extracted manually (e.g., `HandcraftedFeatureExtractor`, `RawPixelFeatureExtractor`).
 - **Web Annotator App**:
   - Housed in `src/annotator/`. A Flask web app used to manually annotate images and visualize predictions. Relies on SQLite (`annotations.db`) and `Flask-SQLAlchemy`.
+  - **Environment Override**: The database URI can be overridden via the `DATABASE_URL` environment variable, which can be stored in the root **`.env`** file.
 - **Data Handling**:
   - All data ingestion and splitting are managed by `src/jute_disease/data/datamodule.py` and `utils/data_utils.py`.
   - The `DataModule` implements K-Fold Cross-Validation and Weighted Random Sampling.
-- **Public API**: Use `jute_disease.` package imports (e.g., `from jute_disease.models.dl import Classifier`) instead of deep internal relative imports when working outside of the specific subpackage (like in `tests/` or `scripts/`).
+- **Public API & Testing**:
+  - Use `jute_disease.` package imports (e.g., `from jute_disease.models.dl import Classifier`) instead of deep internal relative imports when working outside of the specific subpackage.
+  - The test suite is organized into `tests/jute_disease/` and `tests/annotator/`.
 
 ## 4. Operational Boundaries
 
