@@ -68,7 +68,7 @@ def test_ml() -> None:
 
     # 1. Load Model
     classifier_cls = ML_CLASSIFIERS[args.classifier]
-    model = classifier_cls.load()
+    model = classifier_cls.load(f"{args.classifier}_{args.feature_type}")
     if model is None:
         logger.error(
             f"No saved model found for {args.classifier}. Please train it first."
@@ -93,7 +93,7 @@ def test_ml() -> None:
     class_names = test_ds.classes
 
     # 4. Extract Features
-    X_test, y_test = extract_features(test_ds, extractor=extractor)
+    X_test, y_test = extract_features(test_ds, extractor=extractor, cache_name="test")
 
     # 5. Predict and Evaluate
     logger.info("Running predictions on test set...")
@@ -110,7 +110,7 @@ def test_ml() -> None:
     )
 
     # 6. WandB (Optional)
-    if os.environ.get("WANDB_MODE") != "disabled":
+    if os.getenv("WANDB_MODE") != "disabled":
         setup_wandb()
         wandb.init(
             entity=WANDB_ENTITY,

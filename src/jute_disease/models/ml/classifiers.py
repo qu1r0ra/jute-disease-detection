@@ -1,8 +1,6 @@
 # ruff: noqa: N803
 """Scikit-learn classifier wrappers for the jute disease ML pipeline."""
 
-from pathlib import Path
-
 import joblib
 import numpy as np
 from sklearn.base import ClassifierMixin
@@ -28,6 +26,13 @@ class SklearnClassifier:
             raise TypeError(f"{sklearn_cls} must be a scikit-learn classifier.")
         self.model = sklearn_cls(**kwargs)
 
+    def __repr__(self) -> str:
+        params_str = ", ".join(f"{k}={v!r}" for k, v in self.model.get_params().items())
+        return f"{self.__class__.__name__}({params_str})"
+
+    def __str__(self) -> str:
+        return f"Classical ML Wrapper: {self.__class__.__name__}"
+
     def fit(
         self, X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None
     ) -> None:
@@ -48,18 +53,21 @@ class SklearnClassifier:
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         return self.model.predict_proba(X)
 
-    def save(self) -> None:
+    def save(self, name: str | None = None) -> None:
         ML_MODELS_DIR.mkdir(parents=True, exist_ok=True)
-        path = str(ML_MODELS_DIR / f"{self.__class__.__name__.lower()}.joblib")
+        model_name = name or self.__class__.__name__.lower()
+        path = str(ML_MODELS_DIR / f"{model_name}.joblib")
         joblib.dump(self.model, path)
         logger.info(f"Model saved to {path}")
 
     @classmethod
-    def load(cls) -> "SklearnClassifier | None":
-        path = ML_MODELS_DIR / f"{cls.__name__.lower()}.joblib"
-        if not Path(path).exists():
+    def load(cls, name: str | None = None) -> "SklearnClassifier | None":
+        model_name = name or cls.__name__.lower()
+        path = ML_MODELS_DIR / f"{model_name}.joblib"
+        if not path.exists():
             return None
-        instance = cls()
+        # Create instance without calling __init__ potentially requiring args
+        instance = cls.__new__(cls)
         instance.model = joblib.load(str(path))
         return instance
 

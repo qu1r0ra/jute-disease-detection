@@ -72,7 +72,7 @@ def train_ml() -> None:
     args = parser.parse_args()
     seed_everything(args.seed)
 
-    if os.environ.get("WANDB_MODE") != "disabled":
+    if os.getenv("WANDB_MODE") != "disabled":
         setup_wandb()
 
         wandb.init(
@@ -96,9 +96,11 @@ def train_ml() -> None:
     val_ds = ImageFolder(root=ML_SPLIT_DIR / "val", transform=ml_val_transforms)
     test_ds = ImageFolder(root=ML_SPLIT_DIR / "test", transform=ml_val_transforms)
 
-    X_train, y_train = extract_features(train_ds, extractor=extractor)
-    X_val, y_val = extract_features(val_ds, extractor=extractor)
-    X_test, y_test = extract_features(test_ds, extractor=extractor)
+    X_train, y_train = extract_features(
+        train_ds, extractor=extractor, cache_name="train"
+    )
+    X_val, y_val = extract_features(val_ds, extractor=extractor, cache_name="val")
+    X_test, y_test = extract_features(test_ds, extractor=extractor, cache_name="test")
 
     logger.info(f"Training {args.classifier}...")
     classifier_cls = ML_CLASSIFIERS[args.classifier]
@@ -126,7 +128,7 @@ def train_ml() -> None:
     logger.info(f"Test Accuracy: {test_acc:.4f}")
     logger.info(f"Test F1 Macro: {test_f1:.4f}")
 
-    if os.environ.get("WANDB_MODE") != "disabled":
+    if os.getenv("WANDB_MODE") != "disabled":
         wandb.log(
             {
                 "val_acc": acc,
@@ -136,7 +138,7 @@ def train_ml() -> None:
             }
         )
         wandb.finish()
-    model.save()
+    model.save(f"{args.classifier}_{args.feature_type}")
 
 
 if __name__ == "__main__":
