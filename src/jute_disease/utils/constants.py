@@ -9,6 +9,7 @@ ML_SPLIT_DIR = DATA_DIR / "ml_split"
 UNLABELED_DIR = DATA_DIR / "unlabeled"
 
 ML_MODELS_DIR = ROOT_DIR / "artifacts" / "ml_models"
+ML_FEATURES_DIR = ROOT_DIR / "artifacts" / "features"
 
 # Data configurations
 IMAGE_SIZE = 256

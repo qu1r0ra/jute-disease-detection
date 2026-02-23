@@ -5,6 +5,8 @@ from logging import Logger
 
 from dotenv import load_dotenv
 
+import wandb
+
 
 def setup_logging(level: int = logging.INFO) -> None:
     """Set up standardized logging configuration."""
@@ -31,8 +33,6 @@ def get_logger(name: str, level: int = logging.INFO) -> "Logger":
 
 def setup_wandb() -> None:
     """Load environment variables and login to WandB."""
-    import wandb
-
     load_dotenv()
     api_key = os.getenv("WANDB_API_KEY")
     if api_key:

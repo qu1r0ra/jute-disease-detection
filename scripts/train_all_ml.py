@@ -31,8 +31,7 @@ def run_all_ml(
             cmd = [
                 "uv",
                 "run",
-                "python",
-                TRAIN_SCRIPT,
+                "jute-ml",
                 "--classifier",
                 clf,
                 "--feature_type",

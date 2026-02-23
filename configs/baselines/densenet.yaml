@@ -25,6 +25,7 @@ trainer:
         mode: min
 
 model:
+  num_classes: 6
   lr: 0.001
   freeze_backbone: true
   feature_extractor:

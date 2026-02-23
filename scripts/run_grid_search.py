@@ -51,8 +51,7 @@ def run_grid_search(
             cmd = [
                 "uv",
                 "run",
-                "python",
-                "src/jute_disease/engines/dl/cli.py",
+                "jute-dl",
                 "fit",
                 "--config",
                 base_model_config,

@@ -11,7 +11,7 @@ from jute_disease.utils import get_logger
 
 logger = get_logger(__name__)
 
-CLI_SCRIPT = "src/jute_disease/engines/dl/cli.py"
+CLI_SCRIPT = "jute-dl"
 
 
 def run_cross_validation(config: Path, folds: int | None = None) -> None:
@@ -21,7 +21,7 @@ def run_cross_validation(config: Path, folds: int | None = None) -> None:
     if folds is None:
         with open(config) as f:
             cfg = yaml.safe_load(f) or {}
-        folds = cfg.get("data", {}).get("init_args", {}).get("k_fold", 1)
+        folds = cfg.get("data", {}).get("k_fold", 1)
         logger.info(f"Read k_fold={folds} from config.")
     else:
         logger.info(f"Overriding k_fold with CLI argument: {folds}")
@@ -32,7 +32,7 @@ def run_cross_validation(config: Path, folds: int | None = None) -> None:
         logger.info(f"Running fold {fold_idx}/{folds - 1} for {model_name}...")
 
         cmd = [
-            "uv", "run", "python", CLI_SCRIPT, "fit",
+            "uv", "run", CLI_SCRIPT, "fit",
             "--config", str(config),
             f"--data.fold_index={fold_idx}",
             f"--data.k_fold={folds}",

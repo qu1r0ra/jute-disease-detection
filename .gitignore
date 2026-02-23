@@ -1,6 +1,5 @@
 # Miscellaneous
 artifacts/
-config.yaml
 data/*
 !data/*.txt
 lightning_logs/

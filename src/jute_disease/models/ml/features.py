@@ -1,3 +1,4 @@
+# ruff: noqa: N806
 from abc import ABC, abstractmethod
 
 import cv2
@@ -7,7 +8,7 @@ from skimage.feature import graycomatrix, graycoprops, hog, local_binary_pattern
 from torchvision.datasets import ImageFolder
 from tqdm import tqdm
 
-from jute_disease.utils.constants import IMAGE_SIZE
+from jute_disease.utils.constants import IMAGE_SIZE, ML_FEATURES_DIR
 from jute_disease.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -115,8 +116,20 @@ class RawPixelFeatureExtractor(BaseFeatureExtractor):
 def extract_features(
     dataset: ImageFolder,
     extractor: BaseFeatureExtractor,
+    cache_name: str | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Extract features using the provided extractor."""
+    """Extract features using the provided extractor, with optional caching."""
+    if cache_name is not None:
+        ML_FEATURES_DIR.mkdir(parents=True, exist_ok=True)
+        extractor_name = type(extractor).__name__.lower()
+        full_cache_name = f"{extractor_name}_{cache_name}"
+        x_path = ML_FEATURES_DIR / f"{full_cache_name}_X.npy"
+        y_path = ML_FEATURES_DIR / f"{full_cache_name}_y.npy"
+
+        if x_path.exists() and y_path.exists():
+            logger.info(f"Loading cached features: {full_cache_name}")
+            return np.load(x_path), np.load(y_path)
+
     features_list = []
     labels_list = []
 
@@ -127,4 +140,12 @@ def extract_features(
         features_list.append(feats)
         labels_list.append(label)
 
-    return np.array(features_list), np.array(labels_list)
+    X = np.array(features_list)
+    y = np.array(labels_list)
+
+    if cache_name is not None:
+        np.save(x_path, X)
+        np.save(y_path, y)
+        logger.info(f"Saved cached features: {full_cache_name}")
+
+    return X, y

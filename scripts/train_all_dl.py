@@ -10,7 +10,7 @@ from jute_disease.utils import get_logger
 logger = get_logger(__name__)
 
 CONFIGS_DIR = Path("configs/baselines")
-CLI_SCRIPT = "src/jute_disease/engines/dl/cli.py"
+CLI_SCRIPT = "jute-dl"
 
 
 def run_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
@@ -27,7 +27,7 @@ def run_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
         model_name = config.stem
         logger.info(f"Training {model_name} (config: {config})...")
 
-        cmd = ["uv", "run", "python", CLI_SCRIPT, "fit", "--config", str(config)]
+        cmd = ["uv", "run", CLI_SCRIPT, "fit", "--config", str(config)]
 
         result = subprocess.run(cmd)
         if result.returncode != 0:

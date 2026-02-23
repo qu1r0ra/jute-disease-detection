@@ -21,7 +21,9 @@ This document describes the architectural design and directory structure of the 
 │       ├── engines/        # Training/Inference entry points (DL CLI, ML Training)
 │       ├── models/         # Model definitions (DL: MobileViT, ML: Classifiers)
 │       └── utils/          # Shared utilities (logging, seeding, constants)
-├── tests/                  # Hierarchical test suite mirroring src/ structure
+├── tests/                  # Hierarchical test suite
+│   ├── annotator/          # Web application tests
+│   └── jute_disease/       # Core library tests (mirrors src/jute_disease)
 └── AGENTS.md               # Root entry point for AI assistants
 ```
 
@@ -34,7 +36,14 @@ Each subpackage in `src/jute_disease/` (e.g., `models.ml`, `data`, `utils`) uses
 - **Internal developers** use relative imports where appropriate or `from jute_disease.x import y` to avoid circular dependencies.
 - **External consumers** (scripts, tests, notebooks) use the clean package-level imports (e.g., `from jute_disease.models.ml import RandomForest`).
 
-### 2. Deep Learning Service (Lightning + Timm)
+### 2. Command Line Interface (CLI)
+
+The project exposes unified CLI entry points defined in `pyproject.toml`:
+
+- **`jute-dl`**: Maps to `jute_disease.engines.dl.cli:main`. It leverages the **Lightning CLI** to drive training, testing, and prediction from configuration files.
+- **`jute-ml`**: Maps to `jute_disease.engines.ml.train:train_ml`. It provides a consolidated interface for classical machine learning training and evaluation.
+
+### 3. Deep Learning Service (Lightning + Timm)
 
 The DL pipeline is built using **PyTorch Lightning** for state-of-the-art reproducibility and boilerplate reduction.
 
@@ -42,7 +51,7 @@ The DL pipeline is built using **PyTorch Lightning** for state-of-the-art reprod
 - **Backbone System**: Uses a generic `TimmBackbone` to wrap any model from the `timm` library, allowing for easy experimentation with different architectures (e.g., MobileViT, ResNet). The default backbone is `mobilevit_s`.
 - **Lightning CLI**: Training is driven by configuration files in `configs/`, promoting "Configuration as Code". The CLI supports overrides via command-line arguments.
 
-### 3. Machine Learning Framework (Scikit-learn Adapters)
+### 4. Machine Learning Framework (Scikit-learn Adapters)
 
 Classical ML models are integrated using a custom adapter pattern to unify them with the DL workflow.
 
@@ -50,7 +59,7 @@ Classical ML models are integrated using a custom adapter pattern to unify them 
 - **Adapters**: The `SklearnClassifier` base class wraps standard scikit-learn estimators to provide a consistent `fit`/`predict`/`save`/`load` interface across the project.
 - **Implmentations**: Currently supports Logistic Regression, SVM, Random Forest, KNN, and Multinomial Naive Bayes.
 
-### 4. Data Management & Reproducibility
+### 5. Data Management & Reproducibility
 
 - **DataModule**:
   - Handles dataset splitting (Train/Val/Test) with fixed seeds.
@@ -59,7 +68,7 @@ Classical ML models are integrated using a custom adapter pattern to unify them 
 - **Transforms**: Uses **Albumentations** for robust data augmentation and preprocessing.
 - **Seed Everything**: A centralized `seed_everything` utility ensures deterministic behavior across Python, Numpy, specific libraries, and PyTorch.
 
-### 5. Code Quality & Standards
+### 6. Code Quality & Standards
 
 - **Type Safety**: The codebase adheres to strict type checking using modern Python 3.10+ syntax (e.g., `list[str] | None`).
 - **Formatting**: Code is formatted and linted using `ruff` to ensure PEP 8 compliance.

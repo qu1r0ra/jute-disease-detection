@@ -28,6 +28,10 @@ dependencies = [
     "wandb>=0.24.0",
 ]
 
+[project.scripts]
+jute-dl = "jute_disease.engines.dl.cli:main"
+jute-ml = "jute_disease.engines.ml.train:train_ml"
+
 [dependency-groups]
 dev = [
     "mypy>=1.19.1",

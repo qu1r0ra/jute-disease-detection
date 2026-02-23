@@ -28,7 +28,7 @@ def test_classifier_requires_out_features() -> None:
     # nn.Identity has no out_features attribute
     bad_extractor = nn.Identity()
     with pytest.raises(ValueError, match="out_features"):
-        Classifier(feature_extractor=bad_extractor)
+        Classifier(feature_extractor=bad_extractor, num_classes=6)
 
 
 def test_classifier_forward(classifier: Classifier) -> None:

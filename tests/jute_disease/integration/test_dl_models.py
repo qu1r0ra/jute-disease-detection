@@ -6,7 +6,6 @@ Marked as slow — skipped by default. Run explicitly with:
 
 import os
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -36,8 +35,9 @@ def test_dl_fast_dev_run(config_path) -> None:
     project_root = Path(__file__).resolve().parents[1]
 
     cmd = [
-        sys.executable,
-        str(TRAIN_SCRIPT),
+        "uv",
+        "run",
+        "jute-dl",
         "fit",
         "--config",
         config_path,
