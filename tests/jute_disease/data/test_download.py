@@ -4,7 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from jute_disease.utils.download import prepare_dataset_subsets
+from jute_disease.data.download import (
+    prepare_dataset_subsets,
+)
 
 
 def test_prepare_dataset_subsets(tmp_path: Path) -> None:
@@ -36,7 +38,7 @@ def test_prepare_dataset_subsets_skips_if_exists(
     target_dir.mkdir()
     (target_dir / "exist").write_text("content")
 
-    from jute_disease.utils import download
+    from jute_disease.data import download
 
     with caplog.at_level(logging.INFO):
         download.prepare_dataset_subsets(raw_dir, target_dir, ["train"])
@@ -54,7 +56,7 @@ def test_prepare_dataset_subsets_missing_folder(
     target_dir = tmp_path / "target"
     raw_dir.mkdir()
 
-    from jute_disease.utils import download
+    from jute_disease.data import download
 
     with caplog.at_level(logging.WARNING):
         download.prepare_dataset_subsets(raw_dir, target_dir, ["missing"])

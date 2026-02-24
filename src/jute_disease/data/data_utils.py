@@ -6,6 +6,7 @@ import shutil
 
 from tqdm import tqdm
 
+from jute_disease.data.download import download_plant_doc, download_plant_village
 from jute_disease.utils.constants import (
     BY_CLASS_DIR,
     DATA_DIR,
@@ -14,7 +15,6 @@ from jute_disease.utils.constants import (
     ML_SPLIT_DIR,
     SPLITS,
 )
-from jute_disease.utils.download import download_plant_doc, download_plant_village
 from jute_disease.utils.logger import get_logger
 from jute_disease.utils.seed import seed_everything
 

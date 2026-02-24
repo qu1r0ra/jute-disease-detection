@@ -19,12 +19,6 @@ from jute_disease.utils.constants import (
     WANDB_ENTITY,
     WANDB_PROJECT,
 )
-from jute_disease.utils.data_utils import (
-    initialize_data,
-    setup_data_directory,
-    split_data,
-)
-from jute_disease.utils.download import download_plant_doc, download_plant_village
 from jute_disease.utils.logger import get_logger, setup_wandb
 from jute_disease.utils.metrics import EVAL_METRICS, TRAIN_METRICS, format_metrics
 from jute_disease.utils.seed import seed_everything
@@ -51,13 +45,8 @@ __all__ = [
     "UNLABELED_DIR",
     "WANDB_ENTITY",
     "WANDB_PROJECT",
-    "download_plant_doc",
     "format_metrics",
-    "download_plant_village",
     "get_logger",
-    "initialize_data",
     "seed_everything",
-    "setup_data_directory",
     "setup_wandb",
-    "split_data",
 ]
