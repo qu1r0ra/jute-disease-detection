@@ -1,9 +1,16 @@
 import torch
-import torchmetrics
 from lightning import LightningModule
 from torch import nn
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+
+import wandb
+from jute_disease.utils import (
+    DEFAULT_LR,
+    DEFAULT_WEIGHT_DECAY,
+    EVAL_METRICS,
+    TRAIN_METRICS,
+)
 
 
 class Classifier(LightningModule):
@@ -11,10 +18,10 @@ class Classifier(LightningModule):
         self,
         feature_extractor: nn.Module,
         num_classes: int,
-        lr: float = 1e-3,
-        weight_decay: float = 0.01,
-        compile_model: bool = True,
+        lr: float = DEFAULT_LR,
+        weight_decay: float = DEFAULT_WEIGHT_DECAY,
         freeze_backbone: bool = True,
+        compile_model: bool = True,
     ) -> None:
         super().__init__()
         if not hasattr(feature_extractor, "out_features"):
@@ -39,24 +46,17 @@ class Classifier(LightningModule):
         self.weight_decay = weight_decay
         self.save_hyperparameters(ignore=["feature_extractor"])
 
-        self.train_acc = torchmetrics.Accuracy(
-            task="multiclass", num_classes=num_classes
-        )
-        self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
-        self.val_f1 = torchmetrics.F1Score(
-            task="multiclass", num_classes=num_classes, average="macro"
-        )
-        self.test_acc = torchmetrics.Accuracy(
-            task="multiclass", num_classes=num_classes
-        )
-        self.test_f1 = torchmetrics.F1Score(
-            task="multiclass", num_classes=num_classes, average="macro"
-        )
+        self.train_metrics = TRAIN_METRICS.clone(prefix="train_")
+        self.val_metrics = EVAL_METRICS.clone(prefix="val_")
+        self.test_metrics = EVAL_METRICS.clone(prefix="test_")
+
+        self.test_preds: list[torch.Tensor] = []
+        self.test_targets: list[torch.Tensor] = []
 
     def extra_repr(self) -> str:
         return (
             f"num_classes={self.num_classes}, lr={self.lr}, "
-            "weight_decay={self.weight_decay}"
+            f"weight_decay={self.weight_decay}"
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -71,10 +71,8 @@ class Classifier(LightningModule):
         loss = self.loss(y_hat, y)
 
         self.log("train_loss", loss, prog_bar=True)
-        self.train_acc(y_hat, y)
-        self.log(
-            "train_acc", self.train_acc, prog_bar=True, on_step=False, on_epoch=True
-        )
+        self.train_metrics(y_hat, y)
+        self.log_dict(self.train_metrics, prog_bar=True, on_step=False, on_epoch=True)
 
         return loss
 
@@ -86,10 +84,8 @@ class Classifier(LightningModule):
         loss = self.loss(y_hat, y)
 
         self.log("val_loss", loss, prog_bar=True)
-        self.val_acc(y_hat, y)
-        self.val_f1(y_hat, y)
-        self.log("val_acc", self.val_acc, prog_bar=True, on_step=False, on_epoch=True)
-        self.log("val_f1", self.val_f1, prog_bar=True, on_step=False, on_epoch=True)
+        self.val_metrics(y_hat, y)
+        self.log_dict(self.val_metrics, prog_bar=True, on_step=False, on_epoch=True)
 
         return loss
 
@@ -101,14 +97,39 @@ class Classifier(LightningModule):
         loss = self.loss(y_hat, y)
 
         self.log("test_loss", loss)
+        self.test_metrics(y_hat, y)
+        self.log_dict(self.test_metrics, on_step=False, on_epoch=True)
 
-        self.test_acc(y_hat, y)
-        self.log("test_acc", self.test_acc)
-
-        self.test_f1(y_hat, y)
-        self.log("test_f1", self.test_f1)
+        self.test_preds.append(y_hat.argmax(dim=-1).detach().cpu())
+        self.test_targets.append(y.detach().cpu())
 
         return loss
+
+    def on_test_epoch_start(self) -> None:
+        self.test_preds.clear()
+        self.test_targets.clear()
+
+    def on_test_epoch_end(self) -> None:
+        if getattr(self.logger, "experiment", None) is not None:
+            if isinstance(self.logger.experiment, wandb.sdk.wandb_run.Run):
+                preds = torch.cat(self.test_preds).numpy()
+                targets = torch.cat(self.test_targets).numpy()
+
+                class_names = None
+                if hasattr(self.trainer, "datamodule") and hasattr(
+                    self.trainer.datamodule, "classes"
+                ):
+                    class_names = self.trainer.datamodule.classes
+
+                self.logger.experiment.log(
+                    {
+                        "test_conf_mat": wandb.plot.confusion_matrix(
+                            preds=preds, y_true=targets, class_names=class_names
+                        )
+                    }
+                )
+        self.test_preds.clear()
+        self.test_targets.clear()
 
     def predict_step(
         self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int
