@@ -40,8 +40,8 @@ Each subpackage in `src/jute_disease/` (e.g., `models.ml`, `data`, `utils`) uses
 
 The project exposes unified CLI entry points defined in `pyproject.toml`:
 
-- **`jute-dl`**: Maps to `jute_disease.engines.dl.cli:main`. It leverages the **Lightning CLI** to drive training, testing, and prediction from configuration files.
-- **`jute-ml`**: Maps to `jute_disease.engines.ml.train:train_ml`. It provides a consolidated interface for classical machine learning training and evaluation.
+- **`scripts/train_dl.py`**: The main entry point for the Deep learning engine. It leverages the **Lightning CLI** to drive training, testing, and prediction from configuration files.
+- **`make train-ml`**: Centralized Makefile entry point for Classical ML training, executing Python functions housed in `scripts/train_ml.py` and `src/jute_disease/engines/ml/`.
 
 ### 3. Deep Learning Service (Lightning + Timm)
 
@@ -55,9 +55,9 @@ The DL pipeline is built using **PyTorch Lightning** for state-of-the-art reprod
 
 Classical ML models are integrated using a custom adapter pattern to unify them with the DL workflow.
 
-- **Feature Extractors**: Classes like `HandcraftedFeatureExtractor` convert raw images into numerical vectors (HSV, LBP, HOG). `RawPixelFeatureExtractor` handles pixel flattening.
+- **Feature Extractors**: Classes like `CraftedFeatureExtractor` convert raw images into numerical vectors (HSV, LBP, HOG). `RawPixelFeatureExtractor` handles pixel flattening.
 - **Adapters**: The `SklearnClassifier` base class wraps standard scikit-learn estimators to provide a consistent `fit`/`predict`/`save`/`load` interface across the project.
-- **Implmentations**: Currently supports Logistic Regression, SVM, Random Forest, KNN, and Multinomial Naive Bayes.
+- **Implementations**: Currently supports Logistic Regression, SVM, Random Forest, KNN, and Multinomial Naive Bayes.
 
 ### 5. Data Management & Reproducibility
 
@@ -68,7 +68,13 @@ Classical ML models are integrated using a custom adapter pattern to unify them 
 - **Transforms**: Uses **Albumentations** for robust data augmentation and preprocessing.
 - **Seed Everything**: A centralized `seed_everything` utility ensures deterministic behavior across Python, Numpy, specific libraries, and PyTorch.
 
-### 6. Code Quality & Standards
+### 6. Unified Diagnostics & Metrics
+
+Both pipelines are evaluated identically to ensure strict mathematical comparability. We completely deprecated `scikit-learn` metrics in favor of native PyTorch `torchmetrics.MetricCollection`.
+
+- `EVAL_METRICS` computes Accuracy and Macro-Averaged F1, Precision, and Recall uniformly for both classical and neural models.
+
+### 7. Code Quality & Standards
 
 - **Type Safety**: The codebase adheres to strict type checking using modern Python 3.10+ syntax (e.g., `list[str] | None`).
 - **Formatting**: Code is formatted and linted using `ruff` to ensure PEP 8 compliance.

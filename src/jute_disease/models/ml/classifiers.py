@@ -98,3 +98,12 @@ class RandomForest(SklearnClassifier):
 class MultinomialNaiveBayes(SklearnClassifier):
     def __init__(self, **kwargs: object) -> None:
         super().__init__(MultinomialNB, **kwargs)
+
+
+ML_CLASSIFIERS: dict[str, type[SklearnClassifier]] = {
+    "knn": KNearestNeighbors,
+    "lr": LogisticRegression,
+    "mnb": MultinomialNaiveBayes,
+    "rf": RandomForest,
+    "svm": SupportVectorMachine,
+}

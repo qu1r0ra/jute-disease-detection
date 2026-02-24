@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from jute_disease.utils import data_utils
+from jute_disease.data import data_utils
 
 
 def test_setup_data_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

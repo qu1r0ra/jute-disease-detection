@@ -5,7 +5,7 @@ from pathlib import Path
 from PIL import Image
 
 from jute_disease.models.ml import (
-    HandcraftedFeatureExtractor,
+    CraftedFeatureExtractor,
     KNearestNeighbors,
     LogisticRegression,
     MultinomialNaiveBayes,
@@ -44,8 +44,8 @@ def predict_ml() -> None:
     parser.add_argument(
         "--feature_type",
         type=str,
-        default="handcrafted",
-        choices=["handcrafted", "raw"],
+        default="crafted",
+        choices=["crafted", "raw"],
         help="Type of features the model was trained on",
     )
 
@@ -53,7 +53,7 @@ def predict_ml() -> None:
 
     # 1. Load Model
     classifier_cls = ML_CLASSIFIERS[args.classifier]
-    model = classifier_cls.load()
+    model = classifier_cls.load(f"{args.classifier}_{args.feature_type}")
     if model is None:
         logger.error(
             f"No saved model found for {args.classifier}. Please train it first."
@@ -61,8 +61,8 @@ def predict_ml() -> None:
         return
 
     # 2. Setup Feature Extractor
-    if args.feature_type == "handcrafted":
-        extractor = HandcraftedFeatureExtractor()
+    if args.feature_type == "crafted":
+        extractor = CraftedFeatureExtractor()
     else:
         extractor = RawPixelFeatureExtractor()
 

@@ -51,7 +51,8 @@ def run_grid_search(
             cmd = [
                 "uv",
                 "run",
-                "jute-dl",
+                "python",
+                "scripts/train_dl.py",
                 "fit",
                 "--config",
                 base_model_config,

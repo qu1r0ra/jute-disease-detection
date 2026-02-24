@@ -67,16 +67,16 @@ To reproduce our results, you will need the following installed:
 
 This project provides unified CLI entry points for common tasks:
 
-- **`jute-dl`**: Entry point for the Deep Learning engine (Lightning CLI).
+- **`scripts/train_dl.py`**: Entry point for the Deep Learning engine (Lightning CLI).
 
   ```bash
-  uv run jute-dl fit --config configs/baselines/mobilevit.yaml
+  uv run python scripts/train_dl.py fit --config configs/baselines/mobilevit.yaml
   ```
 
-- **`jute-ml`**: Entry point for the Machine Learning engine.
+- **`make train-ml`**: Entry point for the Machine Learning engine sweep. Or run manually via `uv run python scripts/train_ml.py`.
 
   ```bash
-  uv run jute-ml --classifier rf --feature_type handcrafted
+  uv run python scripts/train_ml.py --classifier rf --feature_type crafted
   ```
 
 ### 3.3. Reproducing the Results

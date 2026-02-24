@@ -44,7 +44,7 @@ train-dl-check:
 	$(PYTHON) scripts/train_all_dl_check.py
 
 train-dl-check-single:
-	uv run jute-dl fit \
+	$(PYTHON) scripts/train_dl.py fit \
 		--config configs/baselines/$(MODEL).yaml \
 		--trainer.fast_dev_run=True \
 		--data.num_workers=2 \

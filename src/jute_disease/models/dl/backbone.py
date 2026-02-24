@@ -11,8 +11,8 @@ class TimmBackbone(nn.Module):
         model_name: str,
         pretrained: bool = True,
         out_features: int | None = None,
-        **kwargs,
-    ):
+        **kwargs: object,
+    ) -> None:
         super().__init__()
         self.backbone = timm.create_model(
             model_name,

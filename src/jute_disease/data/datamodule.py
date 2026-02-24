@@ -13,14 +13,14 @@ from torch.utils.data import (
 )
 from torchvision.datasets import ImageFolder
 
+from jute_disease.data.data_utils import split_data
 from jute_disease.data.transforms import dl_train_transforms, dl_val_transforms
-from jute_disease.utils.constants import (
+from jute_disease.utils import (
     BATCH_SIZE,
     DEFAULT_SEED,
     ML_SPLIT_DIR,
     NUM_WORKERS,
 )
-from jute_disease.utils.data_utils import split_data
 
 
 class DataModule(LightningDataModule):

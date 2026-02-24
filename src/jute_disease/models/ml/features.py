@@ -23,7 +23,7 @@ class BaseFeatureExtractor(ABC):
         pass
 
 
-class HandcraftedFeatureExtractor(BaseFeatureExtractor):
+class CraftedFeatureExtractor(BaseFeatureExtractor):
     """Extracts Color (HSV), Texture (LBP, GLCM), and Shape (HOG) features."""
 
     def __init__(self) -> None:
@@ -53,16 +53,23 @@ class HandcraftedFeatureExtractor(BaseFeatureExtractor):
 
         img_cv = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         hsv = cv2.cvtColor(img_cv, cv2.COLOR_BGR2HSV)
+        # Color Moments
         h_mean, h_std = np.mean(hsv[:, :, 0]), np.std(hsv[:, :, 0])
         s_mean, s_std = np.mean(hsv[:, :, 1]), np.std(hsv[:, :, 1])
         v_mean, v_std = np.mean(hsv[:, :, 2]), np.std(hsv[:, :, 2])
-        color_features = np.array([h_mean, h_std, s_mean, s_std, v_mean, v_std])
+        color_moments = np.array([h_mean, h_std, s_mean, s_std, v_mean, v_std])
+
+        # Color Histogram (8 bins per channel)
+        hist = cv2.calcHist([hsv], [0, 1, 2], None, [8, 8, 8], [0, 180, 0, 256, 0, 256])
+        cv2.normalize(hist, hist)
+        color_hist = hist.flatten()
 
         gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
         lbp = local_binary_pattern(
             gray, self.lbp_n_points, self.lbp_radius, self.lbp_method
         )
-        n_bins = int(lbp.max() + 1)
+        # Number of bins for 'uniform' LBP is points + 2
+        n_bins = self.lbp_n_points + 2
         lbp_hist, _ = np.histogram(
             lbp.ravel(), bins=n_bins, range=(0, n_bins), density=True
         )
@@ -92,7 +99,9 @@ class HandcraftedFeatureExtractor(BaseFeatureExtractor):
             feature_vector=True,
         )
 
-        combined = np.hstack([color_features, lbp_hist, glcm_features, hog_features])
+        combined = np.hstack(
+            [color_moments, color_hist, lbp_hist, glcm_features, hog_features]
+        )
 
         return combined.astype(np.float32)
 
@@ -149,3 +158,9 @@ def extract_features(
         logger.info(f"Saved cached features: {full_cache_name}")
 
     return X, y
+
+
+FEATURE_EXTRACTORS: dict[str, type[BaseFeatureExtractor]] = {
+    "crafted": CraftedFeatureExtractor,
+    "raw": RawPixelFeatureExtractor,
+}

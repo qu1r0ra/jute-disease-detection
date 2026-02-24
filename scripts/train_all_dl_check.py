@@ -10,7 +10,7 @@ from jute_disease.utils import get_logger
 logger = get_logger(__name__)
 
 CONFIGS_DIR = Path("configs/baselines")
-CLI_SCRIPT = "jute-dl"
+CLI_SCRIPT = "scripts/train_dl.py"
 
 
 def check_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
@@ -29,14 +29,19 @@ def check_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
         logger.info(f"Verifying {model_name} (fast_dev_run)...")
 
         cmd = [
-            "uv", "run", CLI_SCRIPT, "fit",
-            "--config", str(config),
+            "uv",
+            "run",
+            "python",
+            CLI_SCRIPT,
+            "fit",
+            "--config",
+            str(config),
             "--trainer.fast_dev_run=True",
             "--data.num_workers=2",
             "--data.pin_memory=True",
             "--data.batch_size=32",
             "--trainer.logger=False",
-        ]  # fmt: skip
+        ]
 
         result = subprocess.run(cmd)
         if result.returncode != 0:

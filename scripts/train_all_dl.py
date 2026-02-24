@@ -10,7 +10,7 @@ from jute_disease.utils import get_logger
 logger = get_logger(__name__)
 
 CONFIGS_DIR = Path("configs/baselines")
-CLI_SCRIPT = "jute-dl"
+CLI_SCRIPT = "scripts/train_dl.py"
 
 
 def run_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
@@ -25,13 +25,41 @@ def run_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
 
     for config in configs:
         model_name = config.stem
+
         logger.info(f"Training {model_name} (config: {config})...")
-
-        cmd = ["uv", "run", CLI_SCRIPT, "fit", "--config", str(config)]
-
-        result = subprocess.run(cmd)
+        fit_cmd = [
+            "uv",
+            "run",
+            "python",
+            CLI_SCRIPT,
+            "fit",
+            "--config",
+            str(config),
+        ]
+        result = subprocess.run(fit_cmd)
         if result.returncode != 0:
-            logger.error(f"{model_name} failed with exit code {result.returncode}.")
+            logger.error(
+                f"{model_name} failed during fit with exit code {result.returncode}."
+            )
+            sys.exit(result.returncode)
+
+        logger.info(f"Testing {model_name}...")
+        test_cmd = [
+            "uv",
+            "run",
+            "python",
+            CLI_SCRIPT,
+            "test",
+            "--config",
+            str(config),
+            "--ckpt_path",
+            "best",
+        ]
+        result = subprocess.run(test_cmd)
+        if result.returncode != 0:
+            logger.error(
+                f"{model_name} failed during test with exit code {result.returncode}."
+            )
             sys.exit(result.returncode)
 
         logger.info(f"Finished {model_name}.")

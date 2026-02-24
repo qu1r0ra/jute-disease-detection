@@ -1,29 +1,24 @@
 # ruff: noqa: N806
-import argparse
 import os
 
 import numpy as np
-from sklearn.metrics import f1_score
+import torch
 from torchvision.datasets import ImageFolder
 
 import wandb
 from jute_disease.data import ml_train_transforms, ml_val_transforms
 from jute_disease.models.ml import (
-    HandcraftedFeatureExtractor,
-    KNearestNeighbors,
-    LogisticRegression,
-    MultinomialNaiveBayes,
-    RandomForest,
-    RawPixelFeatureExtractor,
-    SklearnClassifier,
-    SupportVectorMachine,
+    FEATURE_EXTRACTORS,
+    ML_CLASSIFIERS,
     extract_features,
 )
 from jute_disease.utils import (
     DEFAULT_SEED,
+    EVAL_METRICS,
     ML_SPLIT_DIR,
     WANDB_ENTITY,
     WANDB_PROJECT,
+    format_metrics,
     get_logger,
     seed_everything,
     setup_wandb,
@@ -31,46 +26,14 @@ from jute_disease.utils import (
 
 logger = get_logger(__name__)
 
-ML_CLASSIFIERS: dict[str, type[SklearnClassifier]] = {
-    "knn": KNearestNeighbors,
-    "lr": LogisticRegression,
-    "mnb": MultinomialNaiveBayes,
-    "rf": RandomForest,
-    "svm": SupportVectorMachine,
-}
 
-
-def train_ml() -> None:
-    parser = argparse.ArgumentParser(description="Jute Classical ML Training")
-    parser.add_argument(
-        "--classifier",
-        type=str,
-        default="rf",
-        choices=list(ML_CLASSIFIERS.keys()),
-        help="Classical ML classifier to train",
-    )
-    parser.add_argument(
-        "--feature_type",
-        type=str,
-        default="handcrafted",
-        choices=["handcrafted", "raw"],
-        help="Type of features to extract (handcrafted or raw)",
-    )
-    parser.add_argument(
-        "--balanced",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Use balanced sample weights during training (default: True)",
-    )
-    parser.add_argument(
-        "--seed",
-        type=int,
-        default=DEFAULT_SEED,
-        help="Random seed",
-    )
-
-    args = parser.parse_args()
-    seed_everything(args.seed)
+def train_ml(
+    classifier: str = "rf",
+    feature_type: str = "crafted",
+    balanced: bool = True,
+    seed: int = DEFAULT_SEED,
+) -> None:
+    seed_everything(seed)
 
     if os.getenv("WANDB_MODE") != "disabled":
         setup_wandb()
@@ -78,19 +41,17 @@ def train_ml() -> None:
         wandb.init(
             entity=WANDB_ENTITY,
             project=WANDB_PROJECT,
-            name=f"ClassicalML-{args.classifier}",
+            name=f"ClassicalML-{classifier}-{feature_type}",
             config={
-                "classifier": args.classifier,
-                "feature_type": args.feature_type,
-                "balanced": args.balanced,
-                "seed": args.seed,
+                "classifier": classifier,
+                "feature_type": feature_type,
+                "balanced": balanced,
+                "seed": seed,
             },
         )
 
-    if args.feature_type == "handcrafted":
-        extractor = HandcraftedFeatureExtractor()
-    else:
-        extractor = RawPixelFeatureExtractor()
+    extractor_cls = FEATURE_EXTRACTORS[feature_type]
+    extractor = extractor_cls()
 
     train_ds = ImageFolder(root=ML_SPLIT_DIR / "train", transform=ml_train_transforms)
     val_ds = ImageFolder(root=ML_SPLIT_DIR / "val", transform=ml_val_transforms)
@@ -102,44 +63,42 @@ def train_ml() -> None:
     X_val, y_val = extract_features(val_ds, extractor=extractor, cache_name="val")
     X_test, y_test = extract_features(test_ds, extractor=extractor, cache_name="test")
 
-    logger.info(f"Training {args.classifier}...")
-    classifier_cls = ML_CLASSIFIERS[args.classifier]
+    logger.info(f"Training {classifier}...")
+    classifier_cls = ML_CLASSIFIERS[classifier]
     model = classifier_cls()
 
     sample_weight = None
-    if args.balanced:
+    if balanced:
         unique_classes, counts = np.unique(y_train, return_counts=True)
         class_weights = len(y_train) / (len(unique_classes) * counts)
         weight_map = dict(zip(unique_classes, class_weights, strict=True))
         sample_weight = np.array([weight_map[label] for label in y_train])
         logger.info("Calculated balanced sample weights for training.")
 
+    evaluator = EVAL_METRICS.clone()
+
     model.fit(X_train, y_train, sample_weight=sample_weight)
 
     y_val_pred = model.predict(X_val)
-    acc = float(np.mean(y_val_pred == y_val))
-    f1 = float(f1_score(y_val, y_val_pred, average="macro"))
-    logger.info(f"Validation Accuracy: {acc:.4f}")
-    logger.info(f"Validation F1 Macro: {f1:.4f}")
+    val_out = evaluator(torch.tensor(y_val_pred), torch.tensor(y_val))
+    val_metrics = format_metrics(val_out, prefix="val_")
+
+    logger.info(f"Validation Accuracy: {val_metrics['val_acc']:.4f}")
+    logger.info(f"Validation F1 Macro: {val_metrics['val_f1']:.4f}")
 
     y_test_pred = model.predict(X_test)
-    test_acc = float(np.mean(y_test_pred == y_test))
-    test_f1 = float(f1_score(y_test, y_test_pred, average="macro"))
-    logger.info(f"Test Accuracy: {test_acc:.4f}")
-    logger.info(f"Test F1 Macro: {test_f1:.4f}")
+    test_out = evaluator(torch.tensor(y_test_pred), torch.tensor(y_test))
+    test_metrics = format_metrics(test_out, prefix="test_")
+
+    logger.info(f"Test Accuracy: {test_metrics['test_acc']:.4f}")
+    logger.info(f"Test F1 Macro: {test_metrics['test_f1']:.4f}")
 
     if os.getenv("WANDB_MODE") != "disabled":
-        wandb.log(
-            {
-                "val_acc": acc,
-                "val_f1": f1,
-                "test_acc": test_acc,
-                "test_f1": test_f1,
-            }
+        class_names = test_ds.classes
+        wandb_logs = {**val_metrics, **test_metrics}
+        wandb_logs["test_conf_mat"] = wandb.plot.confusion_matrix(
+            preds=y_test_pred, y_true=y_test, class_names=class_names
         )
+        wandb.log(wandb_logs)
         wandb.finish()
-    model.save(f"{args.classifier}_{args.feature_type}")
-
-
-if __name__ == "__main__":
-    train_ml()
+    model.save(f"{classifier}_{feature_type}")

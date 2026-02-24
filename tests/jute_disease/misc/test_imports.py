@@ -16,6 +16,7 @@ def test_data_api() -> None:
         dl_val_transforms,
         ml_train_transforms,
         ml_val_transforms,
+        split_data,
     )
 
     assert DataModule is not None
@@ -23,6 +24,7 @@ def test_data_api() -> None:
     assert dl_val_transforms is not None
     assert ml_train_transforms is not None
     assert ml_val_transforms is not None
+    assert split_data is not None
 
 
 def test_models_dl_api() -> None:
@@ -36,7 +38,7 @@ def test_models_dl_api() -> None:
 def test_models_ml_api() -> None:
     from jute_disease.models.ml import (
         BaseFeatureExtractor,
-        HandcraftedFeatureExtractor,
+        CraftedFeatureExtractor,
         KNearestNeighbors,
         LogisticRegression,
         MultinomialNaiveBayes,
@@ -54,7 +56,7 @@ def test_models_ml_api() -> None:
     assert RandomForest is not None
     assert SupportVectorMachine is not None
     assert BaseFeatureExtractor is not None
-    assert HandcraftedFeatureExtractor is not None
+    assert CraftedFeatureExtractor is not None
     assert RawPixelFeatureExtractor is not None
     assert extract_features is not None
 
@@ -72,7 +74,6 @@ def test_utils_api() -> None:
         get_logger,
         seed_everything,
         setup_wandb,
-        split_data,
     )
 
     assert ROOT_DIR is not None
@@ -86,4 +87,3 @@ def test_utils_api() -> None:
     assert get_logger is not None
     assert seed_everything is not None
     assert setup_wandb is not None
-    assert split_data is not None

@@ -66,7 +66,6 @@ def test_classifier_configure_optimizers(classifier: Classifier) -> None:
     assert "lr_scheduler" in optimizers
 
 
-@pytest.mark.slow
 def test_classifier_training_step(classifier: Classifier) -> None:
     batch = (torch.randn(4, 3, 224, 224), torch.randint(0, 6, (4,)))
     loss = classifier.training_step(batch, 0)
@@ -74,15 +73,42 @@ def test_classifier_training_step(classifier: Classifier) -> None:
     assert loss.item() > 0
 
 
-@pytest.mark.slow
 def test_classifier_validation_step(classifier: Classifier) -> None:
     batch = (torch.randn(4, 3, 224, 224), torch.randint(0, 6, (4,)))
     loss = classifier.validation_step(batch, 0)
     assert loss is not None
 
 
-@pytest.mark.slow
 def test_classifier_test_step(classifier: Classifier) -> None:
     batch = (torch.randn(4, 3, 224, 224), torch.randint(0, 6, (4,)))
     loss = classifier.test_step(batch, 0)
     assert loss is not None
+    assert len(classifier.test_preds) == 1
+    assert len(classifier.test_targets) == 1
+
+
+def test_classifier_predict_step(classifier: Classifier) -> None:
+    batch = (torch.randn(4, 3, 224, 224), torch.randint(0, 6, (4,)))
+    preds = classifier.predict_step(batch, 0)
+    assert preds.shape == (4, 6)
+
+
+def test_classifier_extra_repr(classifier: Classifier) -> None:
+    rep = classifier.extra_repr()
+    assert "num_classes=6" in rep
+    assert "lr=0.001" in rep
+
+
+def test_classifier_on_test_epoch_hooks(classifier: Classifier) -> None:
+    classifier.test_preds.append(torch.tensor([1, 2]))
+    classifier.test_targets.append(torch.tensor([1, 2]))
+
+    classifier.on_test_epoch_start()
+    assert len(classifier.test_preds) == 0
+    assert len(classifier.test_targets) == 0
+
+    classifier.test_preds.append(torch.tensor([1, 2]))
+    classifier.test_targets.append(torch.tensor([1, 2]))
+    classifier.on_test_epoch_end()
+    assert len(classifier.test_preds) == 0
+    assert len(classifier.test_targets) == 0

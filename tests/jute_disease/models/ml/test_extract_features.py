@@ -9,7 +9,7 @@ from PIL import Image
 from torchvision.datasets import ImageFolder
 
 from jute_disease.models.ml import (
-    HandcraftedFeatureExtractor,
+    CraftedFeatureExtractor,
     RawPixelFeatureExtractor,
     extract_features,
 )
@@ -40,8 +40,8 @@ def test_raw_pixel_extract_features_shape(mock_image_folder: ImageFolder) -> Non
 
 
 @pytest.mark.slow
-def test_handcrafted_extract_features_shape(mock_image_folder: ImageFolder) -> None:
-    extractor = HandcraftedFeatureExtractor()
+def test_crafted_extract_features_shape(mock_image_folder: ImageFolder) -> None:
+    extractor = CraftedFeatureExtractor()
     X, y = extract_features(mock_image_folder, extractor)
 
     assert X.shape[0] == 6

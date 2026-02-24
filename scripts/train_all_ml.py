@@ -4,19 +4,18 @@ import argparse
 import subprocess
 import sys
 
+from jute_disease.models.ml import FEATURE_EXTRACTORS, ML_CLASSIFIERS
 from jute_disease.utils import get_logger
 
 logger = get_logger(__name__)
 
-TRAIN_SCRIPT = "src/jute_disease/engines/ml/train.py"
-
-CLASSIFIERS = ["rf", "svm", "knn", "lr", "mnb"]
-FEATURE_TYPES = ["handcrafted", "raw"]
+CLASSIFIERS_KEYS = list(ML_CLASSIFIERS.keys())
+FEATURE_TYPES_KEYS = list(FEATURE_EXTRACTORS.keys())
 
 
 def run_all_ml(
-    classifiers: list[str] = CLASSIFIERS,
-    feature_types: list[str] = FEATURE_TYPES,
+    classifiers: list[str] = CLASSIFIERS_KEYS,
+    feature_types: list[str] = FEATURE_TYPES_KEYS,
     balanced: bool = True,
 ) -> None:
     """Execute all combinations of classical ML experiments."""
@@ -31,12 +30,13 @@ def run_all_ml(
             cmd = [
                 "uv",
                 "run",
-                "jute-ml",
+                "python",
+                "scripts/train_ml.py",
                 "--classifier",
                 clf,
                 "--feature_type",
                 feat,
-            ]  # fmt: skip
+            ]
 
             if balanced:
                 cmd.append("--balanced")
@@ -62,15 +62,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--classifiers",
         nargs="+",
-        default=CLASSIFIERS,
-        choices=CLASSIFIERS,
+        default=CLASSIFIERS_KEYS,
+        choices=CLASSIFIERS_KEYS,
         help="Classifiers to run (default: all).",
     )
     parser.add_argument(
         "--feature-types",
         nargs="+",
-        default=FEATURE_TYPES,
-        choices=FEATURE_TYPES,
+        default=FEATURE_TYPES_KEYS,
+        choices=FEATURE_TYPES_KEYS,
         help="Feature types to use (default: all).",
     )
     parser.add_argument(

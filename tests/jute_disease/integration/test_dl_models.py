@@ -37,7 +37,8 @@ def test_dl_fast_dev_run(config_path) -> None:
     cmd = [
         "uv",
         "run",
-        "jute-dl",
+        "python",
+        "scripts/train_dl.py",
         "fit",
         "--config",
         config_path,

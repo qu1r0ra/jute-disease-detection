@@ -21,6 +21,11 @@ BATCH_SIZE = 256
 NUM_WORKERS = 4
 SEEDS = [42, 1337, 7, 1234, 99]
 DEFAULT_SEED = SEEDS[0]
+DEFAULT_LR = 1e-3
+DEFAULT_WEIGHT_DECAY = 0.01
+
+# Task configurations
+NUM_CLASSES = 6
 
 # Weights & Biases
 WANDB_ENTITY = "grade-descent"
