@@ -3,7 +3,12 @@ import argparse
 import os
 
 import numpy as np
-from sklearn.metrics import classification_report, f1_score
+from sklearn.metrics import (
+    classification_report,
+    f1_score,
+    precision_score,
+    recall_score,
+)
 from torchvision.datasets import ImageFolder
 
 import wandb
@@ -99,11 +104,15 @@ def test_ml() -> None:
     logger.info("Running predictions on test set...")
     y_pred = model.predict(X_test)
 
-    acc = float(np.mean(y_pred == y_test))
-    f1 = float(f1_score(y_test, y_pred, average="macro"))
+    test_acc = float(np.mean(y_pred == y_test))
+    test_f1 = float(f1_score(y_test, y_pred, average="macro"))
+    test_precision = float(
+        precision_score(y_test, y_pred, average="macro", zero_division=0)
+    )
+    test_recall = float(recall_score(y_test, y_pred, average="macro", zero_division=0))
 
-    logger.info(f"Test Accuracy: {acc:.4f}")
-    logger.info(f"Test F1 Macro: {f1:.4f}")
+    logger.info(f"Test Accuracy: {test_acc:.4f}")
+    logger.info(f"Test F1 Macro: {test_f1:.4f}")
     logger.info(
         "\nClassification Report:\n"
         + classification_report(y_test, y_pred, target_names=class_names)
@@ -121,8 +130,13 @@ def test_ml() -> None:
         )
         wandb.log(
             {
-                "test_acc": acc,
-                "test_f1": f1,
+                "test_acc": test_acc,
+                "test_f1": test_f1,
+                "test_precision": test_precision,
+                "test_recall": test_recall,
+                "test_conf_mat": wandb.plot.confusion_matrix(
+                    preds=y_pred, y_true=y_test, class_names=class_names
+                ),
             }
         )
         wandb.finish()

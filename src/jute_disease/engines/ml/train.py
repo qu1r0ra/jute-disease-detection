@@ -3,7 +3,7 @@ import argparse
 import os
 
 import numpy as np
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, precision_score, recall_score
 from torchvision.datasets import ImageFolder
 
 import wandb
@@ -117,24 +117,46 @@ def train_ml() -> None:
     model.fit(X_train, y_train, sample_weight=sample_weight)
 
     y_val_pred = model.predict(X_val)
-    acc = float(np.mean(y_val_pred == y_val))
-    f1 = float(f1_score(y_val, y_val_pred, average="macro"))
-    logger.info(f"Validation Accuracy: {acc:.4f}")
-    logger.info(f"Validation F1 Macro: {f1:.4f}")
+    val_acc = float(np.mean(y_val_pred == y_val))
+    val_f1 = float(f1_score(y_val, y_val_pred, average="macro"))
+    val_precision = float(
+        precision_score(y_val, y_val_pred, average="macro", zero_division=0)
+    )
+    val_recall = float(
+        recall_score(y_val, y_val_pred, average="macro", zero_division=0)
+    )
+
+    logger.info(f"Validation Accuracy: {val_acc:.4f}")
+    logger.info(f"Validation F1 Macro: {val_f1:.4f}")
 
     y_test_pred = model.predict(X_test)
     test_acc = float(np.mean(y_test_pred == y_test))
     test_f1 = float(f1_score(y_test, y_test_pred, average="macro"))
+    test_precision = float(
+        precision_score(y_test, y_test_pred, average="macro", zero_division=0)
+    )
+    test_recall = float(
+        recall_score(y_test, y_test_pred, average="macro", zero_division=0)
+    )
+
     logger.info(f"Test Accuracy: {test_acc:.4f}")
     logger.info(f"Test F1 Macro: {test_f1:.4f}")
 
     if os.getenv("WANDB_MODE") != "disabled":
+        class_names = test_ds.classes
         wandb.log(
             {
-                "val_acc": acc,
-                "val_f1": f1,
+                "val_acc": val_acc,
+                "val_f1": val_f1,
+                "val_precision": val_precision,
+                "val_recall": val_recall,
                 "test_acc": test_acc,
                 "test_f1": test_f1,
+                "test_precision": test_precision,
+                "test_recall": test_recall,
+                "test_conf_mat": wandb.plot.confusion_matrix(
+                    preds=y_test_pred, y_true=y_test, class_names=class_names
+                ),
             }
         )
         wandb.finish()
