@@ -17,6 +17,7 @@ class MockEstimator(BaseEstimator, ClassifierMixin):
         self, X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None
     ) -> "MockEstimator":
         self.sample_weight_passed = sample_weight
+        self.classes_ = np.unique(y)
         return self
 
     def predict(self, X: np.ndarray) -> np.ndarray:
@@ -34,9 +35,10 @@ def test_sklearn_classifier_adapter_passes_weight() -> None:
     adapter = SklearnClassifier(MockEstimator)
     adapter.fit(X, y, sample_weight=sw)
 
-    assert isinstance(adapter.model, MockEstimator)
-    assert adapter.model.sample_weight_passed is not None
-    assert np.array_equal(adapter.model.sample_weight_passed, sw)
+    clf_step = adapter.model.named_steps["clf"]
+    assert isinstance(clf_step, MockEstimator)
+    assert clf_step.sample_weight_passed is not None
+    assert np.array_equal(clf_step.sample_weight_passed, sw)
 
 
 def test_sklearn_classifier_warns_no_weight(caplog: pytest.LogCaptureFixture) -> None:
@@ -51,15 +53,17 @@ def test_sklearn_classifier_warns_no_weight(caplog: pytest.LogCaptureFixture) ->
     adapter = NoWeightAdapter(MockEstimator)
     adapter.fit(X, y, sample_weight=sw)
 
+    clf_step = adapter.model.named_steps["clf"]
     assert "does not support sample_weight" in caplog.text
-    assert isinstance(adapter.model, MockEstimator)
-    assert adapter.model.sample_weight_passed is None
+    assert isinstance(clf_step, MockEstimator)
+    assert clf_step.sample_weight_passed is None
 
 
 def test_sklearn_classifier_predict() -> None:
     X = np.random.rand(10, 2)
+    y = np.array([0, 1] * 5)
     adapter = SklearnClassifier(MockEstimator)
-    adapter.model = MockEstimator()
+    adapter.fit(X, y)
 
     y_pred = adapter.predict(X)
     assert len(y_pred) == 10
@@ -91,6 +95,7 @@ def test_sklearn_classifier_save_load(
     # Load and verify
     loaded = PersistentClassifier.load()
     assert loaded is not None
-    assert isinstance(loaded.model, MockEstimator)
+    loaded_clf = loaded.model.named_steps["clf"]
+    assert isinstance(loaded_clf, MockEstimator)
     # Check if fit attributes survived
-    assert loaded.model.sample_weight_passed is None
+    assert loaded_clf.sample_weight_passed is None
