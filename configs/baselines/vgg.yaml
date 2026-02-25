@@ -34,9 +34,9 @@ model:
   feature_extractor:
     class_path: jute_disease.models.dl.backbone.TimmBackbone
     init_args:
-      model_name: vgg19
+      model_name: vgg16
       pretrained: true
-      out_features: 4096  # vgg19 num_features reports 512 but actual output is 4096
+      out_features: 4096  # vgg16 num_features reports 512 but actual output is 4096
 
 data:
   data_dir: data/ml_split

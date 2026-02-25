@@ -1,4 +1,4 @@
-.PHONY: help data setup-data split-data train-ml train-dl train-dl-check test test-all lint format clean
+.PHONY: help data setup-data split-data train-ml train-dl train-dl-check test test-all lint format clean sync-nb
 
 ifeq (, $(shell which uv))
     PYTHON = python3
@@ -25,6 +25,7 @@ help:
 	@echo "  make clean        		- Remove temporary files and logs"
 	@echo "  make clean-artifacts  	- Remove all generated artifacts (models, checkpoints)"
 	@echo "  make clean-ml     		- Remove ML models and extracted features from artifacts"
+	@echo "  make sync-nb    		- Sync Jupyter Notebooks (.ipynb) with Jupytext (.py) scripts"
 
 data:
 	$(PYTHON) src/jute_disease/data/utils.py init
@@ -89,3 +90,6 @@ clean-artifacts:
 
 clean-ml:
 	rm -rf artifacts/ml_models artifacts/features
+
+sync-nb:
+	uv run jupytext --sync notebooks/reproducibility/*.py
