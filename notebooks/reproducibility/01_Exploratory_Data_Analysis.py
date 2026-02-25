@@ -73,7 +73,6 @@ drive.mount("/content/drive")
 # 2. Update `DATA_ZIP_PATH` below to the path where you stored the file. If you uploaded it to the root of _My Drive_, you can set it to **"/content/drive/MyDrive/data.zip"**.
 
 # %%
-# NOTE:
 # Update this to where you stored data.zip in your GDrive.
 # For organization, we stored ours in
 # "/content/drive/MyDrive/Colab/Jute Leaf Disease/data.zip"
