@@ -8,6 +8,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression as SKLogisticRegression
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.svm import SVC
 
 from jute_disease.utils.constants import ML_MODELS_DIR
@@ -20,14 +22,22 @@ class SklearnClassifier:
     """Adapter that wraps any scikit-learn classifier into a consistent interface."""
 
     supports_sample_weight: bool = True
+    scaler_cls: type = StandardScaler
 
     def __init__(self, sklearn_cls: type[ClassifierMixin], **kwargs: object) -> None:
         if not issubclass(sklearn_cls, ClassifierMixin):
             raise TypeError(f"{sklearn_cls} must be a scikit-learn classifier.")
-        self.model = sklearn_cls(**kwargs)
+
+        steps = []
+        if self.scaler_cls is not None:
+            steps.append(("scaler", self.scaler_cls()))
+        steps.append(("clf", sklearn_cls(**kwargs)))
+
+        self.model = Pipeline(steps)
 
     def __repr__(self) -> str:
-        params_str = ", ".join(f"{k}={v!r}" for k, v in self.model.get_params().items())
+        clf_step = self.model.named_steps["clf"]
+        params_str = ", ".join(f"{k}={v!r}" for k, v in clf_step.get_params().items())
         return f"{self.__class__.__name__}({params_str})"
 
     def __str__(self) -> str:
@@ -36,16 +46,17 @@ class SklearnClassifier:
     def fit(
         self, X: np.ndarray, y: np.ndarray, sample_weight: np.ndarray | None = None
     ) -> None:
-        if sample_weight is not None and not self.supports_sample_weight:
-            logger.warning(
-                f"{self.__class__.__name__} does not support sample_weight. "
-                "Weighting will be ignored."
-            )
-            self.model.fit(X, y)
-        elif sample_weight is not None:
-            self.model.fit(X, y, sample_weight=sample_weight)
-        else:
-            self.model.fit(X, y)
+        fit_kwargs = {}
+        if sample_weight is not None:
+            if not self.supports_sample_weight:
+                logger.warning(
+                    f"{self.__class__.__name__} does not support sample_weight. "
+                    "Weighting will be ignored."
+                )
+            else:
+                fit_kwargs["clf__sample_weight"] = sample_weight
+
+        self.model.fit(X, y, **fit_kwargs)
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         return self.model.predict(X)
@@ -102,6 +113,8 @@ class RandomForest(SklearnClassifier):
 
 
 class MultinomialNaiveBayes(SklearnClassifier):
+    scaler_cls = MinMaxScaler  # MNB requires non-negative values
+
     def __init__(self, random_state: int | None = None, **kwargs: object) -> None:
         # MultinomialNB does not use random_state
         super().__init__(MultinomialNB, **kwargs)
