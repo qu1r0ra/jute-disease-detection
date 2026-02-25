@@ -66,7 +66,6 @@ class SklearnClassifier:
         path = ML_MODELS_DIR / f"{model_name}.joblib"
         if not path.exists():
             return None
-        # Create instance without calling __init__ potentially requiring args
         instance = cls.__new__(cls)
         instance.model = joblib.load(str(path))
         return instance
@@ -75,28 +74,36 @@ class SklearnClassifier:
 class KNearestNeighbors(SklearnClassifier):
     supports_sample_weight = False
 
-    def __init__(self, **kwargs: object) -> None:
+    def __init__(self, random_state: int | None = None, **kwargs: object) -> None:
+        # KNeighborsClassifier does not use random_state
         super().__init__(KNeighborsClassifier, **kwargs)
 
 
 class SupportVectorMachine(SklearnClassifier):
-    def __init__(self, **kwargs: object) -> None:
+    def __init__(self, random_state: int | None = None, **kwargs: object) -> None:
         kwargs.setdefault("probability", True)
+        if random_state is not None:
+            kwargs["random_state"] = random_state
         super().__init__(SVC, **kwargs)
 
 
 class LogisticRegression(SklearnClassifier):
-    def __init__(self, **kwargs: object) -> None:
+    def __init__(self, random_state: int | None = None, **kwargs: object) -> None:
+        if random_state is not None:
+            kwargs["random_state"] = random_state
         super().__init__(SKLogisticRegression, **kwargs)
 
 
 class RandomForest(SklearnClassifier):
-    def __init__(self, **kwargs: object) -> None:
+    def __init__(self, random_state: int | None = None, **kwargs: object) -> None:
+        if random_state is not None:
+            kwargs["random_state"] = random_state
         super().__init__(RandomForestClassifier, **kwargs)
 
 
 class MultinomialNaiveBayes(SklearnClassifier):
-    def __init__(self, **kwargs: object) -> None:
+    def __init__(self, random_state: int | None = None, **kwargs: object) -> None:
+        # MultinomialNB does not use random_state
         super().__init__(MultinomialNB, **kwargs)
 
 

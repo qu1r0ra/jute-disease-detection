@@ -110,3 +110,36 @@ def test_classifier_save_load(
     assert loaded is not None
     preds = loaded.predict(X)
     assert preds.shape == (30,)
+
+
+def test_classifiers_deterministic_seed() -> None:
+    """Verifies that passing a random_state yields identical models."""
+    from jute_disease.models.ml import RandomForest
+
+    rng = np.random.default_rng(42)
+    X = np.abs(rng.random((50, 8))).astype(np.float32)
+    y = np.random.randint(0, 2, size=50)
+
+    # Without seeding, random forests are non-deterministic between instances.
+    # With a seed, their parameters should be identical after fitting.
+    rf1 = RandomForest(random_state=42)
+    rf2 = RandomForest(random_state=42)
+
+    rf1.fit(X, y)
+    rf2.fit(X, y)
+
+    preds1 = rf1.predict_proba(X)
+    preds2 = rf2.predict_proba(X)
+
+    assert np.allclose(preds1, preds2)
+
+
+def test_classifiers_unsupported_random_state_ignored() -> None:
+    """Classifiers that do not support random_state shouldn't crash if passed one."""
+    from jute_disease.models.ml import KNearestNeighbors, MultinomialNaiveBayes
+
+    knn = KNearestNeighbors(random_state=42)
+    mnb = MultinomialNaiveBayes(random_state=42)
+
+    assert knn is not None
+    assert mnb is not None

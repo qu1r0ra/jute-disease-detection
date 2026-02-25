@@ -65,7 +65,7 @@ def train_ml(
 
     logger.info(f"Training {classifier}...")
     classifier_cls = ML_CLASSIFIERS[classifier]
-    model = classifier_cls()
+    model = classifier_cls(random_state=seed)
 
     sample_weight = None
     if balanced:
