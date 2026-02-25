@@ -20,7 +20,7 @@ def test_prepare_dataset_subsets(tmp_path: Path) -> None:
         subset_dir.mkdir(parents=True)
         (subset_dir / "img1.jpg").write_text("data")
 
-    prepare_dataset_subsets(raw_dir, target_dir, ["train", "val"])
+    prepare_dataset_subsets(raw_dir, target_dir)
 
     # Should result in target/apple/train_img1.jpg and target/apple/val_img1.jpg
     assert (target_dir / "apple" / "train_img1.jpg").exists()
@@ -41,7 +41,7 @@ def test_prepare_dataset_subsets_skips_if_exists(
     from jute_disease.data import download
 
     with caplog.at_level(logging.INFO):
-        download.prepare_dataset_subsets(raw_dir, target_dir, ["train"])
+        download.prepare_dataset_subsets(raw_dir, target_dir)
 
     assert "already exists" in caplog.text
 
@@ -59,6 +59,6 @@ def test_prepare_dataset_subsets_missing_folder(
     from jute_disease.data import download
 
     with caplog.at_level(logging.WARNING):
-        download.prepare_dataset_subsets(raw_dir, target_dir, ["missing"])
+        download.prepare_dataset_subsets(raw_dir, target_dir)
 
-    assert "not found" in caplog.text
+    assert "No images found" in caplog.text
