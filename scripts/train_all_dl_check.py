@@ -40,7 +40,6 @@ def check_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
             "--data.num_workers=2",
             "--data.pin_memory=True",
             "--data.batch_size=32",
-            "--trainer.logger=False",
         ]
 
         result = subprocess.run(cmd)
