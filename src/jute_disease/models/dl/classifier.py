@@ -146,7 +146,7 @@ class Classifier(LightningModule):
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
-                "scheduler": ReduceLROnPlateau(optimizer),
+                "scheduler": ReduceLROnPlateau(optimizer, patience=3),
                 "monitor": "val_loss",
                 "frequency": 1,
                 "interval": "epoch",
