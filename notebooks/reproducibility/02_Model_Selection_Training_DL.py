@@ -21,41 +21,30 @@
 # - Validate heavy Deep Learning Baselines (Inception V3, VGG16, DenseNet201).
 # - Perform a grid search across Transfer Learning Initialization Strategies for MobileViT.
 # - Execute runs using the unified Lightning `train_dl.py` scripts and `run_grid_search.py`.
+#
+# **Note:**
+#
+# This notebook must be executed in **Google Colab**, just as the authors did.
 
 # %% [markdown]
 # ## Environment Setup
-
-# %%
-# %load_ext autoreload
-# %autoreload 2
-# %matplotlib inline
-
-import sys
-from pathlib import Path
-
-project_root = Path("../../").resolve()
-if str(project_root) not in sys.path:
-    sys.path.append(str(project_root))
-
-# %%
-# ruff: noqa: F821
-from jute_disease.utils.constants import DEFAULT_SEED
-from jute_disease.utils.logger import get_logger
-from jute_disease.utils.seed import seed_everything
-
-# %%
-logger = get_logger(__name__)
-seed_everything(DEFAULT_SEED)
 
 # %%
 # !git clone https://github.com/qu1r0ra/jute-disease-detection.git
 # %cd jute-disease-detection
 
 # %pip install uv
-
-# Install dependencies into the Colab runtime, not into a virtual environment (.venv)
-logger.info("Installing dependencies with uv...")
 # !uv pip install --system -e .
+
+# %%
+# ruff: noqa: T201
+from pathlib import Path
+
+from jute_disease.utils.constants import DEFAULT_SEED
+from jute_disease.utils.seed import seed_everything
+
+# %%
+seed_everything(DEFAULT_SEED)
 
 # %% [markdown]
 # Mount your Google Drive into the Colab runtime.
@@ -72,17 +61,17 @@ drive.mount("/content/drive")
 # 2. Update `DATA_ZIP_PATH` below to the path where you stored the file. If you uploaded it to the root of _My Drive_, you can set it to **"/content/drive/MyDrive/data.zip"**.
 
 # %%
-# Update this to where you stored data.zip in your GDrive.
+# Update this to where your data.zip is stored relative to the Colab VM filesystem.
 # For organization, we stored ours in
-# "/content/drive/MyDrive/Colab/Jute Leaf Disease/data.zip"
-DATA_ZIP_PATH = "/content/drive/MyDrive/Colab/Jute Leaf Disease/data.zip"
+# "/content/drive/MyDrive/Colab Notebooks/Jute Leaf Disease/data.zip"
+DATA_ZIP_PATH = "/content/drive/MyDrive/Colab Notebooks/Jute Leaf Disease/data.zip"
 
 if Path(DATA_ZIP_PATH).exists():
-    logger.info(f"Unzipping {DATA_ZIP_PATH}...")
-    # !unzip -q -n "$DATA_ZIP_PATH" -d .
-    logger.info("Data unpacked.")
+    print(f"Unzipping {DATA_ZIP_PATH}...")
+    # !unzip -q -n "$DATA_ZIP_PATH" -d data/
+    print("Data unpacked.")
 else:
-    logger.warning(
+    print(
         f"Zip file not found at {DATA_ZIP_PATH}. "
         "Please check the path or upload your data."
     )
@@ -99,22 +88,21 @@ GDRIVE_ARTIFACTS.mkdir(parents=True, exist_ok=True)
 
 if not LOCAL_ARTIFACTS.exists() and not LOCAL_ARTIFACTS.is_symlink():
     LOCAL_ARTIFACTS.symlink_to(GDRIVE_ARTIFACTS)
-    logger.info(f"Symlinked {LOCAL_ARTIFACTS.absolute()} -> {GDRIVE_ARTIFACTS}")
+    print(f"Symlinked {LOCAL_ARTIFACTS.absolute()} -> {GDRIVE_ARTIFACTS}")
 else:
-    logger.info(f"{LOCAL_ARTIFACTS} already exists or is linked.")
+    print(f"{LOCAL_ARTIFACTS} already exists or is linked.")
 
 # %% [markdown]
 # Let us perform a quick sanity test to ensure all generated files show up inside your Google Drive folder containing your `data.zip`. If you see a generated `test.txt` file then you are all set to proceed.
 
 # %%
 test_file = LOCAL_ARTIFACTS / "test.txt"
-test_file.write_text("Hacking the mainframe.")
+test_file.write_text("Hacking into the mainframe.")
 
 if (GDRIVE_ARTIFACTS / "test.txt").exists():
-    logger.info("Symlink worked.")
-    test_file.unlink()
+    print("Symlink worked.")
 else:
-    logger.error("Symlink failed :<")
+    print("Symlink failed :<")
 
 # %% [markdown]
 # ## Transfer Learning Setup
@@ -134,7 +122,7 @@ else:
 # - InceptionV3
 # - VGG16
 # - DenseNet201
-# - ResNet
+# - ResNet50
 # - MobileNet
 # - MobileViT
 #
@@ -172,7 +160,7 @@ else:
 # %%
 from jute_disease.data.download import download_plant_doc, download_plant_village
 
-# Download external datasets directly into Colab environment
+# %%
 download_plant_village()
 download_plant_doc()
 
