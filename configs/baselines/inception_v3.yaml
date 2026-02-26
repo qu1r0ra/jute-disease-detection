@@ -12,7 +12,7 @@ trainer:
     init_args:
       project: jute-disease-detection
       entity: grade-descent
-      name: mobilevit
+      name: inception_v3
       log_model: true
   callbacks:
     - class_path: lightning.pytorch.callbacks.LearningRateMonitor
@@ -21,8 +21,8 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         monitor: val_loss
-        dirpath: artifacts/checkpoints/mobilevit
-        filename: "mobilevit-{epoch:02d}-{val_loss:.4f}"
+        dirpath: artifacts/checkpoints/inception_v3
+        filename: "inception_v3-{epoch:02d}-{val_loss:.4f}"
         save_top_k: 3
         mode: min
     - class_path: lightning.pytorch.callbacks.EarlyStopping
@@ -36,8 +36,9 @@ model:
   lr: 0.001
   freeze_backbone: true
   feature_extractor:
-    class_path: jute_disease.models.dl.mobilevit.MobileViT
+    class_path: jute_disease.models.dl.backbone.TimmBackbone
     init_args:
+      model_name: inception_v3
       pretrained: true
 
 data:
