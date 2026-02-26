@@ -1,10 +1,12 @@
 """Run all DL baseline experiments sequentially."""
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
 
+import wandb
 from jute_disease.utils import get_logger
 
 logger = get_logger(__name__)
@@ -27,6 +29,11 @@ def run_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
         model_name = config.stem
 
         logger.info(f"Training {model_name} (config: {config})...")
+
+        run_id = wandb.util.generate_id()
+        env = os.environ.copy()
+        env["WANDB_RUN_ID"] = run_id
+
         fit_cmd = [
             "uv",
             "run",
@@ -36,7 +43,7 @@ def run_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
             "--config",
             str(config),
         ]
-        result = subprocess.run(fit_cmd)
+        result = subprocess.run(fit_cmd, env=env)
         if result.returncode != 0:
             logger.error(
                 f"{model_name} failed during fit with exit code {result.returncode}."
@@ -55,7 +62,7 @@ def run_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
             "--ckpt_path",
             "best",
         ]
-        result = subprocess.run(test_cmd)
+        result = subprocess.run(test_cmd, env=env)
         if result.returncode != 0:
             logger.error(
                 f"{model_name} failed during test with exit code {result.returncode}."
