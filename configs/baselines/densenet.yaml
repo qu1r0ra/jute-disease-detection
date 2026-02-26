@@ -4,7 +4,7 @@ trainer:
   accelerator: auto
   devices: auto
   precision: 16-mixed
-  max_epochs: 100
+  max_epochs: 30
   logger:
     class_path: lightning.pytorch.loggers.WandbLogger
     init_args:
