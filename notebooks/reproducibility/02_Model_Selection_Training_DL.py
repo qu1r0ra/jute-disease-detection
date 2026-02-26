@@ -21,7 +21,7 @@
 #
 # `(update)`
 # In this notebook, we will focus exclusively on Phase 1 testing and selection for Deep Learning:
-# - Validate heavy Deep Learning Baselines (Inception V3, VGG16, DenseNet201).
+# - Validate heavy Deep Learning Baselines (Inception v3, EfficientNet-B5, ResNet-50).
 # - Perform a grid search across Transfer Learning Initialization Strategies for MobileViT.
 # - Execute runs using the unified Lightning `train_dl.py` scripts and `run_grid_search.py`.
 #
@@ -127,31 +127,29 @@ else:
 #
 # Thus, we hope that transfer learning will enable our deep learning models to adapt general patterns learned from ImageNet objects to the domain of leaf disease detection. We are also curious as to whether utilizing MSTL with similar but general datasets such as PlantVillage and PlantDoc can improve performance.
 #
-# Specifically, we will experiment with six (6) established deep learning architectures:
-# - InceptionV3
-# - VGG16
-# - DenseNet201
-# - ResNet50
-# - MobileNet
-# - MobileViT
+# Specifically, we will experiment with five (5) established deep learning architectures:
+# - ResNet-50
+# - Inception v3
+# - EfficientNet-B5
+# - MobileNetV2
+# - MobileViT-S
 #
 # `(i will polish later)`
-
 # %% [markdown] id="3ba92b2d"
 # ## Deep Learning Baselines (Level 1: ImageNet Only)
 #
-# We systematically train and evaluate our six chosen architectures on the `DATA_ZIP_PATH` jute splits. Every model's feature extractor initiates from ImageNet generic representations. We will freeze their backbones and only train the final custom dense classifiers.
+# We systematically train and evaluate our five chosen architectures on the `DATA_ZIP_PATH` jute splits. Every model's feature extractor initiates from ImageNet generic representations. We will freeze their backbones and only train the final custom dense classifiers.
 
 # %% [markdown] id="65968e63"
 # **Fast Dev Run Validation**
 #
-# First, we dispatch a rapid sanity check using PyTorch Lightning's `fast_dev_run` capability. This performs exactly 1 training and validation batch traversing through all 6 architectures. It mathematically verifies gradients flow properly without silently crashing an hour later!
+# First, we dispatch a rapid sanity check using PyTorch Lightning's `fast_dev_run` capability. This performs exactly 1 training and validation batch traversing through all 5 architectures. It mathematically verifies gradients flow properly without silently crashing an hour later!
 
 # %% id="c99d0d78"
 # !uv run python scripts/train_all_dl_check.py
 
 # %% [markdown] id="a5624dad"
-# **Execute 6 Deep Learning Baselines**
+# **Execute 5 Deep Learning Baselines**
 #
 # Running the master sequential launcher. This autonomously `fits` and subsequently `tests` each `.yaml` model config entirely using your GPU.
 
