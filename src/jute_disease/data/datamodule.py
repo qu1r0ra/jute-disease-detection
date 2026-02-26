@@ -43,7 +43,7 @@ class DataModule(LightningDataModule):
     ) -> None:
         super().__init__()
         self.save_hyperparameters()
-        self.data_dir = Path(data_dir)
+        self.data_dir = Path(data_dir).resolve()
 
         self.jute_train: ImageFolder | Subset | None = None
         self.jute_val: ImageFolder | Subset | None = None
@@ -79,7 +79,7 @@ class DataModule(LightningDataModule):
         return len(self._classes) if self._classes else 0
 
     def prepare_data(self) -> None:
-        if self.data_dir == ML_SPLIT_DIR:
+        if self.data_dir == ML_SPLIT_DIR.resolve():
             split_data()
 
     def setup(self, stage: str | None = None) -> None:
