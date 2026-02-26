@@ -18,12 +18,14 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         monitor: val_loss
+        dirpath: artifacts/checkpoints/inception
         filename: "inception-{epoch:02d}-{val_loss:.4f}"
         save_top_k: 1
         mode: min
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
         monitor: val_loss
+        dirpath: artifacts/checkpoints/inception
         patience: 5
         mode: min
 

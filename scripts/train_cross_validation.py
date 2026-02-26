@@ -38,10 +38,10 @@ def run_cross_validation(config: Path, folds: int | None = None) -> None:
             f"--data.k_fold={folds}",
             f"--trainer.logger.init_args.name={model_name}_fold_{fold_idx}",
             f"--trainer.logger.init_args.group={model_name}_cv",
-            f"--trainer.callbacks.0.init_args.filename={model_name}-fold{fold_idx}-{{epoch:02d}}-{{val_loss:.4f}}",
-            "--trainer.callbacks.0.init_args.monitor=val_loss",
-            "--trainer.callbacks.0.init_args.mode=min",
-            "--trainer.callbacks.0.init_args.save_top_k=1",
+            f"--trainer.callbacks.1.init_args.filename={model_name}-fold{fold_idx}-{{epoch:02d}}-{{val_loss:.4f}}",
+            "--trainer.callbacks.1.init_args.monitor=val_loss",
+            "--trainer.callbacks.1.init_args.mode=min",
+            "--trainer.callbacks.1.init_args.save_top_k=1",
         ]  # fmt: skip
 
         result = subprocess.run(cmd)

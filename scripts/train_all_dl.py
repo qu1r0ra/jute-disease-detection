@@ -51,6 +51,15 @@ def run_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
             sys.exit(result.returncode)
 
         logger.info(f"Testing {model_name}...")
+
+        ckpt_dir = Path("artifacts/checkpoints") / model_name
+        ckpts = list(ckpt_dir.glob("*.ckpt"))
+        if not ckpts:
+            logger.error(f"No checkpoint found for {model_name} in {ckpt_dir}.")
+            sys.exit(1)
+
+        best_ckpt = ckpts[0]
+
         test_cmd = [
             "uv",
             "run",
@@ -60,7 +69,7 @@ def run_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
             "--config",
             str(config),
             "--ckpt_path",
-            "best",
+            str(best_ckpt),
         ]
         result = subprocess.run(test_cmd, env=env)
         if result.returncode != 0:
