@@ -48,7 +48,7 @@ The project exposes unified CLI entry points defined in `pyproject.toml`:
 The DL pipeline is built using **PyTorch Lightning** for state-of-the-art reproducibility and boilerplate reduction.
 
 - **LightningModule (`Classifier`)**: The core class handling the training loop, optimization, logging, and metrics.
-- **Backbone System**: Uses a generic `TimmBackbone` to wrap any model from the `timm` library, allowing for easy experimentation with different architectures (e.g., MobileViT, ResNet). The default backbone is `mobilevit_s`.
+- **Backbone System**: Uses a generic `TimmBackbone` to wrap any model from the `timm` library, allowing for easy experimentation with different architectures (e.g., MobileViT, ResNet-50, Inception v3, EfficientNet-B5). The default backbone is `mobilevit_s`.
 - **Lightning CLI**: Training is driven by configuration files in `configs/`, promoting "Configuration as Code". The CLI supports overrides via command-line arguments.
 
 ### 4. Machine Learning Framework (Scikit-learn Adapters)
