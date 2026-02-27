@@ -36,7 +36,7 @@ Welcome! This document provides crucial context, architectural design choices, a
 Review [`ARCHITECTURE.md`](../ARCHITECTURE.md) for full details, but keep these core concepts in mind:
 
 - **Dual-Engine Setup**:
-  - **Deep Learning (DL)**: Housed in `src/jute_disease/models/dl/`. Driven by PyTorch Lightning's CLI via **`scripts/train_dl.py`**. Models use a wrapper (`Classifier`) around `timm` backbones (`TimmBackbone`). Default is often `mobilevit_s`.
+  - **Deep Learning (DL)**: Housed in `src/jute_disease/models/dl/`. Driven by PyTorch Lightning's CLI via **`scripts/train_dl.py`**. Models use a wrapper (`Classifier`) around `timm` backbones (`TimmBackbone`). Default is often `mobilenet_v2`.
   - **Machine Learning (ML)**: Housed in `src/jute_disease/models/ml/`. Driven via **`scripts/train_ml.py`** and `make train-ml`. Scikit-learn estimators are wrapped in a generic `SklearnClassifier` adapter. Features are extracted manually (e.g., `CraftedFeatureExtractor`, `RawPixelFeatureExtractor`).
 - **Web Annotator App**:
   - Housed in `src/annotator/`. A Flask web app used to manually annotate images and visualize predictions. Relies on SQLite (`annotations.db`) and `Flask-SQLAlchemy`.

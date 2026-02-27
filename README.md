@@ -41,7 +41,7 @@ A high-level overview of the repository organization:
 │   └── jute_disease/   # Main package
 │       ├── data/       # DataModules, Transforms, Datasets
 │       ├── engines/    # Entry points (DL CLI, ML Training)
-│       ├── models/     # Model architectures (e.g., MobileViT, RF, SVM)
+│       ├── models/     # Model architectures (e.g., MobileNetV2, RF, SVM)
 │       └── utils/      # Logging, Seeding, Constants
 └── tests/              # Structured test suite
     ├── annotator/      # Tests for the web app
@@ -70,7 +70,7 @@ This project provides unified CLI entry points for common tasks:
 - **`scripts/train_dl.py`**: Entry point for the Deep Learning engine (Lightning CLI).
 
   ```bash
-  uv run python scripts/train_dl.py fit --config configs/baselines/mobilevit_s.yaml
+  uv run python scripts/train_dl.py fit --config configs/baselines/mobilenet_v2.yaml
   ```
 
 - **`make train-ml`**: Entry point for the Machine Learning engine sweep. Or run manually via `uv run python scripts/train_ml.py`.

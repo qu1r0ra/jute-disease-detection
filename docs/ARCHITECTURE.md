@@ -19,7 +19,7 @@ This document describes the architectural design and directory structure of the 
 │   └── jute_disease/       # Main library package
 │       ├── data/           # LightningDataModules, transforms, and data utilities
 │       ├── engines/        # Training/Inference entry points (DL CLI, ML Training)
-│       ├── models/         # Model definitions (DL: MobileViT, ML: Classifiers)
+│       ├── models/         # Model definitions (DL: MobileNetV2, ML: Classifiers)
 │       └── utils/          # Shared utilities (logging, seeding, constants)
 ├── tests/                  # Hierarchical test suite
 │   ├── annotator/          # Web application tests
@@ -48,7 +48,7 @@ The project exposes unified CLI entry points defined in `pyproject.toml`:
 The DL pipeline is built using **PyTorch Lightning** for state-of-the-art reproducibility and boilerplate reduction.
 
 - **LightningModule (`Classifier`)**: The core class handling the training loop, optimization, logging, and metrics.
-- **Backbone System**: Uses a generic `TimmBackbone` to wrap any model from the `timm` library, allowing for easy experimentation with different architectures (e.g., MobileViT, ResNet-50, Inception v3, EfficientNet-B5, EfficientNet-B7). The default backbone is `mobilevit_s`.
+- **Backbone System**: Uses a generic `TimmBackbone` to wrap any model from the `timm` library, allowing for easy experimentation with different architectures (e.g., MobileNetV2, ResNet-50, Inception v3, EfficientNet-B5, EfficientNet-B7). The default backbone is `mobilenet_v2`.
 - **Lightning CLI**: Training is driven by configuration files in `configs/`, promoting "Configuration as Code". The CLI supports overrides via command-line arguments.
 
 ### 4. Machine Learning Framework (Scikit-learn Adapters)
