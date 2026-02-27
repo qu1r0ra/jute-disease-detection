@@ -4,7 +4,7 @@ from shutil import copyfile
 
 import torch
 from lightning.pytorch import Trainer
-from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, TQDMProgressBar
 from lightning.pytorch.loggers import WandbLogger
 
 from jute_disease.data import DataModule
@@ -70,6 +70,7 @@ def train_pretext_task(
             dirpath="artifacts/checkpoints/pretrained/",
         ),
         EarlyStopping(monitor="val_loss", patience=5, mode="min"),
+        TQDMProgressBar(refresh_rate=100),
     ]
 
     trainer = Trainer(
