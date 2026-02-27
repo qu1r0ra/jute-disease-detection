@@ -181,7 +181,6 @@ else:
 # %% id="4ccb68e2"
 from jute_disease.data.download import download_plant_doc, download_plant_village
 
-# %% id="c2d28511"
 download_plant_village()
 download_plant_doc()
 
