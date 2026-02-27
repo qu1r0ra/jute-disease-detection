@@ -3,13 +3,12 @@ from lightning import LightningModule
 from torch import nn
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torchmetrics import Accuracy, F1Score, MetricCollection, Precision, Recall
 
 import wandb
 from jute_disease.utils import (
     DEFAULT_LR,
     DEFAULT_WEIGHT_DECAY,
-    EVAL_METRICS,
-    TRAIN_METRICS,
 )
 
 
@@ -46,9 +45,26 @@ class Classifier(LightningModule):
         self.weight_decay = weight_decay
         self.save_hyperparameters(ignore=["feature_extractor"])
 
-        self.train_metrics = TRAIN_METRICS.clone(prefix="train_")
-        self.val_metrics = EVAL_METRICS.clone(prefix="val_")
-        self.test_metrics = EVAL_METRICS.clone(prefix="test_")
+        self.train_metrics = MetricCollection(
+            {"acc": Accuracy(task="multiclass", num_classes=num_classes)},
+            prefix="train_",
+        )
+        self.val_metrics = MetricCollection(
+            {
+                "acc": Accuracy(task="multiclass", num_classes=num_classes),
+                "f1": F1Score(
+                    task="multiclass", num_classes=num_classes, average="macro"
+                ),
+                "precision": Precision(
+                    task="multiclass", num_classes=num_classes, average="macro"
+                ),
+                "recall": Recall(
+                    task="multiclass", num_classes=num_classes, average="macro"
+                ),
+            },
+            prefix="val_",
+        )
+        self.test_metrics = self.val_metrics.clone(prefix="test_")
 
         self.test_preds: list[torch.Tensor] = []
         self.test_targets: list[torch.Tensor] = []

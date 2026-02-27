@@ -8,7 +8,7 @@ from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint
 from lightning.pytorch.loggers import WandbLogger
 
 from jute_disease.data import DataModule
-from jute_disease.models.dl import Classifier, MobileViT
+from jute_disease.models.dl import Classifier, TimmBackbone
 from jute_disease.utils import get_logger, seed_everything
 
 logger = get_logger(__name__)
@@ -22,10 +22,11 @@ def train_pretext_task(
     epochs: int = 50,
     batch_size: int = 32,
     lr: float = 0.001,
+    model_name: str = "mobilenetv2_100",
     seed: int = 42,
 ) -> None:
     """
-    Trains MobileViT on a given dataset and saves the checkpoint.
+    Trains a given timm backbone on a dataset and saves the checkpoint.
     """
     seed_everything(seed)
 
@@ -38,8 +39,8 @@ def train_pretext_task(
     logger.info(f"Found {num_classes} classes.")
 
     # 2. Setup Backbone
-    logger.info("Initializing MobileViT...")
-    backbone = MobileViT(pretrained=pretrained)
+    logger.info(f"Initializing {model_name} backbone...")
+    backbone = TimmBackbone(model_name=model_name, pretrained=pretrained)
 
     # Override weights if provided (e.g. from PlantVillage checkpoint)
     if base_backbone_weights is not None:
@@ -108,6 +109,15 @@ if __name__ == "__main__":
         "--output_path", type=str, required=True, help="Where to save the final .ckpt"
     )
     parser.add_argument(
+        "--model_name",
+        type=str,
+        default="mobilenetv2_100",
+        help=(
+            "The timm architecture to initialize "
+            "(e.g. mobilenetv2_100, tf_efficientnet_b7.ns_jft_in1k)"
+        ),
+    )
+    parser.add_argument(
         "--base_weights",
         type=str,
         default=None,
@@ -147,4 +157,5 @@ if __name__ == "__main__":
         base_backbone_weights=backbone_weights,
         epochs=args.epochs,
         batch_size=args.batch_size,
+        model_name=args.model_name,
     )
