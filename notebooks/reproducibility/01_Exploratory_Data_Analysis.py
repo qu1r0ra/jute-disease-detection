@@ -61,6 +61,7 @@ seed_everything(DEFAULT_SEED)
 # Install dependencies into the Colab runtime, not into a virtual environment (.venv)
 logger.info("Installing dependencies with uv...")
 # !uv pip install --system -e .
+# !uv sync
 
 # Mount your Google Drive into the Colab runtime
 drive.mount("/content/drive")
@@ -96,7 +97,7 @@ download_plant_village()
 
 # %% [markdown]
 # At this point, we have downloaded and prepared two datasets:
-# 1. **PlantVillage**: a general dataset of diseased leaf images 
+# 1. **PlantVillage**: a general dataset of diseased leaf images
 # 2. our curated Jute leaf disease and pest dataset compiled from different sources
 #
 # We will be using PlantVillage for multistage transfer learning and our curated dataset for fine-tuning. Our end goal is to train a model that performs excellently on our curated Jute leaf disease and pest dataset.

@@ -38,9 +38,10 @@
 
 # %pip install uv
 # !uv pip install --system -e .
+# !uv sync
 
 # %% [markdown]
-# If you encounter `ModuleNotFoundError`, you can simply restart the session and rerun the cell below.
+# If you encounter `ModuleNotFoundError` or any other error (as we also usually encountered), you can simply restart the session and rerun the cell below.
 
 # %% id="29c4c90c"
 # ruff: noqa: T201
@@ -53,7 +54,7 @@ src_dir = project_root / "src"
 if str(src_dir) not in sys.path:
     sys.path.append(str(src_dir))
 
-
+# %%
 from jute_disease.utils.constants import DEFAULT_SEED
 from jute_disease.utils.seed import seed_everything
 
@@ -74,13 +75,11 @@ drive.mount("/content/drive")
 # 2. Update `DATA_ZIP_PATH` below to the path where you stored the file. If you uploaded it to the root of _My Drive_, you can set it to **"/content/drive/MyDrive/data.zip"**.
 
 # %% id="7caa248a"
-from pathlib import Path
-
 # Update DATA_ZIP_PATH to where data.zip is stored relative to the Colab VM filesystem.
 # For organization, we stored ours in
 # "/content/drive/MyDrive/Colab Notebooks/Jute Leaf Disease/data.zip"
 DATA_ZIP_PATH = "/content/drive/MyDrive/Colab Notebooks/Jute Leaf Disease/data.zip"
-DEST_PATH = Path("data/by_class")
+DEST_PATH = Path("jute-disease-detection/data/by_class")
 
 if Path(DATA_ZIP_PATH).exists():
     DEST_PATH.mkdir(parents=True, exist_ok=True)
