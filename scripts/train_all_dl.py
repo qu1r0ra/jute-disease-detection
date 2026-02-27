@@ -15,9 +15,17 @@ CONFIGS_DIR = Path("configs/baselines")
 CLI_SCRIPT = "scripts/train_dl.py"
 
 
-def run_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
-    """Iterate through all configuration files and execute training."""
-    configs = sorted(configs_dir.glob("*.yaml"))
+def run_all_dl(
+    configs_dir: Path = CONFIGS_DIR, config_file: Path | None = None
+) -> None:
+    """Execute training for a single configuration or iterate through all."""
+    if config_file:
+        if not config_file.exists():
+            logger.error(f"Config file not found: {config_file}")
+            sys.exit(1)
+        configs = [config_file]
+    else:
+        configs = sorted(configs_dir.glob("*.yaml"))
 
     if not configs:
         logger.error(f"No configs found in {configs_dir}")
@@ -91,5 +99,11 @@ if __name__ == "__main__":
         default=CONFIGS_DIR,
         help="Directory containing baseline YAML configs.",
     )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=None,
+        help="Path to a single baseline YAML config to execute.",
+    )
     args = parser.parse_args()
-    run_all_dl(args.configs_dir)
+    run_all_dl(configs_dir=args.configs_dir, config_file=args.config)
