@@ -13,6 +13,7 @@ help:
 	@echo "  make data         		- Initialize data (download & split)"
 	@echo "  make train-ml     		- Run all classical ML experiments"
 	@echo "  make train-dl     		- Run all DL experiments"
+	@echo "  make train-dl-single   - Run training for a single DL model (MODEL=<model_name>)"
 	@echo "  make train-dl-check 	- Run all DL experiments with fast dev run"
 	@echo "  make train-dl-check-single MODEL=<model_name> - Run fast dev run for a single DL model"
 	@echo "  make train-cv     		- Run cross-validation for MobileViT (default 5 folds)"
@@ -41,6 +42,10 @@ train-ml:
 
 train-dl:
 	$(PYTHON) scripts/train_all_dl.py
+
+train-dl-single:
+	$(PYTHON) scripts/train_dl.py fit \
+		--config configs/baselines/$(MODEL).yaml
 
 train-dl-check:
 	$(PYTHON) scripts/train_all_dl_check.py
