@@ -40,11 +40,18 @@
 # !uv pip install --system -e .
 
 # %% [markdown]
-# If you encounter a "Module not found..." error upon import `jute_disease`  below, you can simply restart the
-# > continue
+# If you encounter `ModuleNotFoundError`, you can simply restart the session and rerun the cell below.
 
 # %% id="29c4c90c"
 # ruff: noqa: T201
+import sys
+from pathlib import Path
+
+# Force the Colab kernel to see our local codebase without restarting
+project_root = Path.cwd().resolve()
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
 from jute_disease.utils.constants import DEFAULT_SEED
 from jute_disease.utils.seed import seed_everything
 
