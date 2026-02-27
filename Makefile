@@ -53,7 +53,7 @@ train-dl-check-single:
 	$(PYTHON) scripts/train_all_dl_check.py --config configs/baselines/$(MODEL).yaml
 
 train-cv:
-	$(PYTHON) scripts/train_cross_validation.py configs/baselines/mobilevit_s.yaml --folds 5
+	$(PYTHON) scripts/train_cross_validation.py configs/baselines/mobilenet_v2.yaml --folds 5
 
 grid-search:
 	$(PYTHON) scripts/run_grid_search.py configs/grid/template_grid.yaml
@@ -61,7 +61,7 @@ grid-search:
 pretrain:
 	$(PYTHON) src/jute_disease/engines/dl/pretrain.py \
 		--data_dir data/external/plant_village \
-		--output_path artifacts/checkpoints/pretrained/mobilevit_plantvillage.ckpt \
+		--output_path artifacts/checkpoints/pretrained/mobilenet_v2-plantvillage.ckpt \
 		--epochs 5
 
 test:
