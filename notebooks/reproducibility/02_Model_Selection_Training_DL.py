@@ -21,13 +21,13 @@
 #
 # `(update)`
 # In this notebook, we will focus exclusively on Phase 1 testing and selection for Deep Learning:
-# - Validate heavy Deep Learning Baselines (Inception v3, EfficientNet-B5, ResNet-50).
+# - Validate heavy Deep Learning Baselines (Inception v3, EfficientNet-B5, EfficientNet-B7, ResNet-50).
 # - Perform a grid search across Transfer Learning Initialization Strategies for MobileViT.
 # - Execute runs using the unified Lightning `train_dl.py` scripts and `run_grid_search.py`.
 #
 # **Note:**
 #
-# This notebook must be executed in **Google Colab**, just as the authors did.
+# This notebook must be executed in **Google Colab**, just as we did. Specifically, we used Colab's L4 GPU.
 
 # %% [markdown] id="b04a890a"
 # ## Environment Setup
@@ -41,12 +41,9 @@
 
 # %% id="29c4c90c"
 # ruff: noqa: T201
-from pathlib import Path
-
 from jute_disease.utils.constants import DEFAULT_SEED
 from jute_disease.utils.seed import seed_everything
 
-# %% id="49918c4d"
 seed_everything(DEFAULT_SEED)
 
 # %% [markdown] id="20a1a666"
@@ -64,6 +61,8 @@ drive.mount("/content/drive")
 # 2. Update `DATA_ZIP_PATH` below to the path where you stored the file. If you uploaded it to the root of _My Drive_, you can set it to **"/content/drive/MyDrive/data.zip"**.
 
 # %% id="7caa248a"
+from pathlib import Path
+
 # Update this to where your data.zip is stored relative to the Colab VM filesystem.
 # For organization, we stored ours in
 # "/content/drive/MyDrive/Colab Notebooks/Jute Leaf Disease/data.zip"
@@ -127,10 +126,11 @@ else:
 #
 # Thus, we hope that transfer learning will enable our deep learning models to adapt general patterns learned from ImageNet objects to the domain of leaf disease detection. We are also curious as to whether utilizing MSTL with similar but general datasets such as PlantVillage and PlantDoc can improve performance.
 #
-# Specifically, we will experiment with five (5) established deep learning architectures:
+# Specifically, we will experiment with six (6) established deep learning architectures:
 # - ResNet-50
 # - Inception v3
 # - EfficientNet-B5
+# - EfficientNet-B7
 # - MobileNetV2
 # - MobileViT-S
 #
@@ -138,18 +138,18 @@ else:
 # %% [markdown] id="3ba92b2d"
 # ## Deep Learning Baselines (Level 1: ImageNet Only)
 #
-# We systematically train and evaluate our five chosen architectures on the `DATA_ZIP_PATH` jute splits. Every model's feature extractor initiates from ImageNet generic representations. We will freeze their backbones and only train the final custom dense classifiers.
+# We systematically train and evaluate our six chosen architectures on the `DATA_ZIP_PATH` jute splits. Every model's feature extractor initiates from ImageNet generic representations. We will freeze their backbones and only train the final custom dense classifiers.
 
 # %% [markdown] id="65968e63"
 # **Fast Dev Run Validation**
 #
-# First, we dispatch a rapid sanity check using PyTorch Lightning's `fast_dev_run` capability. This performs exactly 1 training and validation batch traversing through all 5 architectures. It mathematically verifies gradients flow properly without silently crashing an hour later!
+# First, we dispatch a rapid sanity check using PyTorch Lightning's `fast_dev_run` capability. This performs exactly 1 training and validation batch traversing through all 6 architectures. It mathematically verifies gradients flow properly without silently crashing an hour later!
 
 # %% id="c99d0d78"
 # !uv run python scripts/train_all_dl_check.py
 
 # %% [markdown] id="a5624dad"
-# **Execute 5 Deep Learning Baselines**
+# **Execute 6 Deep Learning Baselines**
 #
 # Running the master sequential launcher. This autonomously `fits` and subsequently `tests` each `.yaml` model config entirely using your GPU.
 
@@ -162,7 +162,7 @@ else:
 
 # %% [markdown] id="b53753d7"
 # ## 2. MSTL Domain Initializations (Pre-training)
-# We now download the massive `PlantVillage` and specialized `PlantDoc` datasets via KaggleHub to execute the Multi-Stage Transfer Learning on our MobileViT engine.
+# We now download the massive `PlantVillage` and specialized `PlantDoc` datasets via KaggleHub to execute the Multi-Stage Transfer Learning on our Top 2 performing models.
 
 # %% id="4ccb68e2"
 from jute_disease.data.download import download_plant_doc, download_plant_village
@@ -172,30 +172,34 @@ download_plant_village()
 download_plant_doc()
 
 # %% [markdown] id="b44de4eb"
-# **Pre-Train MobileViT on PlantVillage (Produces Level 2 Checkpoint)**
+# **Pre-Train Top Model A on PlantVillage (Produces Level 2 Checkpoint)**
 # We use our custom PyTorch Lightning pre-training script on PlantVillage. Early-stopping is implemented intrinsically (Defaults to 50 epochs, halts upon val_loss convergence).
 
 # %% id="bc2b9c26"
+# # Replace `<model_name>` with the actual name (e.g., mobilenet_v2)
 # !uv run python src/jute_disease/engines/dl/pretrain.py \
 #   --data_dir data/external/plantvillage \
-#   --output_path artifacts/checkpoints/pretrained/mobilevit_plantvillage.ckpt
+#   --output_path artifacts/checkpoints/pretrained/<model_name>_plantvillage.ckpt
 
 # %% [markdown] id="8edb47106e1a46a883d545849b8ab81b"
-# **Pre-Train MobileViT on PlantDoc (Produces Level 3 Checkpoint)**
+# **Pre-Train Top Model A on PlantDoc (Produces Level 3 Checkpoint)**
 # Note the `--base_weights` parameter: We resume *exactly* from the Level 2 checkpoint! This synthesizes the entire ImageNet -> PlantVillage -> PlantDoc hierarchy!
 
 # %% id="69798b96"
+# # Replace `<model_name>` with the actual name
 # !uv run python src/jute_disease/engines/dl/pretrain.py \
 #   --data_dir data/external/plantdoc \
-#   --base_weights artifacts/checkpoints/pretrained/mobilevit_plantvillage.ckpt \
-#   --output_path artifacts/checkpoints/pretrained/mobilevit_plantvillage_plantdoc.ckpt
+#   --base_weights artifacts/checkpoints/pretrained/<model_name>_plantvillage.ckpt \
+#   --output_path artifacts/checkpoints/pretrained/<model_name>_plantvillage_plantdoc.ckpt
 
 # %% [markdown] id="a1cf8c02"
-# ## 3. Transfer Learning Grid Search (MobileViT Evaluation)
-# Running our Grid Search config utilizing the newly synthesized checkpoints for MobileViT, quantifying the precise benefits of each Initialization Level on small-dataset Leaf Disease recognition!
+# ## 3. Transfer Learning Grid Search
+# Run the Grid Search config utilizing the newly synthesized checkpoints for your Top 2 models, quantifying the precise benefits of each Initialization Level on small-dataset Leaf Disease recognition! Repeat this for Top Model B.
 
 # %% id="32809cc5"
-# !uv run python scripts/run_grid_search.py configs/grid/mobilevit_grid.yaml
+# # E.g., duplicate template_grid.yaml to mobilenet_v2_grid.yaml and run:
+# !uv run python scripts/run_grid_search.py configs/grid/mobilenet_v2_grid.yaml
+# !uv run python scripts/run_grid_search.py configs/grid/efficientnet_b5_grid.yaml
 
 # %% [markdown] id="72d060bf"
 # ## 4. WandB Analysis

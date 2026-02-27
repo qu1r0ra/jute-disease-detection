@@ -23,8 +23,10 @@ def run_grid_search(
         grid_stem = Path(grid_config_path).stem.replace("_grid", "")
         base_config_path = Path("configs/baselines") / f"{grid_stem}.yaml"
         if not base_config_path.exists():
-            base_config_path = Path("configs/baselines/mobilevit.yaml")
-            logger.warning(f"Base config not found. Falling back to {base_config_path}")
+            raise ValueError(
+                f"Base config not found at {base_config_path}. "
+                "Ensure your grid file is named <model_name>_grid.yaml or pass --base-config."
+            )
 
     model_name = Path(base_config_path).stem.capitalize()
     logger.info(f"Using base model config: {base_config_path} ({model_name})")

@@ -41,7 +41,7 @@ def train_ml(
         wandb.init(
             entity=WANDB_ENTITY,
             project=WANDB_PROJECT,
-            name=f"ClassicalML-{classifier}-{feature_type}",
+            name=f"{classifier}-{feature_type}",
             config={
                 "classifier": classifier,
                 "feature_type": feature_type,
