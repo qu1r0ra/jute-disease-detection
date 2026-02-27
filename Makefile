@@ -51,13 +51,7 @@ train-dl-check:
 	$(PYTHON) scripts/train_all_dl_check.py
 
 train-dl-check-single:
-	$(PYTHON) scripts/train_dl.py fit \
-		--config configs/baselines/$(MODEL).yaml \
-		--trainer.fast_dev_run=True \
-		--data.num_workers=2 \
-		--data.pin_memory=True \
-		--data.batch_size=32 \
-		--trainer.logger=False
+	$(PYTHON) scripts/train_all_dl_check.py --config configs/baselines/$(MODEL).yaml
 
 train-cv:
 	$(PYTHON) scripts/train_cross_validation.py configs/baselines/mobilevit_s.yaml --folds 5

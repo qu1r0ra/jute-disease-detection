@@ -13,9 +13,17 @@ CONFIGS_DIR = Path("configs/baselines")
 CLI_SCRIPT = "scripts/train_dl.py"
 
 
-def check_all_dl(configs_dir: Path = CONFIGS_DIR) -> None:
-    """Run a fast dev run for all models to ensure basic functionality."""
-    configs = sorted(configs_dir.glob("*.yaml"))
+def check_all_dl(
+    configs_dir: Path = CONFIGS_DIR, config_file: Path | None = None
+) -> None:
+    """Run a fast dev run for a single configuration or all configs."""
+    if config_file:
+        if not config_file.exists():
+            logger.error(f"Config file not found: {config_file}")
+            sys.exit(1)
+        configs = [config_file]
+    else:
+        configs = sorted(configs_dir.glob("*.yaml"))
 
     if not configs:
         logger.error(f"No configs found in {configs_dir}")
@@ -66,5 +74,11 @@ if __name__ == "__main__":
         default=CONFIGS_DIR,
         help="Directory containing baseline YAML configs.",
     )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=None,
+        help="Path to a single baseline YAML config to check.",
+    )
     args = parser.parse_args()
-    check_all_dl(args.configs_dir)
+    check_all_dl(configs_dir=args.configs_dir, config_file=args.config)
