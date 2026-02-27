@@ -78,7 +78,7 @@ def train_pretext_task(
         devices="auto",
         logger=logger_wandb,
         callbacks=callbacks,
-        log_every_n_steps=10,
+        log_every_n_steps=100,
     )
 
     # 5. Train
