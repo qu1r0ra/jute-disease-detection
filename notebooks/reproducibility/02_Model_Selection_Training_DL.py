@@ -38,21 +38,9 @@
 
 # %pip install uv
 # !uv pip install --system -e .
-# !uv sync
 
 # %% [markdown]
 # If you encounter `ModuleNotFoundError` or any other error (as we also usually encountered), you can simply restart the session and rerun the cell below.
-
-# %% id="29c4c90c"
-# ruff: noqa: T201
-import sys
-from pathlib import Path
-
-# Force the Colab kernel to see our local codebase without restarting
-project_root = Path.cwd().resolve()
-src_dir = project_root / "src"
-if str(src_dir) not in sys.path:
-    sys.path.append(str(src_dir))
 
 # %%
 from jute_disease.utils.constants import DEFAULT_SEED
@@ -75,11 +63,13 @@ drive.mount("/content/drive")
 # 2. Update `DATA_ZIP_PATH` below to the path where you stored the file. If you uploaded it to the root of _My Drive_, you can set it to **"/content/drive/MyDrive/data.zip"**.
 
 # %% id="7caa248a"
+from pathlib import Path
+
 # Update DATA_ZIP_PATH to where data.zip is stored relative to the Colab VM filesystem.
 # For organization, we stored ours in
 # "/content/drive/MyDrive/Colab Notebooks/Jute Leaf Disease/data.zip"
 DATA_ZIP_PATH = "/content/drive/MyDrive/Colab Notebooks/Jute Leaf Disease/data.zip"
-DEST_PATH = Path("jute-disease-detection/data/by_class")
+DEST_PATH = Path("data/by_class")
 
 if Path(DATA_ZIP_PATH).exists():
     DEST_PATH.mkdir(parents=True, exist_ok=True)
@@ -96,7 +86,7 @@ else:
 # Let's cleanly construct the `train`, `val`, and `test` sub-folders inside `data/ml_split/` from your unzipped files. The datamodules dynamically evaluate these structural paths for loading!
 
 # %% id="explicit_split_cell"
-# !uv run python src/jute_disease/data/utils.py split
+# !uv run python jute_disease/data/utils.py split
 
 # %% [markdown] id="849b7c47"
 # To persist our training artifacts beyond the Colab VM, we can _symlink_ the `artifacts` folder directly to our Google Drive.
@@ -169,6 +159,12 @@ else:
 
 # %% id="d32c265a"
 # !uv run python scripts/train_all_dl.py
+
+# %% [markdown]
+# Training an EfficientNet-B7.
+
+# %%
+# !make train-dl-single MODEL=efficientnet_b7
 
 # %% [markdown] id="e3157de6"
 # ## === Everything above is final ===
