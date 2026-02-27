@@ -192,7 +192,7 @@ download_plant_doc()
 # # Replace `<model_name>` with the actual name (e.g., mobilenet_v2)
 # !uv run python src/jute_disease/engines/dl/pretrain.py \
 #   --data_dir data/external/plantvillage \
-#   --output_path artifacts/checkpoints/pretrained/<model_name>_plantvillage.ckpt
+#   --output_path artifacts/checkpoints/pretrained/<model_name>-plantvillage.ckpt
 
 # %% [markdown] id="8edb47106e1a46a883d545849b8ab81b"
 # **Pre-Train Top Model A on PlantDoc (Produces Level 3 Checkpoint)**
@@ -202,8 +202,8 @@ download_plant_doc()
 # # Replace `<model_name>` with the actual name
 # !uv run python src/jute_disease/engines/dl/pretrain.py \
 #   --data_dir data/external/plantdoc \
-#   --base_weights artifacts/checkpoints/pretrained/<model_name>_plantvillage.ckpt \
-#   --output_path artifacts/checkpoints/pretrained/<model_name>_plantvillage_plantdoc.ckpt
+#   --base_weights artifacts/checkpoints/pretrained/<model_name>-plantvillage.ckpt \
+#   --output_path artifacts/checkpoints/pretrained/<model_name>-plantvillage-plantdoc.ckpt
 
 # %% [markdown] id="a1cf8c02"
 # ## 3. Transfer Learning Grid Search
