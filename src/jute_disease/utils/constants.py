@@ -17,11 +17,11 @@ IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG"]
 SPLITS = {"train": 0.7, "val": 0.15, "test": 0.15}
 
 # Execution defaults
-BATCH_SIZE = 256
+BATCH_SIZE = 32
 NUM_WORKERS = 4
 SEEDS = [42, 1337, 7, 1234, 99]
 DEFAULT_SEED = SEEDS[0]
-DEFAULT_LR = 1e-3
+DEFAULT_LR = 0.001
 DEFAULT_WEIGHT_DECAY = 0.01
 
 # Task configurations
