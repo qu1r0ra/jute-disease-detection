@@ -143,6 +143,8 @@ if __name__ == "__main__":
         for k, v in state_dict.items():
             if k.startswith("feature_extractor."):
                 name = k.replace("feature_extractor.", "")
+                if name.startswith("_orig_mod."):
+                    name = name.replace("_orig_mod.", "")
                 backbone_dict[name] = v
 
         if backbone_dict:
