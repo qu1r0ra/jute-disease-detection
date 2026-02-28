@@ -1,9 +1,11 @@
 import argparse
+import os
 import subprocess
 from pathlib import Path
 
 import yaml
 
+import wandb
 from jute_disease.utils import get_logger
 
 logger = get_logger(__name__)
@@ -59,6 +61,13 @@ def run_grid_search(
                 ckpt_arg = weights_path if weights_path != "imagenet" else "null"
                 pretrained_arg = str(weights_path == "imagenet")
 
+                # Setup Shared WandB Run ID so fit and test map to the same dashboard
+                run_id = wandb.util.generate_id()
+                env = os.environ.copy()
+                env["WANDB_RUN_ID"] = run_id
+
+                exp_name = f"{model_name}_lr{lr}_wd{wd}"
+
                 cmd = [
                     "uv",
                     "run",
@@ -72,18 +81,51 @@ def run_grid_search(
                     f"--model.feature_extractor.init_args.drop_rate={dropout}",
                     f"--model.lr={lr}",
                     f"--model.weight_decay={wd}",
-                    f"--trainer.logger.init_args.name={model_name}_lr{lr}_wd{wd}",
+                    f"--trainer.logger.init_args.name={exp_name}",
                     f"--trainer.logger.init_args.group={model_name}_Finetune_Grid",
                     f"--data.k_fold={fixed_params.get('num_folds', 1)}",
                     f"--data.batch_size={fixed_params.get('batch_size', 32)}",
                     f"--trainer.max_epochs={fixed_params.get('max_epochs', 50)}",
                 ]
 
-                logger.info(f"Command: {' '.join(cmd)}")
+                logger.info(f"Command (Fit): {' '.join(cmd)}")
                 try:
-                    subprocess.run(cmd, check=True)
+                    subprocess.run(cmd, env=env, check=True)
                 except subprocess.CalledProcessError as e:
                     logger.error(f"Error running Phase 2 experiment lr{lr}_wd{wd}: {e}")
+                    continue
+
+                logger.info(f"Testing Phase 2 experiment {exp_name}...")
+
+                ckpt_dir = Path("artifacts/checkpoints") / exp_name
+                ckpts = list(ckpt_dir.glob("*.ckpt"))
+                if not ckpts:
+                    logger.error(
+                        f"No checkpoint found for Phase 2 {exp_name} in {ckpt_dir}."
+                    )
+                    continue
+
+                best_ckpt = ckpts[0]
+
+                test_cmd = [
+                    "uv",
+                    "run",
+                    "python",
+                    "scripts/train_dl.py",
+                    "test",
+                    "--config",
+                    str(base_config_path),
+                    "--ckpt_path",
+                    str(best_ckpt),
+                    f"--trainer.logger.init_args.name={exp_name}",
+                    f"--trainer.logger.init_args.group={model_name}_Finetune_Grid",
+                ]
+
+                logger.info(f"Command (Test): {' '.join(test_cmd)}")
+                try:
+                    subprocess.run(test_cmd, env=env, check=True)
+                except subprocess.CalledProcessError as e:
+                    logger.error(f"Error testing Phase 2 experiment {exp_name}: {e}")
 
         return
 
@@ -103,6 +145,12 @@ def run_grid_search(
 
             base_model_config = str(base_config_path)
 
+            run_id = wandb.util.generate_id()
+            env = os.environ.copy()
+            env["WANDB_RUN_ID"] = run_id
+
+            exp_name = f"{model_name}_{level_name}_dr{dropout}"
+
             cmd = [
                 "uv",
                 "run",
@@ -114,7 +162,7 @@ def run_grid_search(
                 f"--model.feature_extractor.init_args.checkpoint_path={ckpt_arg}",
                 f"--model.feature_extractor.init_args.pretrained={pretrained_arg}",
                 f"--model.feature_extractor.init_args.drop_rate={dropout}",
-                f"--trainer.logger.init_args.name={model_name}_{level_name}_dr{dropout}",
+                f"--trainer.logger.init_args.name={exp_name}",
                 f"--trainer.logger.init_args.group={model_name}_Transfer_Grid",
                 f"--model.lr={fixed_params.get('learning_rate', 0.001)}",
                 f"--model.weight_decay={fixed_params.get('weight_decay', 0.01)}",
@@ -123,11 +171,44 @@ def run_grid_search(
                 f"--trainer.max_epochs={fixed_params.get('max_epochs', 100)}",
             ]
 
-            logger.info(f"Command: {' '.join(cmd)}")
+            logger.info(f"Command (Fit): {' '.join(cmd)}")
             try:
-                subprocess.run(cmd, check=True)
+                subprocess.run(cmd, env=env, check=True)
             except subprocess.CalledProcessError as e:
-                logger.error(f"Error running experiment {level_name}_{dropout}: {e}")
+                logger.error(f"Error running experiment {exp_name}: {e}")
+                continue
+
+            logger.info(f"Testing experiment {exp_name}...")
+
+            ckpt_dir = Path("artifacts/checkpoints") / exp_name
+            ckpts = list(ckpt_dir.glob("*.ckpt"))
+            if not ckpts:
+                logger.error(
+                    f"No checkpoint found for Phase 1 {exp_name} in {ckpt_dir}."
+                )
+                continue
+
+            best_ckpt = ckpts[0]
+
+            test_cmd = [
+                "uv",
+                "run",
+                "python",
+                "scripts/train_dl.py",
+                "test",
+                "--config",
+                base_model_config,
+                "--ckpt_path",
+                str(best_ckpt),
+                f"--trainer.logger.init_args.name={exp_name}",
+                f"--trainer.logger.init_args.group={model_name}_Transfer_Grid",
+            ]
+
+            logger.info(f"Command (Test): {' '.join(test_cmd)}")
+            try:
+                subprocess.run(test_cmd, env=env, check=True)
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Error testing Phase 1 experiment {exp_name}: {e}")
 
 
 if __name__ == "__main__":
