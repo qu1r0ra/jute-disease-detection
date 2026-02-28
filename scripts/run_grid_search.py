@@ -11,8 +11,29 @@ from jute_disease.utils import get_logger
 logger = get_logger(__name__)
 
 
+def _get_modified_base_config(base_config_path: str | Path, exp_name: str) -> str:
+    """Read base config, update ModelCheckpoint dirpath, write and return temp path."""
+    with open(base_config_path) as f:
+        config = yaml.safe_load(f) or {}
+
+    for cb in config.get("trainer", {}).get("callbacks", []):
+        if "ModelCheckpoint" in cb.get("class_path", ""):
+            cb.setdefault("init_args", {})["dirpath"] = (
+                f"artifacts/checkpoints/{exp_name}"
+            )
+
+    temp_dir = Path("artifacts/checkpoints/.temp_configs")
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    temp_path = temp_dir / f"{exp_name}.yaml"
+    with open(temp_path, "w") as f:
+        yaml.dump(config, f)
+    return str(temp_path)
+
+
 def run_grid_search(
-    grid_config_path: str | Path, base_config_path: str | Path | None = None
+    grid_config_path: str | Path,
+    base_config_path: str | Path | None = None,
+    fast_dev_run: bool = False,
 ) -> None:
     """
     Reads grid search config and executes training runs using a baseline model config.
@@ -67,6 +88,7 @@ def run_grid_search(
                 env["WANDB_RUN_ID"] = run_id
 
                 exp_name = f"{model_name}_lr{lr}_wd{wd}"
+                exp_config_path = _get_modified_base_config(base_config_path, exp_name)
 
                 cmd = [
                     "uv",
@@ -75,7 +97,7 @@ def run_grid_search(
                     "scripts/train_dl.py",
                     "fit",
                     "--config",
-                    str(base_config_path),
+                    exp_config_path,
                     f"--model.feature_extractor.init_args.checkpoint_path={ckpt_arg}",
                     f"--model.feature_extractor.init_args.pretrained={pretrained_arg}",
                     f"--model.feature_extractor.init_args.drop_rate={dropout}",
@@ -83,10 +105,17 @@ def run_grid_search(
                     f"--model.weight_decay={wd}",
                     f"--trainer.logger.init_args.name={exp_name}",
                     f"--trainer.logger.init_args.group={model_name}_Finetune_Grid",
-                    f"--data.k_fold={fixed_params.get('num_folds', 1)}",
-                    f"--data.batch_size={fixed_params.get('batch_size', 32)}",
-                    f"--trainer.max_epochs={fixed_params.get('max_epochs', 50)}",
                 ]
+
+                if "num_folds" in fixed_params:
+                    cmd.append(f"--data.k_fold={fixed_params['num_folds']}")
+                if "batch_size" in fixed_params:
+                    cmd.append(f"--data.batch_size={fixed_params['batch_size']}")
+                if "max_epochs" in fixed_params:
+                    cmd.append(f"--trainer.max_epochs={fixed_params['max_epochs']}")
+
+                if fast_dev_run:
+                    cmd.append("--trainer.fast_dev_run=True")
 
                 logger.info(f"Command (Fit): {' '.join(cmd)}")
                 try:
@@ -114,7 +143,7 @@ def run_grid_search(
                     "scripts/train_dl.py",
                     "test",
                     "--config",
-                    str(base_config_path),
+                    exp_config_path,
                     "--ckpt_path",
                     str(best_ckpt),
                     f"--trainer.logger.init_args.name={exp_name}",
@@ -143,13 +172,12 @@ def run_grid_search(
             ckpt_arg = weights_path if weights_path != "imagenet" else "null"
             pretrained_arg = str(weights_path == "imagenet")
 
-            base_model_config = str(base_config_path)
-
             run_id = wandb.util.generate_id()
             env = os.environ.copy()
             env["WANDB_RUN_ID"] = run_id
 
             exp_name = f"{model_name}_{level_name}_dr{dropout}"
+            exp_config_path = _get_modified_base_config(base_config_path, exp_name)
 
             cmd = [
                 "uv",
@@ -158,18 +186,27 @@ def run_grid_search(
                 "scripts/train_dl.py",
                 "fit",
                 "--config",
-                base_model_config,
+                exp_config_path,
                 f"--model.feature_extractor.init_args.checkpoint_path={ckpt_arg}",
                 f"--model.feature_extractor.init_args.pretrained={pretrained_arg}",
                 f"--model.feature_extractor.init_args.drop_rate={dropout}",
                 f"--trainer.logger.init_args.name={exp_name}",
                 f"--trainer.logger.init_args.group={model_name}_Transfer_Grid",
-                f"--model.lr={fixed_params.get('learning_rate', 0.001)}",
-                f"--model.weight_decay={fixed_params.get('weight_decay', 0.01)}",
-                f"--data.k_fold={fixed_params.get('num_folds', 1)}",
-                f"--data.batch_size={fixed_params.get('batch_size', 32)}",
-                f"--trainer.max_epochs={fixed_params.get('max_epochs', 100)}",
             ]
+
+            if "learning_rate" in fixed_params:
+                cmd.append(f"--model.lr={fixed_params['learning_rate']}")
+            if "weight_decay" in fixed_params:
+                cmd.append(f"--model.weight_decay={fixed_params['weight_decawy']}")
+            if "num_folds" in fixed_params:
+                cmd.append(f"--data.k_fold={fixed_params['num_folds']}")
+            if "batch_size" in fixed_params:
+                cmd.append(f"--data.batch_size={fixed_params['batch_size']}")
+            if "max_epochs" in fixed_params:
+                cmd.append(f"--trainer.max_epochs={fixed_params['max_epochs']}")
+
+            if fast_dev_run:
+                cmd.append("--trainer.fast_dev_run=True")
 
             logger.info(f"Command (Fit): {' '.join(cmd)}")
             try:
@@ -197,7 +234,7 @@ def run_grid_search(
                 "scripts/train_dl.py",
                 "test",
                 "--config",
-                base_model_config,
+                exp_config_path,
                 "--ckpt_path",
                 str(best_ckpt),
                 f"--trainer.logger.init_args.name={exp_name}",
@@ -225,6 +262,11 @@ if __name__ == "__main__":
             "If omitted, tries to match grid config name."
         ),
     )
+    parser.add_argument(
+        "--fast-dev-run",
+        action="store_true",
+        help="Run 1 batch of training/validation to verify pipeline logic.",
+    )
     args = parser.parse_args()
 
-    run_grid_search(args.grid_config, args.base_config)
+    run_grid_search(args.grid_config, args.base_config, args.fast_dev_run)
