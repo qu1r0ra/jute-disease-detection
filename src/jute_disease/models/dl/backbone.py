@@ -16,6 +16,7 @@ class TimmBackbone(nn.Module):
         pretrained: bool = True,
         out_features: int | None = None,
         checkpoint_path: str | None = None,
+        drop_rate: float = 0.0,
         **kwargs: object,
     ) -> None:
         super().__init__()
@@ -23,6 +24,7 @@ class TimmBackbone(nn.Module):
             model_name,
             pretrained=pretrained,
             num_classes=0,
+            drop_rate=drop_rate,
             **kwargs,
         )
         self.model_name = model_name
