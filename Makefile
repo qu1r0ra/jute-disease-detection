@@ -17,7 +17,8 @@ help:
 	@echo "  make train-dl-check 	- Run all DL experiments with fast dev run"
 	@echo "  make train-dl-check-single MODEL=<model_name> - Run fast dev run for a single DL model"
 	@echo "  make train-cv     		- Run cross-validation for a specific model (default 5 folds)"
-	@echo "  make grid-search  		- Run grid search experiment using the generic template"
+	@echo "  make grid-search  		- Run Phase 1 grid search for Transfer Learning/Dropout"
+	@echo "  make grid-search-finetune 	- Run Phase 2 fine-tuning grid search for Learning Rate/Weight Decay"
 	@echo "  make pretrain     		- Run pre-training script on external data"
 	@echo "  make test         		- Run fast tests (slow tests skipped by default)"
 	@echo "  make test-all     		- Run all tests including slow ones"
@@ -56,7 +57,10 @@ train-cv:
 	$(PYTHON) scripts/train_cross_validation.py configs/baselines/mobilenet_v2.yaml --folds 5
 
 grid-search:
-	$(PYTHON) scripts/run_grid_search.py configs/grid/template_grid.yaml
+	$(PYTHON) scripts/run_grid_search.py configs/grid/mobilenet_v2_grid.yaml
+
+grid-search-finetune:
+	$(PYTHON) scripts/run_grid_search.py configs/grid/mobilenet_v2_finetune_grid.yaml
 
 pretrain:
 	$(PYTHON) src/jute_disease/engines/dl/pretrain.py \

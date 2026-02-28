@@ -79,6 +79,12 @@ This project provides unified CLI entry points for common tasks:
   uv run python scripts/train_ml.py --classifier rf --feature_type crafted
   ```
 
+- **`make grid-search`** and **`make grid-search-finetune`**: Command wrappers to execute Phase 1 (Transfer Learning / Dropout) and Phase 2 (Optimizers) grid searches for the deep learning champion model.
+
+  ```bash
+  make grid-search
+  ```
+
 ### 3.3. Reproducing the Results
 
 1. Clone this repository:
