@@ -59,7 +59,7 @@ if __name__ == "__main__":
         description="Run cross-validation training for a DL model.",
         epilog=(
             "Example: uv run python scripts/train_cross_validation.py "
-            "configs/baselines/mobilevit.yaml --folds 5"
+            "configs/baselines/mobilenet_v2.yaml --folds 5"
         ),
     )
     parser.add_argument("config", type=Path, help="Path to the model config YAML.")

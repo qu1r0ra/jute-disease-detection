@@ -20,8 +20,8 @@
 #
 # `(update)`
 # In this notebook, we will focus exclusively on Phase 1 testing and selection for Deep Learning:
-# - Validate heavy Deep Learning Baselines (Inception v3, EfficientNet-B5, EfficientNet-B7, ResNet-50).
-# - Perform a grid search across Transfer Learning Initialization Strategies for MobileViT.
+# - Validate heavy Deep Learning Baselines (Inception v3, EfficientNet-B5, EfficientNet-B7, ResNet-50, MobileNetV2).
+# - Perform a grid search across Transfer Learning Initialization Strategies for MobileNetV2.
 # - Execute runs using the unified Lightning `train_dl.py` scripts and `run_grid_search.py`.
 #
 # **Note:**
@@ -140,7 +140,6 @@ else:
 # - EfficientNet-B5
 # - EfficientNet-B7
 # - MobileNetV2
-# - MobileViT-S
 #
 # `(i will polish later)`
 # %% [markdown] id="3ba92b2d"

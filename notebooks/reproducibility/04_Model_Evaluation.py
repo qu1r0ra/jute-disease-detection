@@ -22,7 +22,7 @@
 # - **Final Confusion Matrix**: To see the absolute true-positive vs false-positive rates across all Jute disease classes.
 #
 # ## 3. Classical ML vs. Deep Learning Comparison
-# A formal comparison between our best handcrafted feature classical models (RF/SVM) against our Deep Learning neural network (MobileViT). We will compare:
+# A formal comparison between our best handcrafted feature classical models (RF/SVM) against our Deep Learning neural network (MobileNetV2). We will compare:
 # - **Performance**: Does DL significantly outperform ML?
 # - **Efficiency / Cost**: Trade-offs between inference speed, interpretability, and feature extraction overhead.
 #

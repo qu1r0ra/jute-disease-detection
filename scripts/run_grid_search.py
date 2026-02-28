@@ -33,9 +33,61 @@ def run_grid_search(
     logger.info(f"Using base model config: {base_config_path} ({model_name})")
 
     transfer_levels = grid_config.get("transfer_learning_levels", [])
-    dropout_rates = grid_config.get("dropout_rates", [0.0])
+    dropout_rates = grid_config.get("dropout_rates", [])
+
+    learning_rates = grid_config.get("learning_rate", [])
+    weight_decays = grid_config.get("weight_decay", [])
+    locked_params = grid_config.get("locked_params", {})
+
     fixed_params = grid_config.get("fixed_params", {})
 
+    # Detect Mode: Phase 1 (Transfer Search) or Phase 2 (Optimizer Fine-Tuning)
+    is_phase_two = len(learning_rates) > 0 and len(weight_decays) > 0
+
+    if is_phase_two:
+        logger.info(f"Detected Phase 2 Optimizer Grid Search for {model_name}.")
+        level_name = locked_params.get("name", "locked")
+        weights_path = locked_params.get("weights_path", "imagenet")
+        dropout = locked_params.get("dropout_rate", 0.0)
+
+        for lr in learning_rates:
+            for wd in weight_decays:
+                logger.info(
+                    f"\n=== Running Phase 2: {model_name} | LR: {lr} | WD: {wd} ==="
+                )
+
+                ckpt_arg = weights_path if weights_path != "imagenet" else "null"
+                pretrained_arg = str(weights_path == "imagenet")
+
+                cmd = [
+                    "uv",
+                    "run",
+                    "python",
+                    "scripts/train_dl.py",
+                    "fit",
+                    "--config",
+                    str(base_config_path),
+                    f"--model.feature_extractor.init_args.checkpoint_path={ckpt_arg}",
+                    f"--model.feature_extractor.init_args.pretrained={pretrained_arg}",
+                    f"--model.feature_extractor.init_args.drop_rate={dropout}",
+                    f"--model.lr={lr}",
+                    f"--model.weight_decay={wd}",
+                    f"--trainer.logger.init_args.name={model_name}_lr{lr}_wd{wd}",
+                    f"--trainer.logger.init_args.group={model_name}_Finetune_Grid",
+                    f"--data.k_fold={fixed_params.get('num_folds', 1)}",
+                    f"--data.batch_size={fixed_params.get('batch_size', 32)}",
+                    f"--trainer.max_epochs={fixed_params.get('max_epochs', 50)}",
+                ]
+
+                logger.info(f"Command: {' '.join(cmd)}")
+                try:
+                    subprocess.run(cmd, check=True)
+                except subprocess.CalledProcessError as e:
+                    logger.error(f"Error running Phase 2 experiment lr{lr}_wd{wd}: {e}")
+
+        return
+
+    # Phase 1 Execution
     for level in transfer_levels:
         level_name = level["name"]
         weights_path = level["weights_path"]
@@ -82,12 +134,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run experiment grid search.")
     parser.add_argument(
         "grid_config",
-        help="Path to grid search YAML (e.g., configs/grid/mobilevit_grid.yaml)",
+        help="Path to grid search YAML (e.g., configs/grid/mobilenet_v2_grid.yaml)",
     )
     parser.add_argument(
         "--base-config",
-        help="Optional: Path to base model YAML (e.g., configs/baselines/resnet.yaml). "
-        "If omitted, tries to match grid config name.",
+        help=(
+            "Optional: Path to base model YAML "
+            "(e.g., configs/baselines/mobilenet_v2.yaml). "
+            "If omitted, tries to match grid config name."
+        ),
     )
     args = parser.parse_args()
 

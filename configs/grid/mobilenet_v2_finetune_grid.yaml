@@ -1,0 +1,31 @@
+learning_rate:
+  - 0.005
+  - 0.001
+  - 0.0005
+  - 0.0001
+
+weight_decay:
+  - 0.1
+  - 0.05
+  - 0.01
+  - 0.001
+
+fixed_params:
+  input_resolution: [256, 256]
+  batch_size: 32
+  optimizer: "AdamW"
+  reduce_lr_factor: 0.1
+  reduce_lr_patience: 3
+  max_epochs: 50
+  early_stopping_patience: 5
+  loss_function: "CrossEntropyLoss"
+  num_folds: 1
+  num_classes: 6
+  random_seed: 42
+
+# Phase 1 Locks (To be updated after Grid Search 1)
+locked_params:
+  # The winning transfer learning strategy from Phase 1
+  name: "level_3_plantdoc"
+  weights_path: "artifacts/checkpoints/pretrained/mobilenet_v2-plantvillage-plantdoc.ckpt"
+  dropout_rate: 0.3
