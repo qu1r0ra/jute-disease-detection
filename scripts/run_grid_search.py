@@ -18,9 +18,9 @@ def _get_modified_base_config(base_config_path: str | Path, exp_name: str) -> st
 
     for cb in config.get("trainer", {}).get("callbacks", []):
         if "ModelCheckpoint" in cb.get("class_path", ""):
-            cb.setdefault("init_args", {})["dirpath"] = (
-                f"artifacts/checkpoints/{exp_name}"
-            )
+            cb.setdefault("init_args", {})[
+                "dirpath"
+            ] = f"artifacts/checkpoints/{exp_name}"
 
     temp_dir = Path("artifacts/checkpoints/.temp_configs")
     temp_dir.mkdir(parents=True, exist_ok=True)
@@ -197,7 +197,7 @@ def run_grid_search(
             if "learning_rate" in fixed_params:
                 cmd.append(f"--model.lr={fixed_params['learning_rate']}")
             if "weight_decay" in fixed_params:
-                cmd.append(f"--model.weight_decay={fixed_params['weight_decawy']}")
+                cmd.append(f"--model.weight_decay={fixed_params['weight_decay']}")
             if "num_folds" in fixed_params:
                 cmd.append(f"--data.k_fold={fixed_params['num_folds']}")
             if "batch_size" in fixed_params:
