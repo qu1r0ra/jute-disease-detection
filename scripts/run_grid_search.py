@@ -80,9 +80,9 @@ def _get_modified_base_config(base_config_path: str | Path, exp_name: str) -> st
     # Update ModelCheckpoint dirpath
     for cb in trainer_cfg.get("callbacks", []):
         if "ModelCheckpoint" in cb.get("class_path", ""):
-            cb.setdefault("init_args", {})[
-                "dirpath"
-            ] = f"artifacts/checkpoints/{exp_name}"
+            cb.setdefault("init_args", {})["dirpath"] = (
+                f"artifacts/checkpoints/{exp_name}"
+            )
 
     # Append CSVLogger for local metric extraction
     loggers = trainer_cfg.get("logger", [])
