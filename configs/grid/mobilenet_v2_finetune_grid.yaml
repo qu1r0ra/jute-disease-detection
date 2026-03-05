@@ -1,19 +1,27 @@
 learning_rate:
-  - 0.005  # Higher LR
-  - 0.001  # Baseline LR
-  - 0.0005 # Lower LR
+  - 0.005
+  - 0.001
+  - 0.0005
 
 weight_decay:
-  - 0.1    # High WD
-  - 0.05   # Baseline WD
-  - 0.01   # Low WD
+  - 0.1
+  - 0.05
+  - 0.01
 
 locked_params:
   name: "level_1_imagenet"
   weights_path: "imagenet"
-  dropout_rate: 0.0
+  dropout_rate: 0.1
 
 fixed_params:
-  num_folds: 1
+  input_resolution: [256, 256]
   batch_size: 32
+  optimizer: "AdamW"
+  reduce_lr_factor: 0.1
+  reduce_lr_patience: 3
   max_epochs: 50
+  early_stopping_patience: 5
+  loss_function: "CrossEntropyLoss"
+  num_folds: 1
+  num_classes: 6
+  random_seed: 42
