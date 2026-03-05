@@ -61,6 +61,7 @@ train-cv:
 train-dl-512:
 	$(PYTHON) scripts/train_dl.py fit --config configs/baselines/mobilenet_v2.yaml \
 		--data.image_size=512 \
+		--model.feature_extractor.init_args.drop_rate=0.1 \
 		--trainer.callbacks.init_args.dirpath=artifacts/checkpoints/mobilenet_v2_512 \
 		--trainer.callbacks.init_args.filename="mobilenet_v2-512-{epoch:02d}-{val_loss:.4f}" \
 		--trainer.logger.init_args.name=mobilenet_v2_512px
