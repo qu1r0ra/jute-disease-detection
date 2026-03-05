@@ -32,31 +32,32 @@ def _aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
 
         df = pd.concat(dfs, ignore_index=True)
 
+        summary = {"Experiment": exp}
+
         if "val_loss" in df.columns:
             val_df = df.dropna(subset=["val_loss"])
-            best_val = (
-                val_df.loc[val_df["val_loss"].idxmin()].to_dict()
-                if not val_df.empty
-                else {}
-            )
-        else:
-            best_val = {}
+            if not val_df.empty:
+                best_row = val_df.loc[val_df["val_loss"].idxmin()].to_dict()
+                for key, val in best_row.items():
+                    if (
+                        key.startswith("val_")
+                        or key.startswith("train_")
+                        or key in ["epoch", "step"]
+                    ):
+                        summary[key] = val
+
+        # Ensure we have train_acc even if not in the best validation row
+        for col in ["train_acc", "train_loss"]:
+            if col in df.columns and (col not in summary or pd.isna(summary[col])):
+                summary[col] = df[col].max() if "acc" in col else df[col].min()
 
         if "test_loss" in df.columns:
             test_df = df.dropna(subset=["test_loss"])
-            test_metrics = test_df.iloc[-1].to_dict() if not test_df.empty else {}
-        else:
-            test_metrics = {}
-
-        summary = {"Experiment": exp}
-
-        for key, val in best_val.items():
-            if key.startswith("val_") or key.startswith("train_"):
-                summary[key] = val
-
-        for key, val in test_metrics.items():
-            if key.startswith("test_"):
-                summary[key] = val
+            if not test_df.empty:
+                test_metrics = test_df.iloc[-1].to_dict()
+                for key, val in test_metrics.items():
+                    if key.startswith("test_"):
+                        summary[key] = val
 
         results.append(summary)
 
