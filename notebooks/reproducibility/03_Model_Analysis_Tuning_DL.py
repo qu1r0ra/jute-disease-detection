@@ -25,11 +25,12 @@
 # We summarize the performance metrics and visualize the training dynamics of our Phase 1 champion: **MobileNetV2 (ImageNet + 0.1 Dropout)**.
 
 # %%
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+
 from jute_disease.utils import get_logger
 
 logger = get_logger("AnalysisNoteBook")
@@ -99,17 +100,16 @@ else:
 # We perform t-SNE embedding analysis to visualize model separability and inspect the top confident errors.
 
 # %%
-import torch
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
-from sklearn.manifold import TSNE
-from sklearn.metrics import classification_report, confusion_matrix
-from jute_disease.models.dl.classifier import Classifier
-from jute_disease.models.dl.backbone import TimmBackbone
-from jute_disease.data.datamodule import DataModule
 import time
 
+import torch
+import torch.nn.functional as F
+from sklearn.manifold import TSNE
 from torch.utils.data import ConcatDataset
+
+from jute_disease.data.datamodule import DataModule
+from jute_disease.models.dl.backbone import TimmBackbone
+from jute_disease.models.dl.classifier import Classifier
 
 dm = DataModule(data_dir="../../data/ml_split", batch_size=32)
 dm.setup("test")
@@ -154,7 +154,7 @@ end_time = time.time()
 total_imgs = len(pooled_dataset)
 inf_time_per_img = (end_time - start_time) / total_imgs
 logger.info(f"Total images processed: {total_imgs}")
-logger.info(f"Inference time per image: {inf_time_per_img*1000:.2f} ms")
+logger.info(f"Inference time per image: {inf_time_per_img * 1000:.2f} ms")
 
 features = torch.cat(all_features).numpy()
 preds = torch.cat(all_preds).numpy()
@@ -252,7 +252,6 @@ else:
 
 # %%
 from captum.attr import LayerGradCam
-import matplotlib.cm as cm
 from scipy.ndimage import zoom
 
 # We target the last convolutional block of MobileNetV2
@@ -325,6 +324,9 @@ plt.show()
 # # Run this in your terminal to train the 512px model
 # make train-dl-512
 # ```
+
+# %%
+# !make train-dl-512
 
 # %% [markdown]
 # ## Phase 2: Optimizer Grid Search
