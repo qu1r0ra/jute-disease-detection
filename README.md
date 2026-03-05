@@ -102,8 +102,9 @@ This project provides unified CLI entry points for common tasks:
 
 3. Run through the Jupyter notebooks in `notebooks/reproducibility/` in numerical order:
    1. `01_Exploratory_Data_Analysis.ipynb`
-   2. `02_Model_Selection_Training.ipynb`
-   3. ...
+   2. `02_Model_Selection_Training_DL.ipynb`
+   3. `02_Model_Selection_Training_ML.ipynb`
+   4. ...
 
    _Notes_
    - When running a notebook, select `.venv` in root as the kernel.
