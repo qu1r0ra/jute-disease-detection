@@ -64,7 +64,18 @@ train-dl-512:
 		--model.feature_extractor.init_args.drop_rate=0.1 \
 		--trainer.callbacks.init_args.dirpath=artifacts/checkpoints/mobilenet_v2_512 \
 		--trainer.callbacks.init_args.filename="mobilenet_v2-512-{epoch:02d}-{val_loss:.4f}" \
-		--trainer.logger.init_args.name=mobilenet_v2_512px
+		--trainer.logger.init_args.name=mobilenet_v2_512px \
+		--+trainer.logger=lightning.pytorch.loggers.CSVLogger \
+		--trainer.logger[1].init_args.save_dir=artifacts/logs \
+		--trainer.logger[1].init_args.name=mobilenet_v2_512px
+	$(PYTHON) scripts/train_dl.py test --config configs/baselines/mobilenet_v2.yaml \
+		--data.image_size=512 \
+		--ckpt_path=$$(ls -t artifacts/checkpoints/mobilenet_v2_512/*.ckpt | head -1) \
+		--trainer.logger.init_args.name=mobilenet_v2_512px \
+		--+trainer.logger=lightning.pytorch.loggers.CSVLogger \
+		--trainer.logger[1].init_args.save_dir=artifacts/logs \
+		--trainer.logger[1].init_args.name=mobilenet_v2_512px
+	$(PYTHON) scripts/aggregate_results.py --exp-names mobilenet_v2_512px --output artifacts/grid_search_mobilenet_v2_512px_metrics.csv
 
 grid-search:
 	$(PYTHON) scripts/run_grid_search.py configs/grid/mobilenet_v2_grid.yaml
