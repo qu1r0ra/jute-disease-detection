@@ -3,6 +3,7 @@ import os
 import subprocess
 from pathlib import Path
 
+import pandas as pd
 import yaml
 
 import wandb
@@ -11,16 +12,89 @@ from jute_disease.utils import get_logger
 logger = get_logger(__name__)
 
 
+def _aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
+    """Consolidates metrics from all CSVLogger outputs into a master CSV."""
+    results = []
+
+    for exp in exp_names:
+        log_dir = Path("artifacts/logs") / exp
+        if not log_dir.exists():
+            continue
+
+        # Find the latest version folder
+        versions = list(log_dir.glob("version_*"))
+        if not versions:
+            continue
+
+        versions.sort(key=lambda p: int(p.name.split("_")[-1]))
+        latest_version = versions[-1]
+        metrics_file = latest_version / "metrics.csv"
+
+        if not metrics_file.exists():
+            continue
+
+        df = pd.read_csv(metrics_file)
+
+        # Extract best validation epoch metrics (min val_loss)
+        val_df = df.dropna(subset=["val_loss"])
+        if not val_df.empty:
+            best_val = val_df.loc[val_df["val_loss"].idxmin()].to_dict()
+        else:
+            best_val = {}
+
+        # Extract test metrics
+        test_df = df.dropna(subset=["test_loss"])
+        if not test_df.empty:
+            test_metrics = test_df.iloc[-1].to_dict()
+        else:
+            test_metrics = {}
+
+        summary = {"Experiment": exp}
+
+        # Filter metrics
+        for key, val in best_val.items():
+            if key.startswith("val_") or key.startswith("train_"):
+                summary[key] = val
+
+        for key, val in test_metrics.items():
+            if key.startswith("test_"):
+                summary[key] = val
+
+        results.append(summary)
+
+    if results:
+        final_df = pd.DataFrame(results)
+        final_df.to_csv(output_csv, index=False)
+        logger.info(f"Summary metrics exported to {output_csv}")
+    else:
+        logger.warning(f"No metrics found to export to {output_csv}")
+
+
 def _get_modified_base_config(base_config_path: str | Path, exp_name: str) -> str:
-    """Read base config, update ModelCheckpoint dirpath, write and return temp path."""
+    """Read base config, update ModelCheckpoint dirpath, and append CSVLogger."""
     with open(base_config_path) as f:
         config = yaml.safe_load(f) or {}
 
-    for cb in config.get("trainer", {}).get("callbacks", []):
+    trainer_cfg = config.setdefault("trainer", {})
+
+    # Update ModelCheckpoint dirpath
+    for cb in trainer_cfg.get("callbacks", []):
         if "ModelCheckpoint" in cb.get("class_path", ""):
-            cb.setdefault("init_args", {})["dirpath"] = (
-                f"artifacts/checkpoints/{exp_name}"
-            )
+            cb.setdefault("init_args", {})[
+                "dirpath"
+            ] = f"artifacts/checkpoints/{exp_name}"
+
+    # Append CSVLogger for local metric extraction
+    loggers = trainer_cfg.get("logger", [])
+    if isinstance(loggers, dict):
+        loggers = [loggers]
+    loggers.append(
+        {
+            "class_path": "lightning.pytorch.loggers.CSVLogger",
+            "init_args": {"save_dir": "artifacts/logs", "name": exp_name},
+        }
+    )
+    trainer_cfg["logger"] = loggers
 
     temp_dir = Path("artifacts/checkpoints/.temp_configs")
     temp_dir.mkdir(parents=True, exist_ok=True)
@@ -73,6 +147,8 @@ def run_grid_search(
         weights_path = locked_params.get("weights_path", "imagenet")
         dropout = locked_params.get("dropout_rate", 0.0)
 
+        run_exp_names = []
+
         for lr in learning_rates:
             for wd in weight_decays:
                 logger.info(
@@ -87,7 +163,9 @@ def run_grid_search(
                 env = os.environ.copy()
                 env["WANDB_RUN_ID"] = run_id
 
-                exp_name = f"{model_name}_lr{lr}_wd{wd}"
+                short_level = level_name.replace("level_", "l")
+                exp_name = f"{model_name.lower()}-{short_level}-lr_{lr}-wd_{wd}"
+                run_exp_names.append(exp_name)
                 exp_config_path = _get_modified_base_config(base_config_path, exp_name)
 
                 cmd = [
@@ -156,9 +234,16 @@ def run_grid_search(
                 except subprocess.CalledProcessError as e:
                     logger.error(f"Error testing Phase 2 experiment {exp_name}: {e}")
 
+        _aggregate_metrics(
+            run_exp_names,
+            output_csv=Path(
+                f"artifacts/grid_search_{model_name.lower()}_phase2_metrics.csv"
+            ),
+        )
         return
 
     # Phase 1 Execution
+    run_exp_names = []
     for level in transfer_levels:
         level_name = level["name"]
         weights_path = level["weights_path"]
@@ -176,7 +261,9 @@ def run_grid_search(
             env = os.environ.copy()
             env["WANDB_RUN_ID"] = run_id
 
-            exp_name = f"{model_name}_{level_name}_dr{dropout}"
+            short_level = level_name.replace("level_", "l")
+            exp_name = f"{model_name.lower()}-{short_level}-dr_{dropout}"
+            run_exp_names.append(exp_name)
             exp_config_path = _get_modified_base_config(base_config_path, exp_name)
 
             cmd = [
@@ -246,6 +333,13 @@ def run_grid_search(
                 subprocess.run(test_cmd, env=env, check=True)
             except subprocess.CalledProcessError as e:
                 logger.error(f"Error testing Phase 1 experiment {exp_name}: {e}")
+
+    _aggregate_metrics(
+        run_exp_names,
+        output_csv=Path(
+            f"artifacts/grid_search_{model_name.lower()}_phase1_metrics.csv"
+        ),
+    )
 
 
 if __name__ == "__main__":
