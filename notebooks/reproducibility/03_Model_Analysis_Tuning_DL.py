@@ -8,7 +8,8 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: .venv
+#     language: python
 #     name: python3
 # ---
 
@@ -43,35 +44,42 @@ else:
     print("Metrics summary not found.")
 
 # 2. Load Training History for Curves
-history_path = Path(
-    "../../artifacts/logs/mobilenet_v2-l1_imagenet-dr_0.1/version_0/metrics.csv"
-)
-if history_path.exists():
-    history = pd.read_csv(history_path)
+history_dir = Path("../../artifacts/logs/mobilenet_v2-l1_imagenet-dr_0.1")
+history_files = list(history_dir.glob("version_*/metrics.csv"))
+if history_files:
+    dfs = [pd.read_csv(f) for f in history_files]
+    history = pd.concat(dfs, ignore_index=True)
     # Aggregate by epoch (taking max for accuracies/losses since lightning logs multiple steps)
+    agg_dict = {}
+    for col in history.columns:
+        if "loss" in col:
+            agg_dict[col] = "mean"
+        elif "acc" in col or "f1" in col:
+            agg_dict[col] = "max"
+
     epoch_data = (
         history.groupby("epoch")
-        .agg(
-            {
-                "train_loss": "mean",
-                "val_loss": "mean",
-                "train_acc": "max",
-                "val_acc": "max",
-            }
+        .agg(agg_dict)
+        .dropna(
+            subset=[
+                "train_loss",
+                "val_loss" if "val_loss" in history.columns else "train_loss",
+            ]
         )
-        .dropna()
     )
 
     fig, ax = plt.subplots(1, 2, figsize=(15, 5))
 
     # Loss Curves
-    epoch_data[["train_loss", "val_loss"]].plot(ax=ax[0])
+    loss_cols = [c for c in ["train_loss", "val_loss"] if c in epoch_data.columns]
+    epoch_data[loss_cols].plot(ax=ax[0])
     ax[0].set_title("Training and Validation Loss")
     ax[0].set_xlabel("Epoch")
     ax[0].grid(True, alpha=0.3)
 
     # Accuracy Curves
-    epoch_data[["train_acc", "val_acc"]].plot(ax=ax[1])
+    avail_acc = [c for c in ["train_acc", "val_acc"] if c in epoch_data.columns]
+    epoch_data[avail_acc].plot(ax=ax[1])
     ax[1].set_title("Training and Validation Accuracy")
     ax[1].set_xlabel("Epoch")
     ax[1].grid(True, alpha=0.3)
@@ -96,12 +104,14 @@ from jute_disease.models.dl.backbone import TimmBackbone
 from jute_disease.data.datamodule import DataModule
 import time
 
-# Setup Data and Model
+from torch.utils.data import ConcatDataset
+
 dm = DataModule(data_dir="../../data/ml_split", batch_size=32)
 dm.setup("test")
 dm.setup("fit")
 val_loader = dm.val_dataloader()
 test_loader = dm.test_dataloader()
+pooled_dataset = ConcatDataset([dm.jute_val, dm.jute_test])
 
 champion_dir = Path("../../artifacts/checkpoints/mobilenet_v2-l1_imagenet-dr_0.1")
 ckpt_path = list(champion_dir.glob("*.ckpt"))[0]
@@ -136,7 +146,10 @@ with torch.no_grad():
             all_targets.append(y)
 
 end_time = time.time()
-print(f"Total images processed: {len(torch.cat(all_targets))}")
+total_imgs = len(pooled_dataset)
+inf_time_per_img = (end_time - start_time) / total_imgs
+print(f"Total images processed: {total_imgs}")
+print(f"Inference time per image: {inf_time_per_img*1000:.2f} ms")
 
 features = torch.cat(all_features).numpy()
 preds = torch.cat(all_preds).numpy()
@@ -208,7 +221,7 @@ if len(wrong_indices) > 0:
 
     plt.figure(figsize=(20, 10))
     for i, idx in enumerate(top_wrong_idx):
-        img, label = test_loader.dataset[idx]
+        img, label = pooled_dataset[idx]
         img_disp = img.permute(1, 2, 0).numpy()
         img_disp = (
             img_disp * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406])
@@ -246,7 +259,7 @@ sample_indices = [
 ]
 
 for i, idx in enumerate(sample_indices):
-    img, label = test_loader.dataset[idx]
+    img, label = pooled_dataset[idx]
     input_tensor = img.unsqueeze(0).to(device)
 
     attribution = lgc.attribute(input_tensor, target=label)
