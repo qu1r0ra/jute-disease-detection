@@ -217,12 +217,13 @@ download_plant_doc()
 # %% id="32809cc5"
 # !uv run python scripts/run_grid_search.py configs/grid/mobilenet_v2_grid.yaml
 
-# %% [markdown] id="72d060bf"
-# ## 4. WandB Analysis
-# From Weights & Biases, we can now deduce our Champion architectural baseline, as well as definitively prove whether or not Level 3 MSTL was superior computationally versus Level 1 generic pretraining.
-
 # %% [markdown]
 # ## Extras
 
 # %%
 # !make train-dl-512
+
+# %% [markdown]
+# ## References
+#
+# [1] GeeksforGeeks. (2025, December 17). _Difference between fine-tuning and transfer learning_. <https://www.geeksforgeeks.org/machine-learning/what-is-the-difference-between-fine-tuning-and-transfer-learning/>

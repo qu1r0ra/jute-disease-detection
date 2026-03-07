@@ -86,17 +86,33 @@ if metrics_path.exists():
         lambda x: "512px" if "512px" in x else "256px"
     )
     comp_df["Dropout"] = comp_df["Experiment"].apply(
-        lambda x: "DR 0.1" if "dr_0.1" in x else "DR 0.0"
+        lambda x: "0.1" if "dr_0.1" in x else "0.0"
     )
+    comp_df = comp_df.sort_values("Dropout")
 
     import seaborn as sns
 
-    sns.barplot(
+    ax_bar = sns.barplot(
         data=comp_df, x="Dropout", y="test_acc", hue="Resolution", palette="viridis"
     )
     plt.ylim(0.8, 0.95)
     plt.title("Resolution Impact on Test Accuracy (MobileNetV2)")
+    plt.xlabel("Dropout Rate")
     plt.ylabel("Test Accuracy")
+    plt.grid(axis="y", linestyle="--", alpha=0.7)
+
+    for p in ax_bar.patches:
+        height = p.get_height()
+        if height > 0:
+            ax_bar.annotate(
+                f"{height:.1%}",
+                (p.get_x() + p.get_width() / 2.0, height),
+                ha="center",
+                va="bottom",
+                fontsize=10,
+                xytext=(0, 4),
+                textcoords="offset points",
+            )
     plt.savefig(FIGURES_DL_DIR / "resolution_impact.png", bbox_inches="tight", dpi=DPI)
     plt.show()
 
@@ -374,14 +390,32 @@ if len(wrong_indices) > 0:
 
         plt.subplot(2, 5, i + 1)
         plt.imshow(img_disp)
-        plt.title(
-            f"Pred: {dm.classes[preds[idx]]} ({probs[idx, preds[idx]]:.2f})\n"
-            f"Actual: {dm.classes[targets[idx]]}",
+        ax_sub = plt.gca()
+        plt.title("")
+        ax_sub.text(
+            0.5,
+            1.12,
+            f"Pred: {dm.classes[preds[idx]]} ({probs[idx, preds[idx]]:.2f})",
             color="red",
             fontsize=10,
+            ha="center",
+            transform=ax_sub.transAxes,
+        )
+        ax_sub.text(
+            0.5,
+            1.02,
+            f"Actual: {dm.classes[targets[idx]]}",
+            color="black",
+            fontsize=10,
+            ha="center",
+            transform=ax_sub.transAxes,
         )
         plt.axis("off")
-    plt.suptitle("Top 10 Most Confident Incorrect Predictions", fontsize=16)
+    plt.suptitle(
+        "Top 10 Most Confident Incorrect Predictions\n"
+        "(Note: The number in parenthesis is the prediction confidence)",
+        fontsize=16,
+    )
     plt.savefig(FIGURES_DL_DIR / "top_10_errors.png", bbox_inches="tight", dpi=DPI)
     plt.show()
 else:
