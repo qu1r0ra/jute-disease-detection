@@ -21,7 +21,7 @@
 # You may have noticed that the Deep Learning (DL) and the Classical Machine Learning (ML) workflows were separated into different notebooks. We deliberately separated them to allow for independent work. Specifically, I, CJ ([@qu1r0ra](https://github.com/qu1r0ra)) focused on DL while my friend Imman ([@Immern](https://github.com/Immern)) focused on Classical ML.
 #
 # You may have also noticed that each notebook has a corresponding `.py` script. This is to allow for better version control for `.ipynb` files, which are notoriously difficult to track with Git.
-#  
+#
 # That said, in this notebook, we will focus on training DL models experimentally. Specifically, we will do the ff.:
 # - Conduct transfer learning on the ff. chosen Deep Learning architectures pretrained on _ImageNet-1K_ as baseline DL models:
 #   - **EfficientNet-B5**
@@ -187,11 +187,19 @@ else:
 # ![Validation F1 Score Comparison: Baseline DL Models](../../assets/figures/dl/val_f1_baseline.png)
 #
 # For context:
-# > insert table of baseline DL models and corresponding parameter sizes
+#
+# | Model | Source (`timm`) | Parameters (Approx) |
+# | :--- | :--- | :--- |
+# | EfficientNet-B7 | `tf_efficientnet_b7.ns_jft_in1k` | ~66.35M |
+# | EfficientNet-B5 | `efficientnet_b5.sw_in12k_ft_in1k` | ~30.39M |
+# | ResNet-50 | `resnet50.a1_in1k` | ~25.56M |
+# | Inception v3 | `inception_v3.tv_in1k` | ~23.83M |
+# | MobileViT (small) | `mobilevit_s.cvnets_in1k` | ~5.58M |
+# | MobileNet V2 | `mobilenetv2_100.ra_in1k` | ~3.50M |
 
 # %% [markdown]
 # Some insights:
-# - **EfficientNet-B5** achieved the greatest top-1 validation F1.
+# - **EfficientNet-B5** achieved the greatest top-1 validation F1. It has the second most approximate number of parameters, so it is somewhat expected.
 # - It is followed by **MobileNet V2**. Interestingly, MobileNetV2 achieves comparable performance with much less parameters. Hence, we decided to push through with MobileNet V2 for grid search.
 # - **MobileViT (small)** achieved the third-greatest top-1 validation F1.
 # - Interestingly, **EfficientNet-B7** achieved the worst top-1 validation F1 despite having the same architecture as MobileNet-B5, but ~2x the size. This is worth looking into.
