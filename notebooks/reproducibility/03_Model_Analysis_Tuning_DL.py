@@ -25,8 +25,6 @@
 # We summarize the performance metrics and visualize the training dynamics of our Phase 1 champion: **MobileNetV2 (ImageNet + 0.1 Dropout)**.
 
 # %%
-from pathlib import Path
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -298,9 +296,7 @@ plt.legend(loc="upper right", title="Classes", ncol=2)
 plt.title("t-SNE Visualization of Jute Leaf Data")
 plt.xlabel("t-SNE 1")
 plt.ylabel("t-SNE 2")
-plt.savefig(
-    FIGURES_DL_DIR / "tsne_feature_separation.png", bbox_inches="tight", dpi=DPI
-)
+plt.savefig(FIGURES_DL_DIR / "tsne.png", bbox_inches="tight", dpi=DPI)
 plt.show()
 
 # %% [markdown]
@@ -351,9 +347,7 @@ plt.legend(loc="upper right", title="Classes", ncol=2)
 plt.title("UMAP Visualization of Jute Leaf Data")
 plt.xlabel("UMAP 1")
 plt.ylabel("UMAP 2")
-plt.savefig(
-    FIGURES_DL_DIR / "umap_feature_separation.png", bbox_inches="tight", dpi=DPI
-)
+plt.savefig(FIGURES_DL_DIR / "umap.png", bbox_inches="tight", dpi=DPI)
 plt.show()
 
 # %% [markdown]
@@ -454,7 +448,7 @@ for class_idx in range(num_classes):
     plot_idx += num_samples - n
 
 plt.suptitle(
-    "Model Interpretability: Grad-CAM Heatmaps (5 Samples per Class)",
+    "Grad-CAM Heatmaps on Sample Jute Leaf Disease Images",
     fontsize=20,
     y=1.02,
 )
