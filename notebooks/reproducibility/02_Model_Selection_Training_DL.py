@@ -173,16 +173,28 @@ else:
 
 # %% [markdown] id="a5624dad"
 # Having verified that the fast dev run works, we can now conduct transfer learning on our chosen DL architectures pretrained on ImageNet-1K.
+#
+# Before running the script below, make sure you have a [Weights and Biases](https://wandb.ai/site) account and an API key for it so you can track our experiments. You will be prompted to enter your API key.
 
 # %% id="d32c265a"
 # !uv run python scripts/train_all_dl.py
 
 # %% [markdown]
-# > continue here
+# At this point, we have finished training the DL baselines. If training went well, you should have obtained similar results with us, which can be viewed in our [Weights and Biases project](https://wandb.ai/grade-descent/jute-disease-detection).
+#
+# You may notice there are multiple runs under the project. For now, you can focus on the ff. runs (which should also be present in a similar-named project):
+# - efficientnet_b5
+# - efficientnet_b7
+# - inception_v3
+# - mobilenet_v2
+# - mobilevit_s
+# - resnet_50
+
+# %% [markdown]
+# > explain why we chose MobileNet V2 over the rest, add a visualization comparing them
 
 # %% [markdown] id="b53753d7"
-# ## 2. MSTL Domain Initializations (Pre-training)
-# We now download the massive `PlantVillage` and specialized `PlantDoc` datasets via KaggleHub to execute the Multi-Stage Transfer Learning on our Top 2 performing models.
+# That said, we can now proceed with obtaining our level 2 and level 3 checkpoints for **MobileNet V2**, which will be used for the grid search. Let's download the _PlantVillage_ and _PlantDoc_ datasets from Kaggle.
 
 # %% id="4ccb68e2"
 from jute_disease.data.download import download_plant_doc, download_plant_village
@@ -191,8 +203,9 @@ download_plant_village()
 download_plant_doc()
 
 # %% [markdown] id="b44de4eb"
-# **Pre-Train Top Model A on PlantVillage (Produces Level 2 Checkpoint)**
-# We use our custom PyTorch Lightning pre-training script on PlantVillage. Early-stopping is implemented intrinsically (Defaults to 50 epochs, halts upon val_loss convergence).
+# ### Level 2 Checkpoint
+#
+# `ImageNet (pre-trained) -> PlantVillage (fine-tuning)`
 
 # %% id="bc2b9c26"
 # !uv run python src/jute_disease/engines/dl/pretrain.py \
@@ -200,8 +213,11 @@ download_plant_doc()
 #   --output_path artifacts/checkpoints/pretrained/mobilenet_v2-plantvillage.ckpt
 
 # %% [markdown] id="8edb47106e1a46a883d545849b8ab81b"
-# **Pre-Train Top Model A on PlantDoc (Produces Level 3 Checkpoint)**
-# Note the `--base_weights` parameter: We resume *exactly* from the Level 2 checkpoint! This synthesizes the entire ImageNet -> PlantVillage -> PlantDoc hierarchy!
+# ### Level 3 Checkpoint
+#
+# Note the `--base_weights` argument. We are effectively resuming from the Level 2 checkpoint.
+#
+# `ImageNet (pre-trained) -> PlantVillage (fine-tuning) -> PlantDoc (fine-tuning)`
 
 # %% id="69798b96"
 # !uv run python src/jute_disease/engines/dl/pretrain.py \
@@ -210,9 +226,9 @@ download_plant_doc()
 #   --output_path artifacts/checkpoints/pretrained/mobilenet_v2-plantvillage-plantdoc.ckpt
 
 # %% [markdown] id="a1cf8c02"
-# **Grid search on different levels of transfer learning on MobileNet V2**
+# > continue here
 #
-# Hoping this works.
+# **Grid search on different levels of transfer learning on MobileNet V2**
 
 # %% id="32809cc5"
 # !uv run python scripts/run_grid_search.py configs/grid/mobilenet_v2_grid.yaml
