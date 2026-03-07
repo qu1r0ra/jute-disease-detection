@@ -8,8 +8,14 @@ BY_CLASS_DIR = DATA_DIR / "by_class"
 ML_SPLIT_DIR = DATA_DIR / "ml_split"
 UNLABELED_DIR = DATA_DIR / "unlabeled"
 
-ML_MODELS_DIR = ROOT_DIR / "artifacts" / "ml_models"
-ML_FEATURES_DIR = ROOT_DIR / "artifacts" / "features"
+ARTIFACTS_DIR = ROOT_DIR / "artifacts"
+ML_MODELS_DIR = ARTIFACTS_DIR / "ml_models"
+ML_FEATURES_DIR = ARTIFACTS_DIR / "features"
+
+ASSETS_DIR = ROOT_DIR / "assets"
+FIGURES_DIR = ASSETS_DIR / "figures"
+FIGURES_DL_DIR = FIGURES_DIR / "dl"
+FIGURES_GENERAL_DIR = FIGURES_DIR / "general"
 
 # Data configurations
 IMAGE_SIZE = 256
@@ -30,3 +36,6 @@ NUM_CLASSES = 6
 # Weights & Biases
 WANDB_ENTITY = "grade-descent"
 WANDB_PROJECT = "jute-disease-detection"
+
+# Visualization defaults
+DPI = 300

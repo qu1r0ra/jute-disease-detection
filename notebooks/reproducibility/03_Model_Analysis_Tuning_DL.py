@@ -33,13 +33,22 @@ import pandas as pd
 import seaborn as sns
 
 from jute_disease.utils import get_logger
+from jute_disease.utils.constants import (
+    ARTIFACTS_DIR,
+    BATCH_SIZE,
+    DEFAULT_SEED,
+    DPI,
+    FIGURES_DL_DIR,
+    ML_SPLIT_DIR,
+    NUM_WORKERS,
+)
 
 logger = get_logger("AnalysisNoteBook")
 
 # 1. Load Consolidated Metrics
-metrics_path = Path("../../artifacts/grid_search_mobilenet_v2_phase1_metrics.csv")
-res_512_01 = Path("../../artifacts/mobilenet_v2-512px-dr_0.1-metrics.csv")
-res_512_00 = Path("../../artifacts/mobilenet_v2-512px-dr_0.0-metrics.csv")
+metrics_path = ARTIFACTS_DIR / "grid_search_mobilenet_v2_phase1_metrics.csv"
+res_512_01 = ARTIFACTS_DIR / "mobilenet_v2-512px-dr_0.1-metrics.csv"
+res_512_00 = ARTIFACTS_DIR / "mobilenet_v2-512px-dr_0.0-metrics.csv"
 
 if metrics_path.exists():
     df_phase1 = pd.read_csv(metrics_path)
@@ -90,7 +99,7 @@ if metrics_path.exists():
     plt.ylim(0.8, 0.95)
     plt.title("Resolution Impact on Test Accuracy (MobileNetV2)")
     plt.ylabel("Test Accuracy")
-    plt.savefig("../../assets/figures/dl/resolution_impact.png", bbox_inches="tight", dpi=300)
+    plt.savefig(FIGURES_DL_DIR / "resolution_impact.png", bbox_inches="tight", dpi=DPI)
     plt.show()
 
     display(comp_df[["Experiment", "test_acc", "test_f1", "test_loss"]])
@@ -98,7 +107,7 @@ else:
     logger.warning("Metrics summary not found.")
 
 # 2. Load Training History for Curves
-history_dir = Path("../../artifacts/logs/mobilenet_v2-l1_imagenet-dr_0.1")
+history_dir = ARTIFACTS_DIR / "logs" / "mobilenet_v2-l1_imagenet-dr_0.1"
 history_files = list(history_dir.glob("version_*/metrics.csv"))
 if history_files:
     dfs = [pd.read_csv(f) for f in history_files]
@@ -140,7 +149,7 @@ if history_files:
     ax[1].grid(True, alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig("../../assets/figures/dl/training_history.png", bbox_inches="tight", dpi=300)
+    plt.savefig(FIGURES_DL_DIR / "training_history.png", bbox_inches="tight", dpi=DPI)
     plt.show()
 else:
     logger.warning("Training history not found.")
@@ -163,7 +172,7 @@ from jute_disease.data.datamodule import DataModule
 from jute_disease.models.dl.backbone import TimmBackbone
 from jute_disease.models.dl.classifier import Classifier
 
-dm = DataModule(data_dir="../../data/ml_split", batch_size=32)
+dm = DataModule(data_dir=str(ML_SPLIT_DIR), batch_size=BATCH_SIZE)
 dm.setup("test")
 dm.setup("fit")
 
@@ -175,14 +184,14 @@ clean_test = ImageFolder(root=dm.test_dir, transform=dm.val_transform)
 
 # Clean loaders for inference
 clean_train_loader = DataLoader(
-    clean_train, batch_size=32, shuffle=False, num_workers=4
+    clean_train, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS
 )
 val_loader = dm.val_dataloader()
 test_loader = dm.test_dataloader()
 
 pooled_dataset = ConcatDataset([clean_train, clean_val, clean_test])
 
-champion_dir = Path("../../artifacts/checkpoints/mobilenet_v2-l1_imagenet-dr_0.1")
+champion_dir = ARTIFACTS_DIR / "checkpoints" / "mobilenet_v2-l1_imagenet-dr_0.1"
 ckpt_path = list(champion_dir.glob("*.ckpt"))[0]
 backbone = TimmBackbone(model_name="mobilenetv2_100")
 model = Classifier.load_from_checkpoint(ckpt_path, feature_extractor=backbone)
@@ -235,7 +244,7 @@ splits = np.array(all_splits)
 # We visualize the high-dimensional feature vectors to see how well the classes are separated in latent space (Val + Test).
 
 # %%
-tsne = TSNE(n_components=2, perplexity=30, random_state=42)
+tsne = TSNE(n_components=2, perplexity=30, random_state=DEFAULT_SEED)
 feat_2d = tsne.fit_transform(features)
 
 plt.figure(figsize=(14, 10))
@@ -289,7 +298,9 @@ plt.legend(loc="upper right", title="Classes", ncol=2)
 plt.title("t-SNE Visualization of Jute Leaf Data")
 plt.xlabel("t-SNE 1")
 plt.ylabel("t-SNE 2")
-plt.savefig("../../assets/figures/dl/tsne_feature_separation.png", bbox_inches="tight", dpi=300)
+plt.savefig(
+    FIGURES_DL_DIR / "tsne_feature_separation.png", bbox_inches="tight", dpi=DPI
+)
 plt.show()
 
 # %% [markdown]
@@ -299,7 +310,9 @@ plt.show()
 # %%
 import umap
 
-reducer = umap.UMAP(n_neighbors=15, min_dist=0.1, n_components=2, random_state=42)
+reducer = umap.UMAP(
+    n_neighbors=15, min_dist=0.1, n_components=2, random_state=DEFAULT_SEED
+)
 feat_umap = reducer.fit_transform(features)
 
 plt.figure(figsize=(14, 10))
@@ -338,7 +351,9 @@ plt.legend(loc="upper right", title="Classes", ncol=2)
 plt.title("UMAP Visualization of Jute Leaf Data")
 plt.xlabel("UMAP 1")
 plt.ylabel("UMAP 2")
-plt.savefig("../../assets/figures/dl/umap_feature_separation.png", bbox_inches="tight", dpi=300)
+plt.savefig(
+    FIGURES_DL_DIR / "umap_feature_separation.png", bbox_inches="tight", dpi=DPI
+)
 plt.show()
 
 # %% [markdown]
@@ -373,7 +388,7 @@ if len(wrong_indices) > 0:
         )
         plt.axis("off")
     plt.suptitle("Top 10 Most Confident Incorrect Predictions", fontsize=16)
-    plt.savefig("../../assets/figures/dl/top_10_errors.png", bbox_inches="tight", dpi=300)
+    plt.savefig(FIGURES_DL_DIR / "top_10_errors.png", bbox_inches="tight", dpi=DPI)
     plt.show()
 else:
     logger.info("No errors found in test set!")
@@ -393,7 +408,7 @@ lgc = LayerGradCam(model, target_layer)
 num_samples = 5
 num_classes = len(dm.classes)
 plt.figure(figsize=(20, 4 * num_classes))
-np.random.seed(42)
+np.random.seed(DEFAULT_SEED)
 
 plot_idx = 1
 for class_idx in range(num_classes):
@@ -444,7 +459,7 @@ plt.suptitle(
     y=1.02,
 )
 plt.tight_layout()
-plt.savefig("../../assets/figures/dl/grad_cam.png", bbox_inches="tight", dpi=300)
+plt.savefig(FIGURES_DL_DIR / "grad_cam.png", bbox_inches="tight", dpi=DPI)
 plt.show()
 
 # %% [markdown]
