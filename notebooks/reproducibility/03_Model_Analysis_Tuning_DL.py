@@ -30,6 +30,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
 from jute_disease.utils import get_logger
 
@@ -160,11 +161,12 @@ from jute_disease.models.dl.backbone import TimmBackbone
 from jute_disease.models.dl.classifier import Classifier
 
 dm = DataModule(data_dir="../../data/ml_split", batch_size=32)
-dm.setup("test")
 dm.setup("fit")
+dm.setup("test")
+train_loader = dm.train_dataloader()
 val_loader = dm.val_dataloader()
 test_loader = dm.test_dataloader()
-pooled_dataset = ConcatDataset([dm.jute_val, dm.jute_test])
+pooled_dataset = ConcatDataset([dm.jute_train, dm.jute_val, dm.jute_test])
 
 champion_dir = Path("../../artifacts/checkpoints/mobilenet_v2-l1_imagenet-dr_0.1")
 ckpt_path = list(champion_dir.glob("*.ckpt"))[0]
@@ -179,10 +181,12 @@ all_features = []
 all_preds = []
 all_targets = []
 all_probs = []
+all_splits = []
 start_time = time.time()
 
 # Pool Val and Test for broader analysis
-loaders = [("Val", val_loader), ("Test", test_loader)]
+# Pool all splits for a global view of the feature space
+loaders = [("Train", train_loader), ("Val", val_loader), ("Test", test_loader)]
 
 with torch.no_grad():
     for _, loader in loaders:
@@ -197,6 +201,7 @@ with torch.no_grad():
             all_probs.append(probs.cpu())
             all_preds.append(logits.argmax(dim=1).cpu())
             all_targets.append(y)
+            all_splits.extend([split_name] * x.size(0))
 
 end_time = time.time()
 total_imgs = len(pooled_dataset)
@@ -208,6 +213,7 @@ features = torch.cat(all_features).numpy()
 preds = torch.cat(all_preds).numpy()
 targets = torch.cat(all_targets).numpy()
 probs = torch.cat(all_probs).numpy()
+splits = np.array(all_splits)
 
 # %% [markdown]
 # #### t-SNE Feature Embeddings
@@ -217,15 +223,36 @@ probs = torch.cat(all_probs).numpy()
 tsne = TSNE(n_components=2, perplexity=30, random_state=42)
 feat_2d = tsne.fit_transform(features)
 
-plt.figure(figsize=(12, 8))
+plt.figure(figsize=(14, 10))
+colors = sns.color_palette("husl", len(dm.classes))
+
 for i, cls in enumerate(dm.classes):
-    mask = targets == i
+    # Train set (faded 'x' markers)
+    mask_train = (targets == i) & (splits == "Train")
     plt.scatter(
-        feat_2d[mask, 0], feat_2d[mask, 1], label=cls, alpha=0.6, edgecolors="w", s=60
+        feat_2d[mask_train, 0], feat_2d[mask_train, 1],
+        color=colors[i], marker="x", s=25, alpha=0.1, label=None
     )
 
-plt.legend()
-plt.title("t-SNE Visualization of Champion Model Latent Features (Val + Test)")
+    # Eval set (solid 'o' markers)
+    mask_eval = (targets == i) & (splits != "Train")
+    plt.scatter(
+        feat_2d[mask_eval, 0], feat_2d[mask_eval, 1],
+        color=colors[i], marker="o", s=70, alpha=0.8, edgecolors="white",
+        linewidth=0.5, label=cls
+    )
+
+# Add double legend
+from matplotlib.lines import Line2D
+split_legend = [
+    Line2D([0], [0], marker='o', color='gray', lw=0, markersize=8, label='Eval Set (Val/Test)'),
+    Line2D([0], [0], marker='x', color='gray', lw=0, markersize=8, label='Train Set')
+]
+leg1 = plt.legend(handles=split_legend, loc="lower left", title="Splits")
+plt.gca().add_artist(leg1)
+plt.legend(loc="upper right", title="Classes", ncol=2)
+
+plt.title("t-SNE Visualization: Global Feature Separation (Train vs Eval)")
 plt.xlabel("t-SNE 1")
 plt.ylabel("t-SNE 2")
 plt.show()
@@ -240,20 +267,29 @@ import umap
 reducer = umap.UMAP(n_neighbors=15, min_dist=0.1, n_components=2, random_state=42)
 feat_umap = reducer.fit_transform(features)
 
-plt.figure(figsize=(12, 8))
+plt.figure(figsize=(14, 10))
+
 for i, cls in enumerate(dm.classes):
-    mask = targets == i
+    # Train set
+    mask_train = (targets == i) & (splits == "Train")
     plt.scatter(
-        feat_umap[mask, 0],
-        feat_umap[mask, 1],
-        label=cls,
-        alpha=0.6,
-        edgecolors="w",
-        s=60,
+        feat_umap[mask_train, 0], feat_umap[mask_train, 1],
+        color=colors[i], marker="x", s=25, alpha=0.1, label=None
     )
 
-plt.legend()
-plt.title("UMAP Visualization of Champion Model Latent Features (Val + Test)")
+    # Eval set
+    mask_eval = (targets == i) & (splits != "Train")
+    plt.scatter(
+        feat_umap[mask_eval, 0], feat_umap[mask_eval, 1],
+        color=colors[i], marker="o", s=70, alpha=0.8, edgecolors="white",
+        linewidth=0.5, label=cls
+    )
+
+leg1 = plt.legend(handles=split_legend, loc="lower left", title="Splits")
+plt.gca().add_artist(leg1)
+plt.legend(loc="upper right", title="Classes", ncol=2)
+
+plt.title("UMAP Visualization: Global Feature Separation (Train vs Eval)")
 plt.xlabel("UMAP 1")
 plt.ylabel("UMAP 2")
 plt.show()
