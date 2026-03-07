@@ -18,18 +18,36 @@
 # %% [markdown] id="7fb27b941602401d91542211134fc71a"
 # # Deep Learning Model Selection and Training
 #
-# `(update)`
-# In this notebook, we will focus exclusively on Phase 1 testing and selection for Deep Learning:
-# - Validate heavy Deep Learning Baselines (Inception v3, EfficientNet-B5, EfficientNet-B7, ResNet-50, MobileNetV2).
-# - Perform a grid search across Transfer Learning Initialization Strategies for MobileNetV2.
-# - Execute runs using the unified Lightning `train_dl.py` scripts and `run_grid_search.py`.
+# You may have noticed that the Deep Learning (DL) and the Classical Machine Learning (ML) workflows were separated into different notebooks. We deliberately separated them to allow for independent work. Specifically, I, CJ ([@qu1r0ra](https://github.com/qu1r0ra)) focused on DL while my friend Imman ([@Immern](https://github.com/Immern)) focused on Classical ML.
+#
+# You may have also noticed that each notebook has a corresponding `.py` script. This is to allow for better version control for `.ipynb` files, which are notoriously difficult to track with Git.
+#  
+# That said, in this notebook, we will focus on training DL models experimentally. Specifically, we will do the ff.:
+# - Conduct transfer learning on the ff. chosen Deep Learning architectures pretrained on _ImageNet-1K_ as baseline DL models:
+#   - **EfficientNet-B5**
+#   - **EfficientNet-B7** (not included initially but later added out of curiosity to compare with B5)
+#   - **Inception v3**
+#   - **MobileNet V2**
+#   - **MobileViT (small)**
+#   - **ResNet-50**
+# - Decide on a baseline model to move forward with
+# - Get checkpoints for different levels of fine-tuning on the chosen model:
+#   - _Level 1_: ImageNet (pre-trained)
+#   - _Level 2_: ImageNet (pre-trained) -> PlantVillage (fine-tuned)
+#   - _Level 3_: ImageNet (pre-trained) -> PlantVillage (fine-tuned) -> PlantDoc (fine-tuned)
+# - Conduct grid search on the chosen model with the ff. hyperparameters/settings:
+#   - _Dropout rate_: 0.0, 0.1, 0.2
+#   - _Checkpoints_: Levels 1, 2, 3
 #
 # **Note:**
 #
-# This notebook must be executed in **Google Colab**, just as we did. Specifically, we used Colab's L4 GPU.
+# This notebook is expected to be executed in **Google Colab**, just as I did. You can click the 'Open in Colab' button above this cell. Specifically, I used Colab's L4 GPU.
 
 # %% [markdown] id="b04a890a"
 # ## Environment Setup
+
+# %% [markdown]
+# Let's first clone the GitHub repository containing the code then install its dependencies.
 
 # %% id="6930feae"
 # !git clone https://github.com/qu1r0ra/jute-disease-detection.git
@@ -40,7 +58,9 @@
 # !uv sync
 
 # %% [markdown] id="26255b47"
-# If you encounter `ModuleNotFoundError`, you can simply restart the session and rerun the cell below.
+# Let's seed the environment for reproducibility.
+#
+# > If you encounter `ModuleNotFoundError`, you can simply restart the session and rerun the cell below.
 
 # %% id="cd6910a8"
 # ruff: noqa: T201
@@ -49,28 +69,17 @@ from jute_disease.utils.seed import seed_everything
 
 seed_everything(DEFAULT_SEED)
 
-# %% [markdown] id="20a1a666"
-# Mount your Google Drive to the Colab runtime.
-
-# %% id="61b55c67"
-from google.colab import drive
-
-drive.mount("/content/drive")
-
 # %% [markdown] id="69363899"
-# If you haven't yet,
+# Before proceeding,
 #
-# 1. Download `data.zip` from <https://drive.google.com/drive/folders/1WoQ-Xzy0Prl9lInHW5JpGX4tpE9YDUua?usp=sharing> and upload it to your Google Colab account's Google Drive. You can simply upload it to the root of _My Drive_ for simplicity.
+# 1. Download `data.zip` from <https://drive.google.com/drive/folders/1WoQ-Xzy0Prl9lInHW5JpGX4tpE9YDUua?usp=sharing> and upload it to your Google Colab account's Google Drive. You can simply upload it to the root of _My Drive_ for simplicity, but we recommend creating a separate folder for organization.
 # 2. Update `DATA_ZIP_PATH` below to the path where you stored the file. If you uploaded it to the root of _My Drive_, you can set it to **"/content/drive/MyDrive/data.zip"**.
-
-# %% id="oLY0LIHFw3nV"
-# %cd jute-disease-detection
 
 # %% id="7caa248a"
 from pathlib import Path
 
 # Update DATA_ZIP_PATH to where data.zip is stored relative to the Colab VM filesystem.
-# For organization, we stored ours in!uv pip install --system -e .
+# For organization, we stored ours in
 # "/content/drive/MyDrive/Colab Notebooks/Jute Leaf Disease/data.zip"
 DATA_ZIP_PATH = "/content/drive/MyDrive/Colab Notebooks/Jute Leaf Disease/data.zip"
 DEST_PATH = Path("data/by_class")
@@ -79,21 +88,36 @@ if Path(DATA_ZIP_PATH).exists():
     DEST_PATH.mkdir(parents=True, exist_ok=True)
     print(f"Unzipping {DATA_ZIP_PATH} to {DEST_PATH}...")
     # !unzip -q -n "$DATA_ZIP_PATH" -d "$DEST_PATH"
-    print("Data unpacked.")
+    print("Data unzipped.")
 else:
     print(
         f"Zip file not found at {DATA_ZIP_PATH}. "
         "Please check the path or upload your data."
     )
 
+# %% [markdown] id="20a1a666"
+# After following the instructions above, let us mount our Google Drive to the Colab runtime. This is necessary to access the Jute data (`data.zip`) and to persist training artifacts such as model checkpoints and logs beyond the Colab VM's runtime.
+#
+# > You may be prompted to permit access; please do so.
+
+# %% id="61b55c67"
+from google.colab import drive
+
+drive.mount("/content/drive")
+
+# %% id="oLY0LIHFw3nV"
+# %cd jute-disease-detection
+
 # %% [markdown] id="ccaff569"
-# Let's cleanly construct the `train`, `val`, and `test` sub-folders inside `data/ml_split/` from your unzipped files.
+# Let's construct the `train`, `val`, and `test` sub-folders inside `data/ml_split/` from the unzipped data.
+#
+# > Throughout the notebooks, you will see scripts like this being executed. We greatly modularized our code so that notebooks merely serve as a presentation layer with the specifics abstracted away by the codebase. If you want to find out what's happening under the hood, feel free to inspect the the codebase.
 
 # %% id="8dcf08eb"
 # !uv run python src/jute_disease/data/utils.py split
 
 # %% [markdown] id="849b7c47"
-# To persist our training artifacts beyond the Colab VM, we can _symlink_ the `artifacts` folder directly to our Google Drive.
+# To persist our training artifacts beyond the Colab VM, we can _symlink_ the project's `artifacts` folder to our Google Drive.
 
 # %% id="c644e78d"
 GDRIVE_PATH = Path(DATA_ZIP_PATH).parent
@@ -109,7 +133,7 @@ else:
     print(f"{LOCAL_ARTIFACTS} already exists or is linked.")
 
 # %% [markdown] id="875aabf0"
-# Let us perform a quick sanity test to ensure all generated files show up inside your Google Drive folder containing your `data.zip`. If you see a generated `test.txt` file then you are all set to proceed.
+# Let's perform a quick sanity test to ensure all generated files show up inside your Google Drive folder containing your `data.zip`. If you see a generated `test.txt` file then you are all set to proceed.
 
 # %% id="7965401e"
 test_file = LOCAL_ARTIFACTS / "test.txt"
