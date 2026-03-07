@@ -1,6 +1,7 @@
 # ---
 # jupyter:
 #   jupytext:
+#     formats: ipynb,py:percent
 #     text_representation:
 #       extension: .py
 #       format_name: percent
@@ -32,9 +33,9 @@ if str(project_root) not in sys.path:
 # %%
 import matplotlib.pyplot as plt
 import seaborn as sns
-from jute_disease.data.datamodule import DataModule
 from tqdm import tqdm
 
+from jute_disease.data.datamodule import DataModule
 from jute_disease.utils.constants import DEFAULT_SEED
 from jute_disease.utils.logger import get_logger
 from jute_disease.utils.seed import seed_everything
@@ -80,20 +81,23 @@ weighted_labels = collect_labels(dm_weighted)
 # Let us visualize and compare the two distributions.
 
 # %%
+natural_names = [dm_natural.classes[i] for i in natural_labels]
+weighted_names = [dm_weighted.classes[i] for i in weighted_labels]
+
 fig, axes = plt.subplots(1, 2, figsize=(20, 6))
 
-sns.countplot(x=natural_labels, ax=axes[0])
+sns.countplot(x=natural_names, ax=axes[0], order=dm_natural.classes)
 axes[0].set_title("Natural Sampler Class Distribution")
 axes[0].set_xlabel("Class")
 axes[0].set_ylabel("Count")
-axes[0].set_xticklabels(dm_natural.classes, rotation=45, ha="right")
+axes[0].tick_params(axis="x", rotation=45)
 axes[0].grid(axis="y", linestyle="--", alpha=0.7)
 
-sns.countplot(x=weighted_labels, ax=axes[1])
+sns.countplot(x=weighted_names, ax=axes[1], order=dm_weighted.classes)
 axes[1].set_title("Weighted Sampler Class Distribution")
 axes[1].set_xlabel("Class")
 axes[1].set_ylabel("Count")
-axes[1].set_xticklabels(dm_weighted.classes, rotation=45, ha="right")
+axes[1].tick_params(axis="x", rotation=45)
 axes[1].grid(axis="y", linestyle="--", alpha=0.7)
 
 plt.tight_layout()
