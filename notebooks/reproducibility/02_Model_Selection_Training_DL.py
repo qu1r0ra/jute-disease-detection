@@ -174,27 +174,30 @@ else:
 # %% [markdown] id="a5624dad"
 # Having verified that the fast dev run works, we can now conduct transfer learning on our chosen DL architectures pretrained on ImageNet-1K.
 #
-# Before running the script below, make sure you have a [Weights and Biases](https://wandb.ai/site) account and an API key for it so you can track our experiments. You will be prompted to enter your API key.
+# Before running the script below, we highly recommend you to create a [Weights and Biases](https://wandb.ai/site) (WandB) account to track the experiments. If you choose to log in to a WandB account, you will be prompted to enter an API key (see <https://docs.wandb.ai/models/quickstart>).
 
 # %% id="d32c265a"
 # !uv run python scripts/train_all_dl.py
 
 # %% [markdown]
-# At this point, we have finished training the DL baselines. If training went well, you should have obtained similar results with us, which can be viewed in our [Weights and Biases project](https://wandb.ai/grade-descent/jute-disease-detection).
+# At this point, we have finished training the DL baselines. If training went well, you should have obtained results similar to ours, which can be viewed in this run group: <https://wandb.ai/grade-descent/jute-disease-detection/groups/Baseline%20DL%20Models/workspace>.
 #
-# You may notice there are multiple runs under the project. For now, you can focus on the ff. runs (which should also be present in a similar-named project):
-# - efficientnet_b5
-# - efficientnet_b7
-# - inception_v3
-# - mobilenet_v2
-# - mobilevit_s
-# - resnet_50
+# Looking at the validation F1 graph:
+#
+# ![Validation F1 Score Comparison: Baseline DL Models](../../assets/figures/dl/val_f1_baseline.png)
+#
+# For context:
+# > insert table of baseline DL models and corresponding parameter sizes
 
 # %% [markdown]
-# > explain why we chose MobileNet V2 over the rest, add a visualization comparing them
+# Some insights:
+# - **EfficientNet-B5** achieved the greatest top-1 validation F1.
+# - It is followed by **MobileNet V2**. Interestingly, MobileNetV2 achieves comparable performance with much less parameters. Hence, we decided to push through with MobileNet V2 for grid search.
+# - **MobileViT (small)** achieved the third-greatest top-1 validation F1.
+# - Interestingly, **EfficientNet-B7** achieved the worst top-1 validation F1 despite having the same architecture as MobileNet-B5, but ~2x the size. This is worth looking into.
 
 # %% [markdown] id="b53753d7"
-# That said, we can now proceed with obtaining our level 2 and level 3 checkpoints for **MobileNet V2**, which will be used for the grid search. Let's download the _PlantVillage_ and _PlantDoc_ datasets from Kaggle.
+# That said, we can now proceed with obtaining our level 2 and level 3 checkpoints for our chosen DL architecture **MobileNet V2**. These checkpoints will be used for the grid search. Let's download the _PlantVillage_ and _PlantDoc_ datasets from Kaggle.
 
 # %% id="4ccb68e2"
 from jute_disease.data.download import download_plant_doc, download_plant_village
