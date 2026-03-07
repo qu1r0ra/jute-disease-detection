@@ -76,9 +76,6 @@ class EDA:
 
     @staticmethod
     def preview_class_samples(data_path, num_samples=5):
-        """
-        Creates a grid of images: each row is a class, each column is a random sample.
-        """
         data_path = Path(data_path)
         classes = [d for d in data_path.iterdir() if d.is_dir()]
         
