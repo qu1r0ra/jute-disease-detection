@@ -12,12 +12,12 @@ trainer:
       init_args:
         project: jute-disease-detection
         entity: grade-descent
-        name: mobilenet_v2
+        name: mobilenet_v2_512px
         log_model: true
     - class_path: lightning.pytorch.loggers.CSVLogger
       init_args:
         save_dir: artifacts/logs
-        name: mobilenet_v2
+        name: mobilenet_v2_512px
   callbacks:
     - class_path: lightning.pytorch.callbacks.LearningRateMonitor
       init_args:
@@ -25,8 +25,8 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         monitor: val_loss
-        dirpath: artifacts/checkpoints/mobilenet_v2
-        filename: "mobilenet_v2-{epoch:02d}-{val_loss:.4f}"
+        dirpath: artifacts/checkpoints/mobilenet_v2_512
+        filename: "mobilenet_v2-512-{epoch:02d}-{val_loss:.4f}"
         save_top_k: 1
         mode: min
     - class_path: lightning.pytorch.callbacks.EarlyStopping
@@ -47,9 +47,11 @@ model:
     init_args:
       model_name: mobilenetv2_100
       pretrained: true
+      drop_rate: 0.1
 
 data:
   data_dir: data/ml_split
   batch_size: 32
   use_weighted_sampler: true
   k_fold: 1
+  image_size: 512

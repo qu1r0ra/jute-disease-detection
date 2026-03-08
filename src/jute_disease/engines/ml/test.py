@@ -2,10 +2,10 @@
 import os
 
 import torch
+import wandb
 from sklearn.metrics import classification_report
 from torchvision.datasets import ImageFolder
 
-import wandb
 from jute_disease.data import ml_val_transforms
 from jute_disease.models.ml import (
     FEATURE_EXTRACTORS,

@@ -213,3 +213,9 @@ download_plant_doc()
 # %% [markdown] id="72d060bf"
 # ## 4. WandB Analysis
 # From Weights & Biases, we can now deduce our Champion architectural baseline, as well as definitively prove whether or not Level 3 MSTL was superior computationally versus Level 1 generic pretraining.
+
+# %% [markdown]
+# ## Extras
+
+# %%
+# !make train-dl-512

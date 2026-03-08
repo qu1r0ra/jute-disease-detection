@@ -13,11 +13,12 @@ from torch.utils.data import (
 )
 from torchvision.datasets import ImageFolder
 
-from jute_disease.data.transforms import dl_train_transforms, dl_val_transforms
+from jute_disease.data.transforms import create_pipeline
 from jute_disease.data.utils import split_data
 from jute_disease.utils import (
     BATCH_SIZE,
     DEFAULT_SEED,
+    IMAGE_SIZE,
     ML_SPLIT_DIR,
     NUM_WORKERS,
 )
@@ -40,10 +41,14 @@ class DataModule(LightningDataModule):
         pin_memory: bool = True,
         k_fold: int = 1,
         fold_index: int = 0,
+        image_size: int = IMAGE_SIZE,
     ) -> None:
         super().__init__()
         self.save_hyperparameters()
         self.data_dir = Path(data_dir).resolve()
+
+        self.train_transform = create_pipeline(image_size, is_train=True, is_dl=True)
+        self.val_transform = create_pipeline(image_size, is_train=False, is_dl=True)
 
         self.jute_train: ImageFolder | Subset | None = None
         self.jute_val: ImageFolder | Subset | None = None
@@ -104,29 +109,31 @@ class DataModule(LightningDataModule):
                     self._train_pool = ConcatDataset(
                         [
                             ImageFolder(
-                                root=self.train_dir, transform=dl_train_transforms
+                                root=self.train_dir, transform=self.train_transform
                             ),
                             ImageFolder(
-                                root=self.val_dir, transform=dl_train_transforms
+                                root=self.val_dir, transform=self.train_transform
                             ),
                         ]
                     )
                     self._val_pool = ConcatDataset(
                         [
                             ImageFolder(
-                                root=self.train_dir, transform=dl_val_transforms
+                                root=self.train_dir, transform=self.val_transform
                             ),
-                            ImageFolder(root=self.val_dir, transform=dl_val_transforms),
+                            ImageFolder(
+                                root=self.val_dir, transform=self.val_transform
+                            ),
                         ]
                     )
 
                     self.set_fold(self.hparams.fold_index)
                 else:
                     self.jute_train = ImageFolder(
-                        root=self.train_dir, transform=dl_train_transforms
+                        root=self.train_dir, transform=self.train_transform
                     )
                     self.jute_val = ImageFolder(
-                        root=self.val_dir, transform=dl_val_transforms
+                        root=self.val_dir, transform=self.val_transform
                     )
                     self._classes = self.jute_train.classes
                     if self.hparams.use_weighted_sampler:
@@ -149,25 +156,25 @@ class DataModule(LightningDataModule):
                 )
 
                 self.jute_train = Subset(
-                    ImageFolder(root=self.data_dir, transform=dl_train_transforms),
+                    ImageFolder(root=self.data_dir, transform=self.train_transform),
                     train_subset.indices,
                 )
                 self.jute_val = Subset(
-                    ImageFolder(root=self.data_dir, transform=dl_val_transforms),
+                    ImageFolder(root=self.data_dir, transform=self.val_transform),
                     val_subset.indices,
                 )
 
         if stage == "test" or stage is None:
             if self.test_dir.exists():
                 self.jute_test = ImageFolder(
-                    root=self.test_dir, transform=dl_val_transforms
+                    root=self.test_dir, transform=self.val_transform
                 )
                 self._classes = self.jute_test.classes
 
         if stage == "predict":
             predict_root = self.test_dir if self.test_dir.exists() else self.data_dir
             self.jute_predict = ImageFolder(
-                root=predict_root, transform=dl_val_transforms
+                root=predict_root, transform=self.val_transform
             )
 
     def set_fold(self, fold_index: int) -> None:

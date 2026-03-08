@@ -79,11 +79,11 @@ This project provides unified CLI entry points for common tasks:
   uv run python scripts/train_ml.py --classifier rf --feature_type crafted
   ```
 
-- **`make grid-search`** and **`make grid-search-finetune`**: Command wrappers to execute Phase 1 (Transfer Learning / Dropout) and Phase 2 (Optimizers) grid searches for the deep learning champion model. (Append `-check` to run a 1-batch validation `fast_dev_run`).
+- **`make train-dl-512`**: Specialized target to execute a high-resolution (512x512) experiment track, including test evaluation and automated metrics aggregation.
 
-  ```bash
-  make grid-search
-  ```
+- **`make grid-search`**: Executes Phase 1 (Transfer Learning / Dropout) grid searches. (Append `-check` for a fast dev-run).
+
+- **`scripts/aggregate_results.py`**: Utility to consolidate metrics from multiple CSVLogger outputs into a single analysis-ready CSV.
 
 ### 3.3. Reproducing the Results
 
@@ -102,8 +102,9 @@ This project provides unified CLI entry points for common tasks:
 
 3. Run through the Jupyter notebooks in `notebooks/reproducibility/` in numerical order:
    1. `01_Exploratory_Data_Analysis.ipynb`
-   2. `02_Model_Selection_Training.ipynb`
-   3. ...
+   2. `02_Model_Selection_Training_DL.ipynb`
+   3. `02_Model_Selection_Training_ML.ipynb`
+   4. ...
 
    _Notes_
    - When running a notebook, select `.venv` in root as the kernel.

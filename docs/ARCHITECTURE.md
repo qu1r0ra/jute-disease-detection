@@ -48,8 +48,8 @@ The project exposes unified CLI entry points defined in `pyproject.toml`:
 The DL pipeline is built using **PyTorch Lightning** for state-of-the-art reproducibility and boilerplate reduction.
 
 - **LightningModule (`Classifier`)**: The core class handling the training loop, optimization, logging, and metrics.
-- **Backbone System**: Uses a generic `TimmBackbone` to wrap any model from the `timm` library, allowing for easy experimentation with different architectures (e.g., MobileNetV2, ResNet-50, Inception v3, EfficientNet-B5, EfficientNet-B7). The default backbone is `mobilenet_v2`.
-- **Lightning CLI**: Training is driven by configuration files in `configs/`, promoting "Configuration as Code". The CLI supports overrides via command-line arguments.
+- **Backbone System**: Uses a generic `TimmBackbone` to wrap any model from the `timm` library, allowing for easy experimentation with different architectures (e.g., MobileNetV2, ResNet-50, Inception v3, EfficientNet-B5, EfficientNet-B7). Supporting global/local input resolution via the `--data.image_size` parameter.
+- **Lightning CLI**: Training is driven by configuration files in `configs/`, promoting "Configuration as Code".
 
 ### 4. Machine Learning Framework (Scikit-learn Adapters)
 
@@ -65,14 +65,15 @@ Classical ML models are integrated using a custom adapter pattern to unify them 
   - Handles dataset splitting (Train/Val/Test) with fixed seeds.
   - Supports **K-Fold Cross-Validation** via `set_fold()`.
   - Implements **Weighted Random Sampling** to handle class imbalance.
-- **Transforms**: Uses **Albumentations** for robust data augmentation and preprocessing.
+- **Transforms**: Uses a factory pattern (`create_pipeline`) via **Albumentations** for robust and deterministic data augmentation. Supports both global/fixed preprocessing for ML and resolution-parameterized preprocessing for DL.
 - **Seed Everything**: A centralized `seed_everything` utility ensures deterministic behavior across Python, Numpy, specific libraries, and PyTorch.
 
 ### 6. Unified Diagnostics & Metrics
 
-Both pipelines are evaluated identically to ensure strict mathematical comparability. We completely deprecated `scikit-learn` metrics in favor of native PyTorch `torchmetrics.MetricCollection`.
+Both pipelines are evaluated identically using a combined **Experiment Aggregation Utility** (`scripts/aggregate_results.py`). We completely deprecated `scikit-learn` metrics in favor of native PyTorch `torchmetrics.MetricCollection`.
 
-- `EVAL_METRICS` computes Accuracy and Macro-Averaged F1, Precision, and Recall uniformly for both classical and neural models.
+- **EVAL_METRICS**: Computes Accuracy, Macro-F1, Precision, and Recall uniformly for both classical and neural models.
+- **Aggregation**: Metrics from `WandbLogger` (cloud) and `CSVLogger` (local) are automatically synthesized into tabular CSV files for all Grid Searches and manual experiment targets.
 
 ### 7. Code Quality & Standards
 

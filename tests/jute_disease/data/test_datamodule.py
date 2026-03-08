@@ -123,3 +123,16 @@ def test_datamodule_random_split(tmp_path: Path) -> None:
     assert dm.num_classes == 3
     assert len(dm.jute_train) == 24
     assert len(dm.jute_val) == 6
+
+
+def test_datamodule_custom_resolution(mock_dataset_root: Path) -> None:
+    """Test that DataModule respects custom image resolutions."""
+    dm = DataModule(data_dir=mock_dataset_root, image_size=512)
+    dm.setup(stage="fit")
+
+    # Get a batch and check the resolution
+    train_loader = dm.train_dataloader()
+    batch = next(iter(train_loader))
+    imgs, _ = batch
+
+    assert imgs.shape[2:] == (512, 512)

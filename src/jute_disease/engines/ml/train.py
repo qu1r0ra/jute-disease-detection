@@ -3,9 +3,9 @@ import os
 
 import numpy as np
 import torch
+import wandb
 from torchvision.datasets import ImageFolder
 
-import wandb
 from jute_disease.data import ml_train_transforms, ml_val_transforms
 from jute_disease.models.ml import (
     FEATURE_EXTRACTORS,

@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import wandb
+
 from jute_disease.utils import get_logger
 
 logger = get_logger(__name__)

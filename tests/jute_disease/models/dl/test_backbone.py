@@ -73,3 +73,9 @@ def test_timmbackbone_custom_checkpoint_no_matching_keys(tmp_path: Path) -> None
         model_name="mobilenetv2_100", pretrained=False, checkpoint_path=str(ckpt_path)
     )
     assert model.out_features > 0
+
+
+def test_backbone_override_features() -> None:
+    """Ensure out_features can be manually overridden."""
+    model = TimmBackbone(model_name="resnet18", pretrained=False, out_features=123)
+    assert model.out_features == 123
