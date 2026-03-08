@@ -16,7 +16,7 @@
 # <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/main/notebooks/reproducibility/02_Model_Selection_Training_DL.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown] id="7fb27b941602401d91542211134fc71a"
-# # Deep Learning Model Selection and Training
+# # Deep Learning - Model Selection and Training
 #
 # You may have noticed that the Deep Learning (DL) and the Classical Machine Learning (ML) workflows were separated into different notebooks. We deliberately separated them to allow for independent work. Specifically, I, CJ ([@qu1r0ra](https://github.com/qu1r0ra)) focused on DL while my friend Imman ([@Immern](https://github.com/Immern)) focused on Classical ML.
 #
