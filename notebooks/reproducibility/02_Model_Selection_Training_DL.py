@@ -16,12 +16,12 @@
 # <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/main/notebooks/reproducibility/02_Model_Selection_Training_DL.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown] id="7fb27b941602401d91542211134fc71a"
-# # Deep Learning Model Selection and Training
+# # Deep Learning - Model Selection and Training
 #
 # You may have noticed that the Deep Learning (DL) and the Classical Machine Learning (ML) workflows were separated into different notebooks. We deliberately separated them to allow for independent work. Specifically, I, CJ ([@qu1r0ra](https://github.com/qu1r0ra)) focused on DL while my friend Imman ([@Immern](https://github.com/Immern)) focused on Classical ML.
 #
 # You may have also noticed that each notebook has a corresponding `.py` script. This is to allow for better version control for `.ipynb` files, which are notoriously difficult to track with Git.
-#  
+#
 # That said, in this notebook, we will focus on training DL models experimentally. Specifically, we will do the ff.:
 # - Conduct transfer learning on the ff. chosen Deep Learning architectures pretrained on _ImageNet-1K_ as baseline DL models:
 #   - **EfficientNet-B5**
@@ -174,27 +174,40 @@ else:
 # %% [markdown] id="a5624dad"
 # Having verified that the fast dev run works, we can now conduct transfer learning on our chosen DL architectures pretrained on ImageNet-1K.
 #
-# Before running the script below, make sure you have a [Weights and Biases](https://wandb.ai/site) account and an API key for it so you can track our experiments. You will be prompted to enter your API key.
+# Before running the script below, we highly recommend you to create a [Weights and Biases](https://wandb.ai/site) (WandB) account to track the experiments. If you choose to log in to a WandB account, you will be prompted to enter an API key (see <https://docs.wandb.ai/models/quickstart>).
 
 # %% id="d32c265a"
 # !uv run python scripts/train_all_dl.py
 
 # %% [markdown]
-# At this point, we have finished training the DL baselines. If training went well, you should have obtained similar results with us, which can be viewed in our [Weights and Biases project](https://wandb.ai/grade-descent/jute-disease-detection).
+# At this point, we have finished training the DL baselines. If training went well, you should have obtained results similar to ours, which can be viewed [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/Baseline%20DL%20Models/workspace).
 #
-# You may notice there are multiple runs under the project. For now, you can focus on the ff. runs (which should also be present in a similar-named project):
-# - efficientnet_b5
-# - efficientnet_b7
-# - inception_v3
-# - mobilenet_v2
-# - mobilevit_s
-# - resnet_50
+# Looking at the validation F1 graph:
+#
+# ![Validation F1 Score Comparison: Baseline DL Models](../../assets/figures/dl/val_f1_baseline.png)
+#
+# For context, we used the ff. pre-trained models:
+#
+# | Architecture | Hugging Face Model Name | Parameters |
+# | :--- | :--- | :--- |
+# | EfficientNet-B7 | [tf_efficientnet_b7.ns_jft_in1k](https://huggingface.co/timm/tf_efficientnet_b7.ns_jft_in1k) | ~66.35M |
+# | EfficientNet-B5 | [efficientnet_b5.sw_in12k_ft_in1k](https://huggingface.co/timm/efficientnet_b5.sw_in12k_ft_in1k) | ~30.39M |
+# | ResNet-50 | [resnet50.a1_in1k](https://huggingface.co/timm/resnet50.a1_in1k) | ~25.56M |
+# | Inception v3 | [inception_v3.tv_in1k](https://huggingface.co/timm/inception_v3.tv_in1k) | ~23.83M |
+# | MobileViT (small) | [mobilevit_s.cvnets_in1k](https://huggingface.co/timm/mobilevit_s.cvnets_in1k) | ~5.58M |
+# | MobileNet V2 | [mobilenetv2_100.ra_in1k](https://huggingface.co/timm/mobilenetv2_100.ra_in1k) | ~3.50M |
+#
+# Note that the Hugging Face models above may have been pre-trained in different environments and with different techniques. Still, we made sure all our models were eventually pre-trained on ImageNet, hence the `_in1k` suffixes.
 
 # %% [markdown]
-# > explain why we chose MobileNet V2 over the rest, add a visualization comparing them
+# Some insights:
+# - **EfficientNet-B5** achieved the greatest top-1 validation F1. It has the second most parameters, so it is somewhat expected.
+# - It is followed by **MobileNet V2**. Interestingly, MobileNetV2 achieved a performance comparable to EfficientNet-B5 despite having the least parameters. Hence, we decided to push through with MobileNet V2 for grid search. It is also more economical for us.
+# - **MobileViT (small)** achieved the third-greatest top-1 validation F1. It has the second-least parameters.
+# - Interestingly, **EfficientNet-B7** achieved the worst top-1 validation F1 despite having a similar architecture to EfficientNet-B5, but with more than double its size (and thus, the most parameters).
 
 # %% [markdown] id="b53753d7"
-# That said, we can now proceed with obtaining our level 2 and level 3 checkpoints for **MobileNet V2**, which will be used for the grid search. Let's download the _PlantVillage_ and _PlantDoc_ datasets from Kaggle.
+# That said, we can now proceed with obtaining our level 2 and level 3 checkpoints for our chosen DL architecture, **MobileNet V2**. These checkpoints will be used for the grid search. Let's first download the [PlantVillage](https://www.kaggle.com/datasets/mohitsingh1804/plantvillage) and [PlantDoc](https://www.kaggle.com/datasets/nirmalsankalana/plantdoc-dataset) datasets from Kaggle.
 
 # %% id="4ccb68e2"
 from jute_disease.data.download import download_plant_doc, download_plant_village
@@ -206,6 +219,8 @@ download_plant_doc()
 # ### Level 2 Checkpoint
 #
 # `ImageNet (pre-trained) -> PlantVillage (fine-tuning)`
+#
+# For the fine-tuning stages, we will not freeze any parameters. Moreover, we will discard the classifier head and replace it with a new one with the number of neurons equal to the number of classes for the PlantVillage dataset (38).
 
 # %% id="bc2b9c26"
 # !uv run python src/jute_disease/engines/dl/pretrain.py \
@@ -215,9 +230,11 @@ download_plant_doc()
 # %% [markdown] id="8edb47106e1a46a883d545849b8ab81b"
 # ### Level 3 Checkpoint
 #
-# Note the `--base_weights` argument. We are effectively resuming from the Level 2 checkpoint.
-#
 # `ImageNet (pre-trained) -> PlantVillage (fine-tuning) -> PlantDoc (fine-tuning)`
+#
+# Note the `--base_weights` argument. We are effectively resuming from the level 2 checkpoint.
+#
+# Like level 2, we will not freeze any parameters and we will discard the classifier head, replacing it with a new one with the number of neurons equal to the number of classes for the PlantDoc dataset (27).
 
 # %% id="69798b96"
 # !uv run python src/jute_disease/engines/dl/pretrain.py \
@@ -226,18 +243,52 @@ download_plant_doc()
 #   --output_path artifacts/checkpoints/pretrained/mobilenet_v2-plantvillage-plantdoc.ckpt
 
 # %% [markdown] id="a1cf8c02"
-# > continue here
-#
-# **Grid search on different levels of transfer learning on MobileNet V2**
+# Now that we have level 2 and level 3 checkpoints, we can proceed with the grid search.
 
 # %% id="32809cc5"
 # !uv run python scripts/run_grid_search.py configs/grid/mobilenet_v2_grid.yaml
 
 # %% [markdown]
+# Our results for the MobileNet V2 grid search can be viewed [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/MobileNet%20V2%20Grid/workspace).
+#
+# Looking at the graph of validation accuracy over global steps:
+#
+# ![MobileNet V2 Grid Validation Accuracy Graph](../../assets/figures/dl/val_acc_mobilenet_v2_grid.png)
+#
+
+# %% [markdown]
+# Oof, that's pretty annoying to analyze. Maybe looking at the test accuracy graph and a list of models sorted by test accuracy will help:
+#
+# > Such is the pain of relying solely on WandB visualizations. After our first full run and several other mistakes, we realized the importance of saving experiment logs and metrics into a local CSV or parquet file to give us flexibility to visualize data in our own way.
+#
+# ![MobileNet V2 Grid Test Accuracy Graph](../../assets/figures/dl/test_acc_mobilenet_v2_grid.png)
+#
+# ![MobileNet V2 Grid Models Sorted by Test Accuracy](../../assets/figures/dl/grid_models_sorted_test_acc.png)
+
+# %% [markdown]
+# For context, the test accuracy of each model was computed on the best checkpoint obtained during training. By default, PyTorch Lightning determines the best checkpoint as the one that achieved the lowest validation loss, though you could set the criterion yourself. We went with the default.
+#
+# Looking at the graphs, we got the ff. insights:
+# - Level 1 MobileNet V2 checkpoints (MobileNet V2 pre-trained on ImageNet-1K with no fine-tuning whatsoever) led to the best test accuracies, followed by level 3 checkpoints (fine-tuned on PlantVillage then PlantDoc), and lastly, level 2 checkpoints (fine-tuned on PlantVillage). This went against our hypothesis that fine-tuning on related datasets would improve model performance.
+# - Within the same checkpoint groups:
+#   - Dropout rates of 0.0 and 0.1 led to greater test accuracies than their 0.2 counterparts. This may suggest that dropout rates of 0.2 or higher may hurt model performance, though this has yet to be statistically tested.
+#   - A dropout rate of 0.1 led to the greatest test accuracies, followed by 0.0 and 0.2.
+#
+# Thus, we concluded that the MobileNet V2 pre-trained on ImageNet-1K with a dropout rate of 0.1 was the best DL model to push through with (and potentially continue fine-tuning on) for our task of jute leaf disease classification.
+#
+# At this point, we decided to conduct error analysis and see what can be improved.
+
+# %% [markdown]
 # ## Extras
 
+# %% [markdown]
+# If you inspect the codebase, you will notice that the image preprocessing pipeline includes cropping the images to 256x256 pixels for standardization. Our intuition told us that training with higher-resolution images may improve MobileNet V2 performance. We got curious, so we trained a level 1 MobileNet V2 with dropout rates 0.0 and 0.1 but with images cropped to 512x512 pixels. We wanted to compare their performance to their 256x256 pixel counterparts.
+
 # %%
-# !make train-dl-512
+# !uv run python scripts/train_dl_512.py
+
+# %% [markdown]
+# Our results can be viewed [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/MobileNet%20V2%20512px/workspace). They will be compared against their 256x256 pixel counterparts in the [next DL notebook](./03_Model_Analysis_Tuning_DL.py).
 
 # %% [markdown]
 # ## References

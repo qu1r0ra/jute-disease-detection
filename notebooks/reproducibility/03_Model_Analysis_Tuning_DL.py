@@ -411,10 +411,14 @@ if len(wrong_indices) > 0:
             transform=ax_sub.transAxes,
         )
         plt.axis("off")
-    plt.suptitle(
-        "Top 10 Most Confident Incorrect Predictions\n"
+    plt.suptitle("Top 10 Most Confident Incorrect Predictions", fontsize=16)
+    plt.figtext(
+        0.5,
+        0.92,
         "(Note: The number in parenthesis is the prediction confidence)",
-        fontsize=16,
+        ha="center",
+        fontsize=12,
+        color="gray",
     )
     plt.savefig(FIGURES_DL_DIR / "top_10_errors.png", bbox_inches="tight", dpi=DPI)
     plt.show()
