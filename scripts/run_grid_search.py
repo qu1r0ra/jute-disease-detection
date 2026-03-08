@@ -70,7 +70,10 @@ def _aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
 
 
 def _get_modified_base_config(
-    base_config_path: str | Path, exp_name: str, wandb_group: str
+    base_config_path: str | Path,
+    exp_name: str,
+    wandb_group: str,
+    patience: int | None = None,
 ) -> str:
     """Read base config, update loggers/checkpoints, and return temp path."""
     with open(base_config_path) as f:
@@ -79,10 +82,13 @@ def _get_modified_base_config(
     trainer_cfg = config.setdefault("trainer", {})
 
     for cb in trainer_cfg.get("callbacks", []):
-        if "ModelCheckpoint" in cb.get("class_path", ""):
+        class_path = cb.get("class_path", "")
+        if "ModelCheckpoint" in class_path:
             cb.setdefault("init_args", {})["dirpath"] = (
                 f"artifacts/checkpoints/{exp_name}"
             )
+        elif "EarlyStopping" in class_path and patience is not None:
+            cb.setdefault("init_args", {})["patience"] = patience
 
     # Explicitly define WandbLogger properties to avoid CLI CSVLogger crashes
     loggers = trainer_cfg.get("logger", [])
@@ -144,9 +150,11 @@ def run_grid_search(
     locked_params = grid_config.get("locked_params", {})
 
     fixed_params = grid_config.get("fixed_params", {})
+    if not weight_decays and "weight_decay" in fixed_params:
+        weight_decays = [fixed_params["weight_decay"]]
 
     # Detect Mode: Phase 1 or Phase 2
-    is_phase_two = len(learning_rates) > 0 and len(weight_decays) > 0
+    is_phase_two = len(learning_rates) > 0 and len(locked_params) > 0
 
     if is_phase_two:
         logger.info(f"Detected Phase 2 Optimizer Grid Search for {model_name}.")
@@ -174,8 +182,9 @@ def run_grid_search(
                 exp_name = f"{model_name.lower()}-{short_level}-lr_{lr}-wd_{wd}"
                 wandb_group = f"{model_name}_Finetune_Grid"
                 run_exp_names.append(exp_name)
+                patience = fixed_params.get("early_stopping_patience")
                 exp_config_path = _get_modified_base_config(
-                    base_config_path, exp_name, wandb_group
+                    base_config_path, exp_name, wandb_group, patience=patience
                 )
 
                 cmd = [
@@ -271,8 +280,9 @@ def run_grid_search(
             exp_name = f"{model_name.lower()}-{short_level}-dr_{dropout}"
             wandb_group = f"{model_name}_Transfer_Grid"
             run_exp_names.append(exp_name)
+            patience = fixed_params.get("early_stopping_patience")
             exp_config_path = _get_modified_base_config(
-                base_config_path, exp_name, wandb_group
+                base_config_path, exp_name, wandb_group, patience=patience
             )
 
             cmd = [
