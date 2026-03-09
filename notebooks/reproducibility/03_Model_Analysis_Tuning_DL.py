@@ -270,6 +270,13 @@ plt.savefig(FIGURES_DL_DIR / "training_history.png", bbox_inches="tight", dpi=DP
 plt.show()
 
 # %% [markdown]
+# ### Phase 1 Confusion Matrix
+#
+# > Replace the placeholder below with the confusion matrix downloaded from Weights & Biases for the Phase 1 baseline run.
+#
+# ![Phase 1 CM](path/to/phase1_cm.png)
+
+# %% [markdown]
 # Some insights:
 # - Train loss appears to be consistently higher than validation loss.
 #   - This is possibly explained by how our data is heavily augmented during training but not during validation, making it more difficult for the model to get correct predictions on the training set per epoch.
@@ -628,6 +635,253 @@ plt.show()
 # !uv run python scripts/run_grid_search.py \
 #     configs/grid/mobilenet_v2_finetune_grid.yaml \
 #     --base-config configs/baselines/mobilenet_v2.yaml
+
+# %% [markdown]
+# ### Phase 2 Training Curves
+# Let's inspect the training curve of the champion fine-tuned configuration.
+
+# %%
+finetuned_history_dir = LOGS_DIR / "phase2_finetune_grid" / "mobilenet_v2-l1_imagenet-lr_0.01-wd_0.05"
+ft_history_files = list(finetuned_history_dir.glob("*-metrics.csv"))
+
+if ft_history_files:
+    dfs = [pd.read_csv(f) for f in ft_history_files]
+    history = pd.concat(dfs, ignore_index=True)
+    agg_dict = {}
+    for col in history.columns:
+        if "loss" in col:
+            agg_dict[col] = "mean"
+        elif "acc" in col or "f1" in col:
+            agg_dict[col] = "max"
+
+    epoch_data = (
+        history.groupby("epoch")
+        .agg(agg_dict)
+        .dropna(
+            subset=[
+                "train_loss",
+                "val_loss" if "val_loss" in history.columns else "train_loss",
+            ]
+        )
+    )
+
+    fig, ax = plt.subplots(1, 2, figsize=(15, 5))
+
+    loss_cols = [c for c in ["train_loss", "val_loss"] if c in epoch_data.columns]
+    epoch_data[loss_cols].plot(ax=ax[0])
+    ax[0].set_title("Training and Validation Loss (Finetuned)")
+    ax[0].set_xlabel("Epoch")
+    ax[0].grid(True, alpha=0.3)
+
+    avail_acc = [c for c in ["train_acc", "val_acc"] if c in epoch_data.columns]
+    epoch_data[avail_acc].plot(ax=ax[1])
+    ax[1].set_title("Training and Validation Accuracy (Finetuned)")
+    ax[1].set_xlabel("Epoch")
+    ax[1].grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(FIGURES_DL_DIR / "finetuned_training_history.png", bbox_inches="tight", dpi=DPI)
+    plt.show()
+
+# %% [markdown]
+# ### Confusion Matrix Comparison
+#
+# > Replace the placeholders below with the confusion matrices downloaded from Weights & Biases.
+#
+# | Phase 1 Baseline (ImageNet L1) | Phase 2 Finetuned (LR=0.01) |
+# | :---: | :---: |
+# | ![Phase 1 CM](path/to/phase1_cm.png) | ![Phase 2 CM](path/to/phase2_cm.png) |
+#
+# Some insights:
+# - ...
+
+# %% [markdown]
+# ### Finetuned Model Inference
+# We now load the best checkpoint from our finetuning run and re-generate predictions for Error Analysis and Grad-CAM visualization.
+
+# %%
+finetuned_dir = ARTIFACTS_DIR / "checkpoints" / "mobilenet_v2-l1_imagenet-lr_0.01-wd_0.05"
+ft_ckpt_paths = list(finetuned_dir.glob("*.ckpt"))
+
+if ft_ckpt_paths:
+    ft_ckpt_path = ft_ckpt_paths[0]
+    backbone = TimmBackbone(model_name="mobilenetv2_100")
+    ft_model = Classifier.load_from_checkpoint(ft_ckpt_path, feature_extractor=backbone)
+    ft_model.eval()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    ft_model.to(device)
+
+    all_features = []
+    all_preds = []
+    all_targets = []
+    all_probs = []
+    all_splits = []
+    start_time = time.time()
+
+    loaders = [
+        ("Train", clean_train_loader),
+        ("Val", val_loader),
+        ("Test", test_loader),
+    ]
+
+    with torch.no_grad():
+        for split_name, loader in loaders:
+            for x, y in loader:
+                x = x.to(device)
+                feat = ft_model.feature_extractor(x)
+                logits = ft_model.classifier(feat)
+                probs = F.softmax(logits, dim=1)
+
+                all_features.append(feat.cpu())
+                all_probs.append(probs.cpu())
+                all_preds.append(logits.argmax(dim=1).cpu())
+                all_targets.append(y)
+                all_splits.extend([split_name] * x.size(0))
+
+    end_time = time.time()
+    total_imgs = len(pooled_dataset)
+    inf_time_ms = (end_time - start_time) / total_imgs * 1000
+    logger.info(f"[Finetuned] Inference time per image: {inf_time_ms:.2f} ms")
+
+    ft_features = torch.cat(all_features).numpy()
+    ft_preds = torch.cat(all_preds).numpy()
+    ft_targets = torch.cat(all_targets).numpy()
+    ft_probs = torch.cat(all_probs).numpy()
+    ft_splits = np.array(all_splits)
+
+# %% [markdown]
+# ### Finetuned Top Confident Errors
+
+# %%
+if ft_ckpt_paths:
+    is_wrong = ft_preds != ft_targets
+    wrong_indices = np.where(is_wrong)[0]
+
+    if len(wrong_indices) > 0:
+        wrong_probs = [ft_probs[i, ft_preds[i]] for i in wrong_indices]
+        sorted_wrong = np.argsort(wrong_probs)[::-1][:10]
+        top_wrong_idx = wrong_indices[sorted_wrong]
+
+        plt.figure(figsize=(20, 10))
+        for i, idx in enumerate(top_wrong_idx):
+            img, label = pooled_dataset[idx]
+            img_disp = img.permute(1, 2, 0).numpy()
+            img_disp = (
+                img_disp * np.array([0.229, 0.224, 0.225])
+                + np.array([0.485, 0.456, 0.406])
+            ).clip(0, 1)
+
+            plt.subplot(2, 5, i + 1)
+            plt.imshow(img_disp)
+            ax_sub = plt.gca()
+            plt.title("")
+            ax_sub.text(
+                0.5,
+                1.12,
+                f"Pred: {dm.classes[ft_preds[idx]]} ({ft_probs[idx, ft_preds[idx]]:.2f})",
+                color="red",
+                fontsize=10,
+                ha="center",
+                transform=ax_sub.transAxes,
+            )
+            ax_sub.text(
+                0.5,
+                1.02,
+                f"Actual: {dm.classes[ft_targets[idx]]}",
+                color="black",
+                fontsize=10,
+                ha="center",
+                transform=ax_sub.transAxes,
+            )
+            plt.axis("off")
+
+        plt.suptitle("Finetuned Top 10 Most Confident Incorrect Predictions", fontsize=16)
+        plt.figtext(
+            0.5,
+            0.92,
+            "(Note: The number in parenthesis is the prediction confidence)",
+            ha="center",
+            fontsize=12,
+            color="gray",
+        )
+        plt.savefig(FIGURES_DL_DIR / "finetuned_top_10_errors.png", bbox_inches="tight", dpi=DPI)
+        plt.show()
+    else:
+        logger.info("[Finetuned] No errors found in test set!")
+
+# %% [markdown]
+# > continue here
+#
+# Some insights:
+# - ...
+
+# %% [markdown]
+# ### Finetuned Model Interpretability (Grad-CAM)
+
+# %%
+if ft_ckpt_paths:
+    target_layer = ft_model.feature_extractor.backbone.conv_head
+    lgc = LayerGradCam(ft_model, target_layer)
+
+    num_samples = 5
+    num_classes = len(dm.classes)
+    plt.figure(figsize=(20, 4 * num_classes))
+    np.random.seed(DEFAULT_SEED)
+
+    plot_idx = 1
+    for class_idx in range(num_classes):
+        class_name = dm.classes[class_idx]
+        all_class_indices = np.where(ft_targets == class_idx)[0]
+
+        n = min(len(all_class_indices), num_samples)
+        selected_indices = np.random.choice(all_class_indices, n, replace=False)
+
+        for idx in selected_indices:
+            img, label = pooled_dataset[idx]
+            input_tensor = img.unsqueeze(0).to(device)
+
+            attribution = lgc.attribute(input_tensor, target=label)
+            heatmap = attribution.squeeze().cpu().detach().numpy()
+            heatmap = np.maximum(heatmap, 0)
+            if heatmap.max() > 0:
+                heatmap /= heatmap.max()
+
+            img_disp = img.permute(1, 2, 0).numpy()
+            img_disp = (
+                img_disp * np.array([0.229, 0.224, 0.225])
+                + np.array([0.485, 0.456, 0.406])
+            ).clip(0, 1)
+
+            h, w = img_disp.shape[:2]
+            heatmap_upsampled = zoom(
+                heatmap, (h / heatmap.shape[0], w / heatmap.shape[1])
+            )
+
+            plt.subplot(num_classes, num_samples, plot_idx)
+            plt.imshow(img_disp)
+            plt.imshow(heatmap_upsampled, cmap="jet", alpha=0.4)
+            if (plot_idx - 1) % num_samples == 0:
+                plt.ylabel(class_name, fontsize=14, fontweight="bold")
+
+            plt.title(f"Conf: {ft_probs[idx, label]:.2f}")
+            plt.xticks([])
+            plt.yticks([])
+            plot_idx += 1
+
+        plot_idx += num_samples - n
+
+    plt.suptitle(
+        "Finetuned Grad-CAM Heatmaps on Sample Jute Leaf Disease Images", fontsize=20, y=1.02
+    )
+    plt.tight_layout()
+    plt.savefig(FIGURES_DL_DIR / "finetuned_grad_cam.png", bbox_inches="tight", dpi=DPI)
+    plt.show()
+
+# %% [markdown]
+# > continue here
+#
+# Some insights:
+# - ...
 
 # %% [markdown]
 # ## Conclusion
