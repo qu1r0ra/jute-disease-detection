@@ -19,7 +19,7 @@ from jute_disease.utils.constants import (
     WANDB_ENTITY,
     WANDB_PROJECT,
 )
-from jute_disease.utils.logger import get_logger, setup_wandb
+from jute_disease.utils.logger import flatten_log_version, get_logger, setup_wandb
 from jute_disease.utils.metrics import EVAL_METRICS, TRAIN_METRICS, format_metrics
 from jute_disease.utils.seed import seed_everything
 
@@ -45,6 +45,7 @@ __all__ = [
     "UNLABELED_DIR",
     "WANDB_ENTITY",
     "WANDB_PROJECT",
+    "flatten_log_version",
     "format_metrics",
     "get_logger",
     "seed_everything",

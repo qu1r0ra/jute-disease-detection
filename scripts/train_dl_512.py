@@ -6,8 +6,10 @@ import sys
 from pathlib import Path
 
 import wandb
+import yaml
 
-from jute_disease.utils import get_logger
+from jute_disease.utils import flatten_log_version, get_logger
+from jute_disease.utils.constants import CHECKPOINTS_DIR
 
 logger = get_logger(__name__)
 
@@ -21,6 +23,24 @@ def run_dl_512() -> None:
         raise FileNotFoundError(f"Config file not found: {CONFIG_PATH}")
 
     logger.info("Starting DL 512px Training Pipeline...")
+
+    with open(CONFIG_PATH) as f:
+        cfg = yaml.safe_load(f) or {}
+
+    loggers = cfg.get("trainer", {}).get("logger", [])
+    if isinstance(loggers, dict):
+        loggers = [loggers]
+
+    csv_save_dir = "artifacts/logs"
+    csv_name = CONFIG_PATH.stem
+    for logger_cfg in loggers:
+        if "CSVLogger" in logger_cfg.get("class_path", ""):
+            init_args = logger_cfg.get("init_args", {})
+            csv_save_dir = init_args.get("save_dir", csv_save_dir)
+            csv_name = init_args.get("name", csv_name)
+            break
+
+    log_dir = Path(csv_save_dir) / csv_name
 
     run_id = wandb.util.generate_id()
     env = os.environ.copy()
@@ -40,9 +60,10 @@ def run_dl_512() -> None:
     result = subprocess.run(fit_cmd, env=env)
     if result.returncode != 0:
         raise RuntimeError(f"Failed during fit with exit code {result.returncode}.")
+    flatten_log_version(log_dir, "train-metrics.csv")
 
     # 2. Test
-    ckpt_dir = Path("artifacts/checkpoints/mobilenet_v2_512")
+    ckpt_dir = CHECKPOINTS_DIR / "mobilenet_v2_512"
     if not ckpt_dir.exists():
         raise FileNotFoundError(f"Checkpoint directory not found: {ckpt_dir}")
 
@@ -67,6 +88,7 @@ def run_dl_512() -> None:
     result = subprocess.run(test_cmd, env=env)
     if result.returncode != 0:
         raise RuntimeError(f"Failed during test with exit code {result.returncode}.")
+    flatten_log_version(log_dir, "test-metrics.csv")
 
     # 3. Aggregate
     agg_cmd = [
@@ -77,7 +99,7 @@ def run_dl_512() -> None:
         "--exp-names",
         "mobilenet_v2_512px",
         "--output",
-        "artifacts/grid_search_mobilenet_v2_512px_metrics.csv",
+        "artifacts/logs/resolution_exps/summary_metrics.csv",
     ]
     logger.info("Running metric aggregation...")
     result = subprocess.run(agg_cmd, env=env)

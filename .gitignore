@@ -1,5 +1,6 @@
 # Miscellaneous
-artifacts/
+artifacts/*
+!artifacts/logs/
 data/*
 !data/*.txt
 lightning_logs/

@@ -1,7 +1,9 @@
 learning_rate:
+  - 0.01
   - 0.005
-  - 0.001
+  - 0.001  # Baseline
   - 0.0005
+  - 0.0001
 
 locked_params:
   name: "level_1_imagenet"

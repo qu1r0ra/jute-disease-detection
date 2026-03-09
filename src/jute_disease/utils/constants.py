@@ -9,6 +9,8 @@ ML_SPLIT_DIR = DATA_DIR / "ml_split"
 UNLABELED_DIR = DATA_DIR / "unlabeled"
 
 ARTIFACTS_DIR = ROOT_DIR / "artifacts"
+LOGS_DIR = ARTIFACTS_DIR / "logs"
+CHECKPOINTS_DIR = ARTIFACTS_DIR / "checkpoints"
 ML_MODELS_DIR = ARTIFACTS_DIR / "ml_models"
 ML_FEATURES_DIR = ARTIFACTS_DIR / "features"
 
