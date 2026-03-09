@@ -7,8 +7,9 @@ import sys
 from pathlib import Path
 
 import wandb
+import yaml
 
-from jute_disease.utils import get_logger
+from jute_disease.utils import flatten_log_version, get_logger
 from jute_disease.utils.constants import CHECKPOINTS_DIR
 
 logger = get_logger(__name__)
@@ -38,6 +39,24 @@ def run_all_dl(
 
         logger.info(f"Training {model_name} (config: {config})...")
 
+        with open(config) as f:
+            cfg = yaml.safe_load(f) or {}
+
+        loggers = cfg.get("trainer", {}).get("logger", [])
+        if isinstance(loggers, dict):
+            loggers = [loggers]
+
+        csv_save_dir = "artifacts/logs"
+        csv_name = model_name
+        for logger_cfg in loggers:
+            if "CSVLogger" in logger_cfg.get("class_path", ""):
+                init_args = logger_cfg.get("init_args", {})
+                csv_save_dir = init_args.get("save_dir", csv_save_dir)
+                csv_name = init_args.get("name", csv_name)
+                break
+
+        log_dir = Path(csv_save_dir) / csv_name
+
         run_id = wandb.util.generate_id()
         env = os.environ.copy()
         env["WANDB_RUN_ID"] = run_id
@@ -56,6 +75,7 @@ def run_all_dl(
             raise RuntimeError(
                 f"{model_name} failed during fit with exit code {result.returncode}."
             )
+        flatten_log_version(log_dir, "train-metrics.csv")
 
         logger.info(f"Testing {model_name}...")
 
@@ -84,6 +104,7 @@ def run_all_dl(
             raise RuntimeError(
                 f"{model_name} failed during test with exit code {result.returncode}."
             )
+        flatten_log_version(log_dir, "test-metrics.csv")
 
         logger.info(f"Finished {model_name}.")
 
