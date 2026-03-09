@@ -242,7 +242,7 @@ if metrics_path.exists():
 # %%
 # 2. Load Training History for Curves
 history_dir = LOGS_DIR / "phase1_transfer_grid" / "mobilenet_v2-l1_imagenet-dr_0.1"
-history_files = list(history_dir.glob("version_*/metrics.csv"))
+history_files = list(history_dir.glob("*-metrics.csv"))
 
 if history_files:
     dfs = [pd.read_csv(f) for f in history_files]
