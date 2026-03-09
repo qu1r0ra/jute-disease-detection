@@ -641,7 +641,9 @@ plt.show()
 # Let's inspect the training curve of the champion fine-tuned configuration.
 
 # %%
-finetuned_history_dir = LOGS_DIR / "phase2_finetune_grid" / "mobilenet_v2-l1_imagenet-lr_0.01-wd_0.05"
+finetuned_history_dir = (
+    LOGS_DIR / "phase2_finetune_grid" / "mobilenet_v2-l1_imagenet-lr_0.01-wd_0.05"
+)
 ft_history_files = list(finetuned_history_dir.glob("*-metrics.csv"))
 
 if ft_history_files:
@@ -680,7 +682,9 @@ if ft_history_files:
     ax[1].grid(True, alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig(FIGURES_DL_DIR / "finetuned_training_history.png", bbox_inches="tight", dpi=DPI)
+    plt.savefig(
+        FIGURES_DL_DIR / "finetuned_training_history.png", bbox_inches="tight", dpi=DPI
+    )
     plt.show()
 
 # %% [markdown]
@@ -700,7 +704,9 @@ if ft_history_files:
 # We now load the best checkpoint from our finetuning run and re-generate predictions for Error Analysis and Grad-CAM visualization.
 
 # %%
-finetuned_dir = ARTIFACTS_DIR / "checkpoints" / "mobilenet_v2-l1_imagenet-lr_0.01-wd_0.05"
+finetuned_dir = (
+    ARTIFACTS_DIR / "checkpoints" / "mobilenet_v2-l1_imagenet-lr_0.01-wd_0.05"
+)
 ft_ckpt_paths = list(finetuned_dir.glob("*.ckpt"))
 
 if ft_ckpt_paths:
@@ -778,7 +784,8 @@ if ft_ckpt_paths:
             ax_sub.text(
                 0.5,
                 1.12,
-                f"Pred: {dm.classes[ft_preds[idx]]} ({ft_probs[idx, ft_preds[idx]]:.2f})",
+                f"Pred: {dm.classes[ft_preds[idx]]} "
+                f"({ft_probs[idx, ft_preds[idx]]:.2f})",
                 color="red",
                 fontsize=10,
                 ha="center",
@@ -795,7 +802,9 @@ if ft_ckpt_paths:
             )
             plt.axis("off")
 
-        plt.suptitle("Finetuned Top 10 Most Confident Incorrect Predictions", fontsize=16)
+        plt.suptitle(
+            "Finetuned Top 10 Most Confident Incorrect Predictions", fontsize=16
+        )
         plt.figtext(
             0.5,
             0.92,
@@ -804,7 +813,9 @@ if ft_ckpt_paths:
             fontsize=12,
             color="gray",
         )
-        plt.savefig(FIGURES_DL_DIR / "finetuned_top_10_errors.png", bbox_inches="tight", dpi=DPI)
+        plt.savefig(
+            FIGURES_DL_DIR / "finetuned_top_10_errors.png", bbox_inches="tight", dpi=DPI
+        )
         plt.show()
     else:
         logger.info("[Finetuned] No errors found in test set!")
@@ -871,7 +882,9 @@ if ft_ckpt_paths:
         plot_idx += num_samples - n
 
     plt.suptitle(
-        "Finetuned Grad-CAM Heatmaps on Sample Jute Leaf Disease Images", fontsize=20, y=1.02
+        "Finetuned Grad-CAM Heatmaps on Sample Jute Leaf Disease Images",
+        fontsize=20,
+        y=1.02,
     )
     plt.tight_layout()
     plt.savefig(FIGURES_DL_DIR / "finetuned_grad_cam.png", bbox_inches="tight", dpi=DPI)
