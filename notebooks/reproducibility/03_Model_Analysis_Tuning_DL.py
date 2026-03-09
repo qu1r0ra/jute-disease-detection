@@ -96,6 +96,7 @@ import seaborn as sns
 from jute_disease.utils import get_logger
 from jute_disease.utils.constants import (
     ARTIFACTS_DIR,
+    BATCH_SIZE,
     DATA_DIR,
     DEFAULT_SEED,
     DPI,
@@ -589,13 +590,14 @@ if ckpt_paths:
 #
 # To answer this, we execute a final "Phase 2" grid search dedicated exclusively to fine-tuning the **Learning Rate** with significantly extended training bounds:
 # - **Iterating LRs**: `0.01`, `0.005`, `0.001`, `0.0005`, `0.0001`
-# - **Extended Capability**: `max_epochs` raised to 50.
 # - **Extended Patience**: `early_stopping_patience` raised to 20.
 #
 # If the model still caps at similar performance levels despite exhaustive optimizer iterations and extended time arrays, our data-ceiling hypothesis stands.
 
 # %%
-# !make grid-search-finetune
+# !uv run python scripts/run_grid_search.py \
+#     configs/grid/mobilenet_v2_finetune_grid.yaml \
+#     --base-config configs/baselines/mobilenet_v2.yaml
 
 # %% [markdown]
 # ## Conclusion
