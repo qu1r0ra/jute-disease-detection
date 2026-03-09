@@ -33,6 +33,21 @@
 #
 # - Like the [previous notebook](./02_Model_Selection_Training_DL.ipynb), this is expected to be executed in **Google Colab**. What Colab GPU to use is technically up to you, but we recommend sticking to whatever you used in the previous notebook for fair model comparison. In our case, we used an **L4**.
 # - This time, we chose not to abstract the visualization logic into separate scripts to allow for quick inline revisions.
+#
+# ## Outline
+#
+# - [Environment Setup](#environment-setup)
+# - [Part 1: Baseline Analysis](#part-1-baseline-analysis)
+#   - [1A. Model Performance](#1a-model-performance)
+#   - [1B. Error Analysis](#1b-error-analysis)
+#   - [1C. Latent Space Analysis](#1c-latent-space-analysis)
+#   - [1D. Interpretability](#1d-interpretability)
+# - [Part 2: Optimizer Fine-Tuning](#part-2-optimizer-fine-tuning)
+#   - [2A. Model Performance](#2a-model-performance)
+#   - [2B. Error Analysis](#2b-error-analysis)
+#   - [2C. Interpretability](#2c-interpretability)
+# - [Conclusion](#conclusion)
+# - [References](#references)
 
 # %% [markdown]
 # ## Environment Setup
@@ -116,9 +131,11 @@ else:
     print("Symlink failed :<")
 
 # %% [markdown]
-# ## Model Analysis
+# ## Part 1: Baseline Analysis
 #
-# ### Impact of a Higher Image Resolution on Model Performance
+# ### 1A. Model Performance
+#
+# #### Impact of a Higher Image Resolution on Model Performance
 #
 # Let's begin by analyzing how training on a higher image resolution impacts our model's performance. Recall that our models were originally trained on 256x256 pixel images and that we trained 512x512 pixel counterparts for the pre-trained MobileNet V2 with dropout rates 0.0 and 0.1 for comparison.
 
@@ -225,7 +242,7 @@ display(
 # Hence, our initial hypothesis of training on higher-resolution images is disproven, though not in a formal statistical manner.
 
 # %% [markdown]
-# ### Loss and Accuracy Curves
+# #### Loss and Accuracy Curves
 #
 # Now let's analyze how training went for our best MobileNet model by inspecting its training and validation loss and accuracy curves.
 
@@ -285,17 +302,18 @@ plt.show()
 # - Regardless, it is worth inspecting how extending the training time will affect the training and validation metrics. We may have cut it too short by setting the early stopping patience low (originally 5). During fine-tuning, we will increase it to 20 to see whether the metrics will converge.
 
 # %% [markdown]
-# ### Confusion Matrix
+# ### 1B. Error Analysis
+#
+# #### Confusion Matrix
 #
 # Now let's analyze 
 #
-# ![Phase 1 CM](path/to/phase1_cm.png)
+# ![Part 1 CM](path/to/phase1_cm.png)
 
 # %% [markdown]
-# ## Latent Space Analysis
+# #### Model Inference Setup
 #
-# Some interesting stuff ahead! Let's perform **t-SNE** and **UMAP** embedding analyses to visualize our data in lower dimensions, and inspect the top confident errors to determine whether the model struggles with specific classes.
-
+# Our subsequent error analysis, latent space, and interpretability evaluations require the test set predictions. We generate them here.
 # %%
 import time
 
@@ -377,6 +395,76 @@ preds = torch.cat(all_preds).numpy()
 targets = torch.cat(all_targets).numpy()
 probs = torch.cat(all_probs).numpy()
 splits = np.array(all_splits)
+
+# %% [markdown]
+# #### Top Confident Errors
+
+# %%
+is_wrong = preds != targets
+wrong_indices = np.where(is_wrong)[0]
+
+if len(wrong_indices) > 0:
+    wrong_probs = [probs[i, preds[i]] for i in wrong_indices]
+    sorted_wrong = np.argsort(wrong_probs)[::-1][:10]
+    top_wrong_idx = wrong_indices[sorted_wrong]
+
+    plt.figure(figsize=(20, 10))
+    for i, idx in enumerate(top_wrong_idx):
+        img, label = pooled_dataset[idx]
+        img_disp = img.permute(1, 2, 0).numpy()
+        img_disp = (
+            img_disp * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406])
+        ).clip(0, 1)
+
+        plt.subplot(2, 5, i + 1)
+        plt.imshow(img_disp)
+        ax_sub = plt.gca()
+        plt.title("")
+        ax_sub.text(
+            0.5,
+            1.12,
+            f"Pred: {dm.classes[preds[idx]]} ({probs[idx, preds[idx]]:.2f})",
+            color="red",
+            fontsize=10,
+            ha="center",
+            transform=ax_sub.transAxes,
+        )
+        ax_sub.text(
+            0.5,
+            1.02,
+            f"Actual: {dm.classes[targets[idx]]}",
+            color="black",
+            fontsize=10,
+            ha="center",
+            transform=ax_sub.transAxes,
+        )
+        plt.axis("off")
+
+    plt.suptitle("Top 10 Most Confident Incorrect Predictions", fontsize=16)
+    plt.figtext(
+        0.5,
+        0.92,
+        "(Note: The number in parenthesis is the prediction confidence)",
+        ha="center",
+        fontsize=12,
+        color="gray",
+    )
+    plt.savefig(FIGURES_DL_DIR / "top_10_errors.png", bbox_inches="tight", dpi=DPI)
+    plt.show()
+else:
+    logger.info("No errors found in test set!")
+
+# %% [markdown]
+# > continue here
+#
+# Some insights:
+# - **The "Data-Level Ceiling"**: Label Ambiguity. Many Jute leaves in our dataset exhibit symptoms of **multiple classes simultaneously** (e.g., both Mosaic and Cercospora). In our current **Single-Label Multiclass** setup, the model is forced to choose one, and is penalized for recognizing features of the other.
+# - ...
+
+# %% [markdown]
+# ### 1C. Latent Space Analysis
+#
+# Some interesting stuff ahead! Let's perform **t-SNE** and **UMAP** embedding analyses to visualize our data in lower dimensions, and inspect the top confident errors to determine whether the model struggles with specific classes.
 
 # %% [markdown]
 # ### T-distributed Stochastic Neighbor Embedding (t-SNE)
@@ -492,72 +580,7 @@ plt.show()
 # - ...
 
 # %% [markdown]
-# ### Top Confident Errors
-
-# %%
-is_wrong = preds != targets
-wrong_indices = np.where(is_wrong)[0]
-
-if len(wrong_indices) > 0:
-    wrong_probs = [probs[i, preds[i]] for i in wrong_indices]
-    sorted_wrong = np.argsort(wrong_probs)[::-1][:10]
-    top_wrong_idx = wrong_indices[sorted_wrong]
-
-    plt.figure(figsize=(20, 10))
-    for i, idx in enumerate(top_wrong_idx):
-        img, label = pooled_dataset[idx]
-        img_disp = img.permute(1, 2, 0).numpy()
-        img_disp = (
-            img_disp * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406])
-        ).clip(0, 1)
-
-        plt.subplot(2, 5, i + 1)
-        plt.imshow(img_disp)
-        ax_sub = plt.gca()
-        plt.title("")
-        ax_sub.text(
-            0.5,
-            1.12,
-            f"Pred: {dm.classes[preds[idx]]} ({probs[idx, preds[idx]]:.2f})",
-            color="red",
-            fontsize=10,
-            ha="center",
-            transform=ax_sub.transAxes,
-        )
-        ax_sub.text(
-            0.5,
-            1.02,
-            f"Actual: {dm.classes[targets[idx]]}",
-            color="black",
-            fontsize=10,
-            ha="center",
-            transform=ax_sub.transAxes,
-        )
-        plt.axis("off")
-
-    plt.suptitle("Top 10 Most Confident Incorrect Predictions", fontsize=16)
-    plt.figtext(
-        0.5,
-        0.92,
-        "(Note: The number in parenthesis is the prediction confidence)",
-        ha="center",
-        fontsize=12,
-        color="gray",
-    )
-    plt.savefig(FIGURES_DL_DIR / "top_10_errors.png", bbox_inches="tight", dpi=DPI)
-    plt.show()
-else:
-    logger.info("No errors found in test set!")
-
-# %% [markdown]
-# > continue here
-#
-# Some insights:
-# - **The "Data-Level Ceiling"**: Label Ambiguity. Many Jute leaves in our dataset exhibit symptoms of **multiple classes simultaneously** (e.g., both Mosaic and Cercospora). In our current **Single-Label Multiclass** setup, the model is forced to choose one, and is penalized for recognizing features of the other.
-# - ...
-
-# %% [markdown]
-# ## Model Interpretability
+# ### 1D. Interpretability
 #
 # We use Grad-CAM to visualize where the model focuses its attention when making predictions.
 
@@ -626,13 +649,13 @@ plt.show()
 # - ...
 
 # %% [markdown]
-# ## Phase 2: Optimizer Fine-Tuning (Empirical Verification)
+# ## Part 2: Optimizer Fine-Tuning (Empirical Verification)
 #
 # Our analysis above (specifically regarding the multi-label ambiguity in our dataset) led us to form a strong hypothesis: the performance ceiling we are experiencing (~90% test accuracy) is a "Data-Level Ceiling" caused by overlapping symptoms, not an architectural capacity issue.
 #
 # However, to be scientifically rigorous, we must verify this. Is the model genuinely bottlenecked by the data, or was it simply under-trained due to a lack of epochs or killed prematurely by strict early stopping configurations?
 #
-# To answer this, we execute a final "Phase 2" grid search dedicated exclusively to fine-tuning the **Learning Rate** with significantly extended training bounds:
+# To answer this, we execute a final "Part 2" grid search dedicated exclusively to fine-tuning the **Learning Rate** with significantly extended training bounds:
 # - **Iterating LRs**: `0.01`, `0.005`, `0.001`, `0.0005`, `0.0001`
 # - **Extended Patience**: `early_stopping_patience` raised to 20.
 #
@@ -644,7 +667,9 @@ plt.show()
 #     --base-config configs/baselines/mobilenet_v2.yaml
 
 # %% [markdown]
-# ### Phase 2 Training Curves
+# ### 2A. Model Performance
+#
+# #### Part 2 Training Curves
 # Let's inspect the training curve of the champion fine-tuned configuration.
 
 # %%
@@ -695,19 +720,21 @@ if ft_history_files:
     plt.show()
 
 # %% [markdown]
-# ### Confusion Matrix Comparison
+# ### 2B. Error Analysis
+#
+# #### Confusion Matrix Comparison
 #
 # > Replace the placeholders below with the confusion matrices downloaded from Weights & Biases.
 #
-# | Phase 1 Baseline (ImageNet L1) | Phase 2 Finetuned (LR=0.01) |
+# | Part 1 Baseline (ImageNet L1) | Part 2 Finetuned (LR=0.01) |
 # | :---: | :---: |
-# | ![Phase 1 CM](path/to/phase1_cm.png) | ![Phase 2 CM](path/to/phase2_cm.png) |
+# | ![Part 1 CM](path/to/phase1_cm.png) | ![Part 2 CM](path/to/phase2_cm.png) |
 #
 # Some insights:
 # - ...
 
 # %% [markdown]
-# ### Finetuned Model Inference
+# #### Finetuned Model Inference
 # We now load the best checkpoint from our finetuning run and re-generate predictions for Error Analysis and Grad-CAM visualization.
 
 # %%
@@ -763,7 +790,7 @@ if ft_ckpt_paths:
     ft_splits = np.array(all_splits)
 
 # %% [markdown]
-# ### Finetuned Top Confident Errors
+# #### Finetuned Top Confident Errors
 
 # %%
 if ft_ckpt_paths:
@@ -834,7 +861,9 @@ if ft_ckpt_paths:
 # - ...
 
 # %% [markdown]
-# ### Finetuned Model Interpretability (Grad-CAM)
+# ### 2C. Interpretability
+#
+# #### Finetuned Model Interpretability (Grad-CAM)
 
 # %%
 if ft_ckpt_paths:
