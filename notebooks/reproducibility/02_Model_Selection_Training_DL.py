@@ -32,12 +32,12 @@
 #   - **ResNet-50**
 # - Decide on a baseline model to move forward with
 # - Get checkpoints for different levels of fine-tuning on the chosen model:
-#   - _Level 1_: ImageNet (pre-trained)
-#   - _Level 2_: ImageNet (pre-trained) -> PlantVillage (fine-tuning)
-#   - _Level 3_: ImageNet (pre-trained) -> PlantVillage (fine-tuning) -> PlantDoc (fine-tuning)
+#   - `Level 1`: ImageNet (pre-trained)
+#   - `Level 2`: ImageNet (pre-trained) -> PlantVillage (fine-tuning)
+#   - `Level 3`: ImageNet (pre-trained) -> PlantVillage (fine-tuning) -> PlantDoc (fine-tuning)
 # - Conduct grid search on the chosen model with the ff. hyperparameters/settings:
-#   - _Dropout rate_: 0.0, 0.1, 0.2
-#   - _Checkpoints_: Levels 1, 2, 3
+#   - Dropout rate: `0.0`, `0.1`, `0.2`
+#   - Checkpoint: `Levels 1, 2, 3`
 #
 # **Note:**
 #
