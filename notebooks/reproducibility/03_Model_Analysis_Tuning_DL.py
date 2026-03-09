@@ -87,17 +87,22 @@ else:
 # !uv run python src/jute_disease/data/utils.py split
 
 # %%
+import shutil
+
 GDRIVE_PATH = Path(DATA_ZIP_PATH).parent
 GDRIVE_ARTIFACTS = GDRIVE_PATH / "artifacts"
 GDRIVE_ARTIFACTS.mkdir(parents=True, exist_ok=True)
 
 LOCAL_ARTIFACTS = Path("artifacts")
 
-if not LOCAL_ARTIFACTS.exists() and not LOCAL_ARTIFACTS.is_symlink():
+if not LOCAL_ARTIFACTS.is_symlink():
+    if LOCAL_ARTIFACTS.exists():
+        shutil.copytree(LOCAL_ARTIFACTS, GDRIVE_ARTIFACTS, dirs_exist_ok=True)
+        shutil.rmtree(LOCAL_ARTIFACTS)
     LOCAL_ARTIFACTS.symlink_to(GDRIVE_ARTIFACTS)
     print(f"Symlinked {LOCAL_ARTIFACTS.absolute()} to {GDRIVE_ARTIFACTS}")
 else:
-    print(f"{LOCAL_ARTIFACTS} already exists or is linked.")
+    print(f"{LOCAL_ARTIFACTS} is already linked.")
 
 # %%
 test_file = LOCAL_ARTIFACTS / "test.txt"

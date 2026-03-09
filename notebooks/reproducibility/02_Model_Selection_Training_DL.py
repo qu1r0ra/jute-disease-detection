@@ -123,17 +123,22 @@ else:
 # To persist our training artifacts beyond the Colab VM, we can _symlink_ the project's `artifacts` folder to our Google Drive.
 
 # %% id="c644e78d"
+import shutil
+
 GDRIVE_PATH = Path(DATA_ZIP_PATH).parent
 GDRIVE_ARTIFACTS = GDRIVE_PATH / "artifacts"
 GDRIVE_ARTIFACTS.mkdir(parents=True, exist_ok=True)
 
 LOCAL_ARTIFACTS = Path("artifacts")
 
-if not LOCAL_ARTIFACTS.exists() and not LOCAL_ARTIFACTS.is_symlink():
+if not LOCAL_ARTIFACTS.is_symlink():
+    if LOCAL_ARTIFACTS.exists():
+        shutil.copytree(LOCAL_ARTIFACTS, GDRIVE_ARTIFACTS, dirs_exist_ok=True)
+        shutil.rmtree(LOCAL_ARTIFACTS)
     LOCAL_ARTIFACTS.symlink_to(GDRIVE_ARTIFACTS)
     print(f"Symlinked {LOCAL_ARTIFACTS.absolute()} to {GDRIVE_ARTIFACTS}")
 else:
-    print(f"{LOCAL_ARTIFACTS} already exists or is linked.")
+    print(f"{LOCAL_ARTIFACTS} is already linked.")
 
 # %% [markdown] id="875aabf0"
 # Let's perform a quick sanity test to ensure all generated files show up inside your Google Drive folder containing your `data.zip`. If you see a generated `test.txt` file then you are all set to proceed.
