@@ -1,5 +1,6 @@
 import argparse
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -11,6 +12,22 @@ from jute_disease.utils import get_logger
 from jute_disease.utils.constants import CHECKPOINTS_DIR, LOGS_DIR
 
 logger = get_logger(__name__)
+
+
+def _flatten_log_version(log_dir: Path, target_name: str) -> None:
+    """Takes the latest parameter's `version_*` folder and flattens
+    its metrics out.
+    """
+    if not log_dir.exists():
+        return
+    versions = sorted([d for d in log_dir.glob("version_*") if d.is_dir()])
+    if not versions:
+        return
+    latest_version = versions[-1]
+    metrics_file = latest_version / "metrics.csv"
+    if metrics_file.exists():
+        shutil.move(str(metrics_file), str(log_dir / target_name))
+    shutil.rmtree(str(latest_version))
 
 
 def _aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
@@ -221,6 +238,9 @@ def run_grid_search(
                 logger.info(f"Command (Fit): {' '.join(cmd)}")
                 try:
                     subprocess.run(cmd, env=env, check=True)
+                    _flatten_log_version(
+                        LOGS_DIR / log_group / exp_name, "train-metrics.csv"
+                    )
                 except subprocess.CalledProcessError as e:
                     logger.error(f"Error running Phase 2 experiment lr{lr}_wd{wd}: {e}")
                     continue
@@ -252,6 +272,9 @@ def run_grid_search(
                 logger.info(f"Command (Test): {' '.join(test_cmd)}")
                 try:
                     subprocess.run(test_cmd, env=env, check=True)
+                    _flatten_log_version(
+                        LOGS_DIR / log_group / exp_name, "test-metrics.csv"
+                    )
                 except subprocess.CalledProcessError as e:
                     logger.error(f"Error testing Phase 2 experiment {exp_name}: {e}")
 
@@ -327,6 +350,9 @@ def run_grid_search(
             logger.info(f"Command (Fit): {' '.join(cmd)}")
             try:
                 subprocess.run(cmd, env=env, check=True)
+                _flatten_log_version(
+                    LOGS_DIR / log_group / exp_name, "train-metrics.csv"
+                )
             except subprocess.CalledProcessError as e:
                 logger.error(f"Fit failed for {exp_name}: {e}")
                 continue
@@ -358,6 +384,9 @@ def run_grid_search(
             logger.info(f"Command (Test): {' '.join(test_cmd)}")
             try:
                 subprocess.run(test_cmd, env=env, check=True)
+                _flatten_log_version(
+                    LOGS_DIR / log_group / exp_name, "test-metrics.csv"
+                )
             except subprocess.CalledProcessError as e:
                 logger.error(f"Error testing Phase 1 experiment {exp_name}: {e}")
 

@@ -18,7 +18,7 @@ def aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
         if not log_dir.exists():
             continue
 
-        metrics_files = list(log_dir.glob("version_*/metrics.csv"))
+        metrics_files = list(log_dir.glob("*-metrics.csv"))
         if not metrics_files:
             continue
 
