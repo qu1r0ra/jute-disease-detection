@@ -8,7 +8,8 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: .venv
+#     language: python
 #     name: python3
 # ---
 
@@ -16,7 +17,7 @@
 # <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/main/notebooks/reproducibility/03_Model_Analysis_Tuning_DL.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown]
-# # Deep Learning Model Analysis and Fine-Tuning
+# # Deep Learning - Model Analysis and Fine-Tuning
 #
 # Continuing from our previous notebook, we will now conduct a detailed evaluation of our chosen MobileNet V2 champion model.
 #
@@ -55,10 +56,23 @@ from jute_disease.utils.seed import seed_everything
 seed_everything(DEFAULT_SEED)
 
 # %% [markdown]
-# Before proceeding,
+# If you haven't done yet from the previous notebook,
 #
 # 1. Download `data.zip` from <https://drive.google.com/drive/folders/1WoQ-Xzy0Prl9lInHW5JpGX4tpE9YDUua?usp=sharing> and upload it to your Google Colab account's Google Drive. You can simply upload it to the root of _My Drive_ for simplicity, but we recommend creating a separate folder for organization.
 # 2. Update `DATA_ZIP_PATH` below to the path where you stored the file. If you uploaded it to the root of _My Drive_, you can set it to **"/content/drive/MyDrive/data.zip"**.
+
+# %% [markdown]
+# After following the instructions above, let us mount our Google Drive to the Colab runtime. This is necessary to access the Jute data (`data.zip`) and to persist training artifacts such as model checkpoints and logs beyond the Colab VM's runtime.
+#
+# > You may be prompted to permit access; please do so.
+
+# %%
+from google.colab import drive
+
+drive.mount("/content/drive")
+
+# %% [markdown]
+# Let's unzip `data.zip` which contains our merged Jute leaf disease data.
 
 # %%
 from pathlib import Path
@@ -79,16 +93,6 @@ else:
         f"Zip file not found at {DATA_ZIP_PATH}. "
         "Please check the path or upload your data."
     )
-
-# %% [markdown]
-# After following the instructions above, let us mount our Google Drive to the Colab runtime. This is necessary to access the Jute data (`data.zip`) and to persist training artifacts such as model checkpoints and logs beyond the Colab VM's runtime.
-#
-# > You may be prompted to permit access; please do so.
-
-# %%
-from google.colab import drive
-
-drive.mount("/content/drive")
 
 # %% [markdown]
 # Let's construct the `train`, `val`, and `test` sub-folders inside `data/ml_split/` from the unzipped data.

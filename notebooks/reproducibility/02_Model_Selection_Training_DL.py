@@ -75,6 +75,22 @@ seed_everything(DEFAULT_SEED)
 # 1. Download `data.zip` from <https://drive.google.com/drive/folders/1WoQ-Xzy0Prl9lInHW5JpGX4tpE9YDUua?usp=sharing> and upload it to your Google Colab account's Google Drive. You can simply upload it to the root of _My Drive_ for simplicity, but we recommend creating a separate folder for organization.
 # 2. Update `DATA_ZIP_PATH` below to the path where you stored the file. If you uploaded it to the root of _My Drive_, you can set it to **"/content/drive/MyDrive/data.zip"**.
 
+# %% [markdown] id="20a1a666"
+# After following the instructions above, let us mount our Google Drive to the Colab runtime. This is necessary to access the Jute data (`data.zip`) and to persist training artifacts such as model checkpoints and logs beyond the Colab VM's runtime.
+#
+# > You may be prompted to permit access; please do so.
+
+# %% id="61b55c67"
+from google.colab import drive
+
+drive.mount("/content/drive")
+
+# %% [markdown]
+# Let's unzip `data.zip` which contains our merged Jute leaf disease data.
+
+# %% id="oLY0LIHFw3nV"
+# %cd jute-disease-detection
+
 # %% id="7caa248a"
 from pathlib import Path
 
@@ -94,19 +110,6 @@ else:
         f"Zip file not found at {DATA_ZIP_PATH}. "
         "Please check the path or upload your data."
     )
-
-# %% [markdown] id="20a1a666"
-# After following the instructions above, let us mount our Google Drive to the Colab runtime. This is necessary to access the Jute data (`data.zip`) and to persist training artifacts such as model checkpoints and logs beyond the Colab VM's runtime.
-#
-# > You may be prompted to permit access; please do so.
-
-# %% id="61b55c67"
-from google.colab import drive
-
-drive.mount("/content/drive")
-
-# %% id="oLY0LIHFw3nV"
-# %cd jute-disease-detection
 
 # %% [markdown] id="ccaff569"
 # Let's construct the `train`, `val`, and `test` sub-folders inside `data/ml_split/` from the unzipped data.
