@@ -35,7 +35,7 @@
 # %% [markdown]
 # ## Environment Setup
 #
-# Let's run the quick environment setup again. Refer to the previous notebook for detailed instructions.
+# Let's run the environment setup again. Refer to the previous notebook for detailed instructions and remarks.
 
 # %%
 # !git clone https://github.com/qu1r0ra/jute-disease-detection.git
@@ -45,9 +45,6 @@
 # !uv pip install --system -e .
 # !uv sync
 
-# %% [markdown]
-# Let's seed the environment for reproducibility.
-
 # %%
 # ruff: noqa: T201
 from jute_disease.utils.constants import DEFAULT_SEED
@@ -55,24 +52,13 @@ from jute_disease.utils.seed import seed_everything
 
 seed_everything(DEFAULT_SEED)
 
-# %% [markdown]
-# If you haven't done yet from the previous notebook,
-#
-# 1. Download `data.zip` from <https://drive.google.com/drive/folders/1WoQ-Xzy0Prl9lInHW5JpGX4tpE9YDUua?usp=sharing> and upload it to your Google Colab account's Google Drive. You can simply upload it to the root of _My Drive_ for simplicity, but we recommend creating a separate folder for organization.
-# 2. Update `DATA_ZIP_PATH` below to the path where you stored the file. If you uploaded it to the root of _My Drive_, you can set it to **"/content/drive/MyDrive/data.zip"**.
-
-# %% [markdown]
-# After following the instructions above, let us mount our Google Drive to the Colab runtime. This is necessary to access the Jute data (`data.zip`) and to persist training artifacts such as model checkpoints and logs beyond the Colab VM's runtime.
-#
-# > You may be prompted to permit access; please do so.
-
 # %%
 from google.colab import drive
 
 drive.mount("/content/drive")
 
-# %% [markdown]
-# Let's unzip `data.zip` which contains our merged Jute leaf disease data.
+# %%
+# %cd jute-disease-detection
 
 # %%
 from pathlib import Path
@@ -94,16 +80,8 @@ else:
         "Please check the path or upload your data."
     )
 
-# %% [markdown]
-# Let's construct the `train`, `val`, and `test` sub-folders inside `data/ml_split/` from the unzipped data.
-#
-# > Throughout the notebooks, you will see scripts like this being executed. We greatly modularized our code so that notebooks merely serve as a presentation layer with the specifics abstracted away by the codebase. If you want to find out what's happening under the hood, feel free to inspect the the codebase.
-
 # %%
 # !uv run python src/jute_disease/data/utils.py split
-
-# %% [markdown]
-# To persist our training artifacts beyond the Colab VM, we can _symlink_ the project's `artifacts` folder to our Google Drive.
 
 # %%
 GDRIVE_PATH = Path(DATA_ZIP_PATH).parent
@@ -117,9 +95,6 @@ if not LOCAL_ARTIFACTS.exists() and not LOCAL_ARTIFACTS.is_symlink():
     print(f"Symlinked {LOCAL_ARTIFACTS.absolute()} to {GDRIVE_ARTIFACTS}")
 else:
     print(f"{LOCAL_ARTIFACTS} already exists or is linked.")
-
-# %% [markdown]
-# Let's perform a quick sanity test to ensure all generated files show up inside your Google Drive folder containing your `data.zip`. If you see a generated `test.txt` file then you are all set to proceed.
 
 # %%
 test_file = LOCAL_ARTIFACTS / "test.txt"
