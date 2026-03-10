@@ -422,7 +422,9 @@ display(df_metrics.round(4))
 # %% [markdown]
 # #### Model Inference Setup
 #
-# Our subsequent error analysis, latent space, and interpretability evaluations require the test set predictions. We generate them here.
+# The following error analysis, latent space analysis, and interpretability sections require the model's test set predictions and generated features, so let's first create them with our chosen MobileNet V2 configuration.
+#
+# > Funnily, this is the only time we'll have to manually write an ML loop as PyTorch Lightning normally handles most of this under the hood. However, we now need more control over what we feed into and get out from the model.
 # %%
 import time
 
@@ -438,7 +440,7 @@ from jute_disease.data.datamodule import DataModule
 from jute_disease.models.dl.backbone import TimmBackbone
 from jute_disease.models.dl.classifier import Classifier
 
-dm = DataModule(data_dir=str(ML_SPLIT_DIR), batch_size=BATCH_SIZE)
+dm = DataModule(data_dir=str(ML_SPLIT_DIR))
 dm.setup("test")
 dm.setup("fit")
 
