@@ -508,18 +508,26 @@ probs = torch.cat(all_probs).numpy()
 splits = np.array(all_splits)
 
 # %% [markdown]
+# Some additional insights:
+# - Running this on a _ThinkPad T480_ with an _Intel Core i7-8550U_ processor (up to 4.00 GHz) achieved a mean inference time of 96.95 ms per image.
+
+# %% [markdown]
 # #### Top Confident Errors
 
 # %%
+TOP_K = 10
 is_wrong = preds != targets
 wrong_indices = np.where(is_wrong)[0]
 
 if len(wrong_indices) > 0:
     wrong_probs = [probs[i, preds[i]] for i in wrong_indices]
-    sorted_wrong = np.argsort(wrong_probs)[::-1][:10]
+    n_display = min(TOP_K, len(wrong_indices))
+    sorted_wrong = np.argsort(wrong_probs)[::-1][:n_display]
     top_wrong_idx = wrong_indices[sorted_wrong]
 
-    plt.figure(figsize=(20, 10))
+    ncols = 5
+    nrows = int(np.ceil(n_display / ncols))
+    plt.figure(figsize=(20, 5 * nrows))
     for i, idx in enumerate(top_wrong_idx):
         img, label = pooled_dataset[idx]
         img_disp = img.permute(1, 2, 0).numpy()
@@ -527,7 +535,7 @@ if len(wrong_indices) > 0:
             img_disp * np.array([0.229, 0.224, 0.225]) + np.array([0.485, 0.456, 0.406])
         ).clip(0, 1)
 
-        plt.subplot(2, 5, i + 1)
+        plt.subplot(nrows, ncols, i + 1)
         plt.imshow(img_disp)
         ax_sub = plt.gca()
         plt.title("")
@@ -551,7 +559,7 @@ if len(wrong_indices) > 0:
         )
         plt.axis("off")
 
-    plt.suptitle("Top 10 Most Confident Incorrect Predictions", fontsize=16)
+    plt.suptitle(f"Top {n_display} Most Confident Incorrect Predictions", fontsize=16)
     plt.figtext(
         0.5,
         0.92,
@@ -560,7 +568,9 @@ if len(wrong_indices) > 0:
         fontsize=12,
         color="gray",
     )
-    plt.savefig(FIGURES_DL_DIR / "top_10_errors.png", bbox_inches="tight", dpi=DPI)
+    plt.savefig(
+        FIGURES_DL_DIR / f"top_{n_display}_errors.png", bbox_inches="tight", dpi=DPI
+    )
     plt.show()
 else:
     logger.info("No errors found in test set!")
@@ -1017,15 +1027,19 @@ if ft_ckpt_paths:
 
 # %%
 if ft_ckpt_paths:
+    TOP_K = 10
     is_wrong = ft_preds != ft_targets
     wrong_indices = np.where(is_wrong)[0]
 
     if len(wrong_indices) > 0:
         wrong_probs = [ft_probs[i, ft_preds[i]] for i in wrong_indices]
-        sorted_wrong = np.argsort(wrong_probs)[::-1][:10]
+        n_display = min(TOP_K, len(wrong_indices))
+        sorted_wrong = np.argsort(wrong_probs)[::-1][:n_display]
         top_wrong_idx = wrong_indices[sorted_wrong]
 
-        plt.figure(figsize=(20, 10))
+        ncols = 5
+        nrows = int(np.ceil(n_display / ncols))
+        plt.figure(figsize=(20, 5 * nrows))
         for i, idx in enumerate(top_wrong_idx):
             img, label = pooled_dataset[idx]
             img_disp = img.permute(1, 2, 0).numpy()
@@ -1034,7 +1048,7 @@ if ft_ckpt_paths:
                 + np.array([0.485, 0.456, 0.406])
             ).clip(0, 1)
 
-            plt.subplot(2, 5, i + 1)
+            plt.subplot(nrows, ncols, i + 1)
             plt.imshow(img_disp)
             ax_sub = plt.gca()
             plt.title("")
@@ -1060,7 +1074,8 @@ if ft_ckpt_paths:
             plt.axis("off")
 
         plt.suptitle(
-            "Finetuned Top 10 Most Confident Incorrect Predictions", fontsize=16
+            f"Finetuned Top {n_display} Most Confident Incorrect Predictions",
+            fontsize=16,
         )
         plt.figtext(
             0.5,
@@ -1071,7 +1086,9 @@ if ft_ckpt_paths:
             color="gray",
         )
         plt.savefig(
-            FIGURES_DL_DIR / "finetuned_top_10_errors.png", bbox_inches="tight", dpi=DPI
+            FIGURES_DL_DIR / f"finetuned_top_{n_display}_errors.png",
+            bbox_inches="tight",
+            dpi=DPI,
         )
         plt.show()
     else:
