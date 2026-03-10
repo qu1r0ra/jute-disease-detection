@@ -513,10 +513,6 @@ probs = torch.cat(all_probs).numpy()
 splits = np.array(all_splits)
 
 # %% [markdown]
-# Some additional insights:
-# - Running this on a _ThinkPad T480_ with an _Intel Core i7-8550U_ processor (up to 4.00 GHz) achieved a mean inference time of 96.95 ms per image.
-
-# %% [markdown]
 # #### Top Confident Errors
 #
 # Let's visualize the model's top confident errors to analyze the images and classes it struggles with.
@@ -787,8 +783,7 @@ for class_idx in range(num_classes):
     plot_idx += num_samples - n
 
 plt.suptitle(
-    "Grad-CAM Heatmaps on Sample Jute Leaf Disease Images\n"
-    "(MobileNet V2 with DR 0.1)",
+    "Grad-CAM Heatmaps on Sample Jute Leaf Disease Images\n(MobileNet V2 with DR 0.1)",
     fontsize=20,
     y=1.02,
 )
@@ -819,6 +814,8 @@ plt.show()
 # Thus, we will execute a second grid search with the ff. configurations:
 # - **Learning Rate**: `0.01`, `0.005`, `0.001`, `0.0005`, `0.0001`
 # - **Extended Patience**: `early_stopping_patience` raised to 20.
+#
+# Our results can be found [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/MobileNet%20V2%20Finetune%20Grid/workspace).
 
 # %%
 # !uv run python scripts/run_grid_search.py \
@@ -993,9 +990,7 @@ axes[0].set_xlabel("Predicted Class")
 axes[0].tick_params(axis="x", rotation=45)
 
 sns.heatmap(ft_cm_pivot, annot=True, fmt="g", cmap="Oranges", cbar=False, ax=axes[1])
-axes[1].set_title(
-    "Confusion Matrix (MobileNet V2 with DR 0.1, LR 0.01)"
-)
+axes[1].set_title("Confusion Matrix (MobileNet V2 with DR 0.1, LR 0.01)")
 axes[1].set_ylabel("Actual Class")
 axes[1].set_xlabel("Predicted Class")
 axes[1].tick_params(axis="x", rotation=45)
