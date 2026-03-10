@@ -242,9 +242,64 @@ display(
 # Hence, our initial hypothesis of training on higher-resolution images is disproven, though not in a formal statistical manner.
 
 # %% [markdown]
-# #### Loss and Accuracy Curves
+# #### Impact of Dropout Rate on Training Dynamics
 #
-# Now let's analyze how training went for our best MobileNet model by inspecting its training and validation loss and accuracy curves.
+# Before inspecting our final champion configuration, let's visualize how the Dropout Rate (DR) impacts the validation loss and accuracy curves of the Level 1 ImageNet MobileNetV2 models. We'll compare DR 0.0, 0.1, and 0.2 to see its regularization effect.
+
+# %%
+dr_rates = ["0.0", "0.1", "0.2"]
+dr_colors = {"0.0": "tab:blue", "0.1": "tab:green", "0.2": "tab:orange"}
+
+fig, ax = plt.subplots(1, 2, figsize=(15, 5))
+
+for dr in dr_rates:
+    history_dir = LOGS_DIR / "phase1_transfer_grid" / f"mobilenet_v2-l1_imagenet-dr_{dr}"
+    history_files = list(history_dir.glob("*-metrics.csv"))
+    
+    if history_files:
+        dfs = [pd.read_csv(f) for f in history_files]
+        hist = pd.concat(dfs, ignore_index=True)
+        agg_dict = {}
+        for col in hist.columns:
+            if "loss" in col:
+                agg_dict[col] = "mean"
+            elif "acc" in col or "f1" in col:
+                agg_dict[col] = "max"
+        
+        epoch_data = (
+            hist.groupby("epoch")
+            .agg(agg_dict)
+            .dropna(subset=["val_loss"])
+        )
+        
+        ax[0].plot(epoch_data.index, epoch_data["val_loss"], label=f"DR {dr}", color=dr_colors[dr])
+        ax[1].plot(epoch_data.index, epoch_data["val_acc"], label=f"DR {dr}", color=dr_colors[dr])
+
+ax[0].set_title("Validation Loss Comparison across Dropout Rates")
+ax[0].set_xlabel("Epoch")
+ax[0].set_ylabel("Validation Loss")
+ax[0].legend()
+ax[0].grid(True, alpha=0.3)
+
+ax[1].set_title("Validation Accuracy Comparison across Dropout Rates")
+ax[1].set_xlabel("Epoch")
+ax[1].set_ylabel("Validation Accuracy")
+ax[1].legend()
+ax[1].grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.savefig(FIGURES_DL_DIR / "dropout_impact_curves.png", bbox_inches="tight", dpi=DPI)
+plt.show()
+
+# %% [markdown]
+# > continue here
+#
+# Some insights:
+# - ...
+#
+# #### Loss and Accuracy Curves (Champion Model)
+#
+# Now let's analyze how training went for our chosen champion MobileNet model (`DR=0.1`) by exclusively inspecting its training and validation split curves.
 
 # %%
 history_dir = LOGS_DIR / "phase1_transfer_grid" / "mobilenet_v2-l1_imagenet-dr_0.1"
@@ -299,7 +354,9 @@ plt.show()
 #   - This is possibly explained by how our data is heavily augmented during training but not during validation, making it more difficult for the model to get correct predictions on the training set per epoch.
 #   - Furthermore, due to dropout, some neurons are deactivated during training, making the task more difficult.
 # - Train accuracy appears to be consistently lower than validation accuracy. This is possibly explained by the same reason as above. Fortunately, the gap between the two appears to decrease over time, indicating that the model was able to generalize better over time.
-# - Regardless, it is worth inspecting how extending the training time will affect the training and validation metrics. We may have cut it too short by setting the early stopping patience low (originally 5). During fine-tuning, we will increase it to 20 to see whether the metrics will converge.
+# - Train loss appears to be more erratic compared to validation loss, 
+#
+# Regardless, it is worth inspecting how extending the training time will affect the training and validation metrics. We may have cut it too short by setting the early stopping patience low (originally 5). During fine-tuning, we will increase it to 20 to see whether the metrics will converge.
 
 # %% [markdown]
 # ### 1B. Error Analysis
