@@ -21,6 +21,7 @@
 *.pyd    binary
 
 # Jupyter notebook
+# Ignore in GitHub language stats
 *.ipynb  text eol=lf linguist-vendored=true
 
 # Note: .db, .p, and .pkl files are associated
