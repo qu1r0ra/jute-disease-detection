@@ -339,7 +339,7 @@ plt.show()
 #
 # #### Confusion Matrix
 #
-# Let's verify where the model struggles by visualizing the confusion matrix logged by Weights & Biases.
+# Let's analyze where the model struggles by visualizing the confusion matrix logged by Weights and Biases. Since it is in a `.json` format, we'll first need to convert it into a pandas DataFrame.
 
 # %%
 import json
@@ -380,9 +380,11 @@ def get_cm_metrics(cm_df):
     return pd.DataFrame(metrics).set_index("Class")
 
 
-if cmat_path.exists():
-    with open(cmat_path) as f:
-        cmat_data = json.load(f)
+if not cmat_path.exists():
+    raise FileNotFoundError(f"No confusion matrix found at {cmat_path}")
+
+with open(cmat_path) as f:
+    cmat_data = json.load(f)
 
     df_cm = pd.DataFrame(cmat_data["data"], columns=cmat_data["columns"])
     cm_pivot = df_cm.pivot(
@@ -405,11 +407,9 @@ if cmat_path.exists():
     )
     plt.show()
 
-    print("Part 1: Classification Metrics by Class")
+    print("Classification Metrics by Class")
     df_metrics = get_cm_metrics(cm_pivot)
     display(df_metrics.round(4))
-else:
-    logger.warning(f"Confusion matrix not found at {cmat_path}")
 
 # %% [markdown]
 # Some insights:
