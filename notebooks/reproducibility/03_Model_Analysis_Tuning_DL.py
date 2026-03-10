@@ -1212,7 +1212,7 @@ plt.show()
 # %% [markdown]
 # ## Conclusion
 #
-# > continue here
+# Through our analyses, we have shown that while fine-tuning the learning rate to $0.01$ can slightly improve accuracy, the model reaches a performance plateau due to major problems such as focusing on irrelevant details (e.g., background, other visual features) and failing to distinguish between _Cercospora Leaf Spot_ and _Mosaic_ diseases due to visual similarities. Future work can consider improving the data preprocessing pipeline or exploring multi-label classification or object detection to consider cases where a jute leaf may exhibit multiple diseases or multiple jute leaves are present in a single image.
 
 # %% [markdown]
 # ## References
