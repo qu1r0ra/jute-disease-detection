@@ -242,7 +242,7 @@ display(
 # Hence, our initial hypothesis of training on higher-resolution images is disproven, though not in a formal statistical manner.
 
 # %% [markdown]
-# #### Impact of Dropout Rate on Training Dynamics
+# #### Loss and Accuracy Curves
 #
 # Before inspecting our final champion configuration, let's visualize how the Dropout Rate (DR) impacts the validation loss and accuracy curves of the Level 1 ImageNet MobileNetV2 models. We'll compare DR 0.0, 0.1, and 0.2 to see its regularization effect.
 
@@ -304,76 +304,22 @@ for dr in dr_rates:
         color=dr_colors[dr],
     )
 
-ax[0].set_title("Training & Validation Loss across Dropout Rates")
+ax[0].set_title("Training and Validation Loss across Dropout Rates (MobileNet V2)")
 ax[0].set_xlabel("Epoch")
 ax[0].set_ylabel("Loss")
 ax[0].legend()
 ax[0].grid(True, alpha=0.3)
 
-ax[1].set_title("Training & Validation Accuracy across Dropout Rates")
+ax[1].set_title("Training and Validation Accuracy across Dropout Rates (MobileNet V2)")
 ax[1].set_xlabel("Epoch")
 ax[1].set_ylabel("Accuracy")
 ax[1].legend()
 ax[1].grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig(FIGURES_DL_DIR / "dropout_impact_curves.png", bbox_inches="tight", dpi=DPI)
-plt.show()
-
-# %% [markdown]
-# Some insights:
-# - a
-
-# %% [markdown]
-# #### Loss and Accuracy Curves of the Best Baseline Model
-#
-# Now let's analyze how training went for our chosen champion MobileNet model (`DR=0.1`) by exclusively inspecting its training and validation split curves.
-
-# %%
-history_dir = LOGS_DIR / "phase1_transfer_grid" / "mobilenet_v2-l1_imagenet-dr_0.1"
-history_files = list(history_dir.glob("*-metrics.csv"))
-
-if not history_files:
-    raise FileNotFoundError(f"No history metrics found in: {history_dir}")
-
-dfs = [pd.read_csv(f) for f in history_files]
-history = pd.concat(dfs, ignore_index=True)
-agg_dict = {}
-for col in history.columns:
-    if "loss" in col:
-        agg_dict[col] = "mean"
-    elif "acc" in col or "f1" in col:
-        agg_dict[col] = "max"
-
-epoch_data = (
-    history.groupby("epoch")
-    .agg(agg_dict)
-    .dropna(
-        subset=[
-            "train_loss",
-            "val_loss" if "val_loss" in history.columns else "train_loss",
-        ]
-    )
+plt.savefig(
+    FIGURES_DL_DIR / "baseline_loss_accuracy_curves.png", bbox_inches="tight", dpi=DPI
 )
-
-fig, ax = plt.subplots(1, 2, figsize=(15, 5))
-
-loss_cols = [c for c in ["train_loss", "val_loss"] if c in epoch_data.columns]
-epoch_data[loss_cols].plot(ax=ax[0])
-ax[0].set_title("Training and Validation Loss (MobileNet V2-DR 0.1)")
-ax[0].set_xlabel("Epoch")
-ax[0].set_ylim(0, 1.2)
-ax[0].grid(True, alpha=0.3)
-
-acc_cols = [c for c in ["train_acc", "val_acc"] if c in epoch_data.columns]
-epoch_data[acc_cols].plot(ax=ax[1])
-ax[1].set_title("Training and Validation Accuracy (MobileNet V2-DR 0.1)")
-ax[1].set_xlabel("Epoch")
-ax[1].set_ylim(0.5, 1)
-ax[1].grid(True, alpha=0.3)
-
-plt.tight_layout()
-plt.savefig(FIGURES_DL_DIR / "training_history.png", bbox_inches="tight", dpi=DPI)
 plt.show()
 
 # %% [markdown]
@@ -381,10 +327,12 @@ plt.show()
 # - Train loss appears to be consistently higher than validation loss.
 #   - This is possibly explained by how our data is heavily augmented during training but not during validation, making it more difficult for the model to get correct predictions on the training set per epoch.
 #   - Furthermore, due to dropout, some neurons are deactivated during training, making the task more difficult.
-# - Train accuracy appears to be consistently lower than validation accuracy. This is possibly explained by the same reason as above. Fortunately, the gap between the two appears to decrease over time, indicating that the model was able to generalize better over time.
-# - Train loss appears to be more erratic compared to validation loss, 
+# - Train accuracy appears to be consistently lower than validation accuracy. This is possibly explained by the same reasons above. Fortunately, the gap between the two appears to decrease over time, indicating that the model was able to generalize better over time.
+# - Train loss appears to be more erratic compared to validation loss. Moreover, higher dropout rates appear to lead to a slightly higher train loss and lower train accuracy during training (but nothing suggestive of test performance). This is possibly explained by the same reasons in the first point.
+# - The loss and accuracy curves of different models appear to follow the same pattern.
+#   - This is likely because we seeded the data splitting and augmentations, making them reproducible and thus, resulting in similar curves.
 #
-# Regardless, it is worth inspecting how extending the training time will affect the training and validation metrics. We may have cut it too short by setting the early stopping patience low (originally 5). During fine-tuning, we will increase it to 20 to see whether the metrics will converge.
+# It is worth inspecting how extending the training time will affect the training and validation metrics. We may have cut it too short by setting the early stopping patience low (originally 5). During fine-tuning, we will increase it to 20 to see whether the metrics will converge and improve.
 
 # %% [markdown]
 # ### 1B. Error Analysis
@@ -403,6 +351,31 @@ cmat_path = (
     / "conf_mat.json"
 )
 
+
+def get_cm_metrics(cm_df):
+    classes = cm_df.index
+    metrics = []
+    for cls in classes:
+        tp = cm_df.loc[cls, cls] if cls in cm_df.columns else 0
+        fn = cm_df.loc[cls, :].sum() - tp
+        fp = cm_df.loc[:, cls].sum() - tp if cls in cm_df.columns else 0
+
+        p = tp / (tp + fp) if (tp + fp) > 0 else 0
+        r = tp / (tp + fn) if (tp + fn) > 0 else 0
+        f1 = 2 * p * r / (p + r) if (p + r) > 0 else 0
+
+        metrics.append(
+            {
+                "Class": cls,
+                "Precision": p,
+                "Recall": r,
+                "F1-Score": f1,
+                "Support": int(tp + fn),
+            }
+        )
+    return pd.DataFrame(metrics).set_index("Class")
+
+
 if cmat_path.exists():
     with open(cmat_path) as f:
         cmat_data = json.load(f)
@@ -414,7 +387,7 @@ if cmat_path.exists():
 
     plt.figure(figsize=(10, 8))
     sns.heatmap(cm_pivot, annot=True, fmt="g", cmap="Blues", cbar=False)
-    plt.title("Part 1: Confusion Matrix")
+    plt.title("Baseline MobileNet V2 Confusion Matrix")
     plt.ylabel("Actual Class")
     plt.xlabel("Predicted Class")
     plt.xticks(rotation=45, ha="right")
@@ -427,8 +400,16 @@ if cmat_path.exists():
         dpi=DPI,
     )
     plt.show()
+
+    print("Part 1: Classification Metrics by Class")
+    df_metrics = get_cm_metrics(cm_pivot)
+    display(df_metrics.round(4))
 else:
     logger.warning(f"Confusion matrix not found at {cmat_path}")
+
+# %% [markdown]
+# Some insights:
+# - a
 
 # %% [markdown]
 # #### Model Inference Setup
@@ -908,7 +889,7 @@ if ft_history_files:
 #
 # #### Confusion Matrix Comparison
 #
-# Let's see how our finely tuned model's confusion matrix stacks up against the baseline. 
+# Let's see how our finely tuned model's confusion matrix stacks up against the baseline.
 
 # %%
 import json
@@ -952,6 +933,10 @@ if ft_cmat_path.exists() and cmat_path.exists():
         dpi=DPI,
     )
     plt.show()
+
+    print("Part 2: Finetuned Classification Metrics by Class")
+    df_ft_metrics = get_cm_metrics(ft_cm_pivot)
+    display(df_ft_metrics.round(4))
 else:
     logger.warning("One or both of the confusion matrices are missing.")
 
