@@ -1,1 +1,189 @@
-{"columns": ["Actual", "Predicted", "nPredictions"], "data": [["Cercospora Leaf Spot", "Cercospora Leaf Spot", 41.0], ["Cercospora Leaf Spot", "Dieback", 0.0], ["Cercospora Leaf Spot", "General Damage", 1.0], ["Cercospora Leaf Spot", "Healthy", 2.0], ["Cercospora Leaf Spot", "Mosaic", 3.0], ["Cercospora Leaf Spot", "Stem Rot", 0.0], ["Dieback", "Cercospora Leaf Spot", 0.0], ["Dieback", "Dieback", 45.0], ["Dieback", "General Damage", 0.0], ["Dieback", "Healthy", 0.0], ["Dieback", "Mosaic", 0.0], ["Dieback", "Stem Rot", 0.0], ["General Damage", "Cercospora Leaf Spot", 0.0], ["General Damage", "Dieback", 1.0], ["General Damage", "General Damage", 42.0], ["General Damage", "Healthy", 1.0], ["General Damage", "Mosaic", 1.0], ["General Damage", "Stem Rot", 0.0], ["Healthy", "Cercospora Leaf Spot", 0.0], ["Healthy", "Dieback", 0.0], ["Healthy", "General Damage", 4.0], ["Healthy", "Healthy", 89.0], ["Healthy", "Mosaic", 0.0], ["Healthy", "Stem Rot", 0.0], ["Mosaic", "Cercospora Leaf Spot", 11.0], ["Mosaic", "Dieback", 0.0], ["Mosaic", "General Damage", 2.0], ["Mosaic", "Healthy", 0.0], ["Mosaic", "Mosaic", 71.0], ["Mosaic", "Stem Rot", 5.0], ["Stem Rot", "Cercospora Leaf Spot", 0.0], ["Stem Rot", "Dieback", 0.0], ["Stem Rot", "General Damage", 0.0], ["Stem Rot", "Healthy", 0.0], ["Stem Rot", "Mosaic", 0.0], ["Stem Rot", "Stem Rot", 41.0]]}
+{
+    "columns": [
+      "Actual",
+      "Predicted",
+      "nPredictions"
+    ],
+    "data": [
+      [
+        "Cercospora Leaf Spot",
+        "Cercospora Leaf Spot",
+        41
+      ],
+      [
+        "Cercospora Leaf Spot",
+        "Dieback",
+        0
+      ],
+      [
+        "Cercospora Leaf Spot",
+        "General Damage",
+        1
+      ],
+      [
+        "Cercospora Leaf Spot",
+        "Healthy",
+        2
+      ],
+      [
+        "Cercospora Leaf Spot",
+        "Mosaic",
+        3
+      ],
+      [
+        "Cercospora Leaf Spot",
+        "Stem Rot",
+        0
+      ],
+      [
+        "Dieback",
+        "Cercospora Leaf Spot",
+        0
+      ],
+      [
+        "Dieback",
+        "Dieback",
+        45
+      ],
+      [
+        "Dieback",
+        "General Damage",
+        0
+      ],
+      [
+        "Dieback",
+        "Healthy",
+        0
+      ],
+      [
+        "Dieback",
+        "Mosaic",
+        0
+      ],
+      [
+        "Dieback",
+        "Stem Rot",
+        0
+      ],
+      [
+        "General Damage",
+        "Cercospora Leaf Spot",
+        0
+      ],
+      [
+        "General Damage",
+        "Dieback",
+        1
+      ],
+      [
+        "General Damage",
+        "General Damage",
+        42
+      ],
+      [
+        "General Damage",
+        "Healthy",
+        1
+      ],
+      [
+        "General Damage",
+        "Mosaic",
+        1
+      ],
+      [
+        "General Damage",
+        "Stem Rot",
+        0
+      ],
+      [
+        "Healthy",
+        "Cercospora Leaf Spot",
+        0
+      ],
+      [
+        "Healthy",
+        "Dieback",
+        0
+      ],
+      [
+        "Healthy",
+        "General Damage",
+        4
+      ],
+      [
+        "Healthy",
+        "Healthy",
+        89
+      ],
+      [
+        "Healthy",
+        "Mosaic",
+        0
+      ],
+      [
+        "Healthy",
+        "Stem Rot",
+        0
+      ],
+      [
+        "Mosaic",
+        "Cercospora Leaf Spot",
+        11
+      ],
+      [
+        "Mosaic",
+        "Dieback",
+        0
+      ],
+      [
+        "Mosaic",
+        "General Damage",
+        2
+      ],
+      [
+        "Mosaic",
+        "Healthy",
+        0
+      ],
+      [
+        "Mosaic",
+        "Mosaic",
+        71
+      ],
+      [
+        "Mosaic",
+        "Stem Rot",
+        5
+      ],
+      [
+        "Stem Rot",
+        "Cercospora Leaf Spot",
+        0
+      ],
+      [
+        "Stem Rot",
+        "Dieback",
+        0
+      ],
+      [
+        "Stem Rot",
+        "General Damage",
+        0
+      ],
+      [
+        "Stem Rot",
+        "Healthy",
+        0
+      ],
+      [
+        "Stem Rot",
+        "Mosaic",
+        0
+      ],
+      [
+        "Stem Rot",
+        "Stem Rot",
+        41
+      ]
+    ]
+  }
