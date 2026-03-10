@@ -208,7 +208,7 @@ ax_bar = sns.barplot(
     palette="viridis",
 )
 plt.ylim(0.8, 0.95)
-plt.title("Impact of Image Resolution on Test Accuracy (MobileNetV2-DR 0.1)")
+plt.title("Impact of Image Resolution on Test Accuracy (MobileNetV2 with DR 0.1)")
 plt.xlabel("Dropout Rate")
 plt.ylabel("Test Accuracy")
 plt.grid(axis="y", linestyle="--", alpha=0.7)
@@ -238,6 +238,7 @@ display(
 # Some insights:
 # - Training on 512x512 pixel images appears to lead to worse performance compared to training on 256x256 pixel images.
 # - A dropout rate of 0.1 appears to lead to a higher test F1 compared to their 0.0 counterparts, though likely statistically insignificant given our sample. This may suggest that slightly increased regularization may improve our model's performance on unseen data.
+# - Our current best test accuracy is **88.3%**, achieved by a MobileNet V2 pre-trained on ImageNet-1K with a dropout rate of **0.1**.
 #
 # Hence, our initial hypothesis of training on higher-resolution images is disproven, though not in a formal statistical manner.
 
@@ -304,13 +305,15 @@ for dr in dr_rates:
         color=dr_colors[dr],
     )
 
-ax[0].set_title("Training and Validation Loss across Dropout Rates (MobileNet V2)")
+ax[0].set_title("Training and Validation Loss across Dropout Rates (MobileNet V2 with DR 0.1)")
 ax[0].set_xlabel("Epoch")
 ax[0].set_ylabel("Loss")
 ax[0].legend()
 ax[0].grid(True, alpha=0.3)
 
-ax[1].set_title("Training and Validation Accuracy across Dropout Rates (MobileNet V2)")
+ax[1].set_title(
+    "Training and Validation Accuracy across Dropout Rates (MobileNet V2 with DR 0.1)"
+)
 ax[1].set_xlabel("Epoch")
 ax[1].set_ylabel("Accuracy")
 ax[1].legend()
@@ -802,7 +805,7 @@ plt.show()
 # %% [markdown]
 # ## Part 2: Fine-Tuning
 #
-# Our analysis above leads to the hypothesis that the problem is primarily in the preprocessing of the data rather than the architecture (though we can still modify the architecture and expect improvements). We want to determine whether our model is indeed bottle-necked by the data preprocessing or simply lacked training, as our early stopping was originally set to 5.
+# Our analysis above led to the hypothesis that the problem is primarily in the preprocessing of the data rather than the architecture (though we can still modify the architecture and expect improvements). We want to determine whether our model is indeed bottle-necked by the data preprocessing or simply lacked training, as our early stopping was originally set to 5.
 #
 # Thus, we will execute a second grid search with the ff. configurations:
 # - **Learning Rate**: `0.01`, `0.005`, `0.001`, `0.0005`, `0.0001`
@@ -817,22 +820,19 @@ plt.show()
 # ### 2A. Model Performance
 
 # %% [markdown]
-# #### Learning Rate Tuning Performance
+# #### Test Accuracy across Learning Rates
 #
-# Let's assess the performance metrics across all the learning rates we tested during our Part 2 Grid Search to empirically demonstrate which configuration was optimal for the MobileNet V2 model.
+# Let's visualize test accuracy across all the learning rates we tested to see which learning rate may be better suited for our task.
 
 # %%
 ft_metrics_path = LOGS_DIR / "phase2_finetune_grid" / "aggregated_grid_metrics.csv"
 
 if not ft_metrics_path.exists():
-    raise FileNotFoundError(
-        f"Metrics file not found at {ft_metrics_path}"
-    )
+    raise FileNotFoundError(f"Metrics file not found at {ft_metrics_path}")
 
 df_ft = pd.read_csv(ft_metrics_path)
 
 
-# Extract learning rates from Experiment names
 def extract_lr(exp_name):
     import re
 
@@ -842,7 +842,6 @@ def extract_lr(exp_name):
 
 df_ft["Learning Rate"] = df_ft["Experiment"].apply(extract_lr)
 
-# Sort backwards to see descending LR
 df_ft = df_ft.sort_values("Learning Rate", ascending=False)
 
 plt.figure(figsize=(10, 6))
@@ -879,13 +878,13 @@ display(df_ft[disp_cols].reset_index(drop=True))
 
 # %% [markdown]
 # Some insights:
-# - As we decrease the learning rate to extremely small values (e.g., `0.0001`), performance degrades and loss increases.
-# - A higher learning rate of `0.01` with an `0.05` weight decay yields the maximum test accuracy achievable.
-# - The highest accuracy metric caps closely around ~91.4%, which perfectly aligns with our "Data-Level Ceiling" hypothesis.
+# - A learning rate of `0.01` appears to be the best for our task, leading to the highest test accuracy of around **91.4%**. This is a slight jump from the previous best accuracy of **88.3%**.
+# - Decreasing the learning rate appears to hurt model performance for our task. It also took the longest, taking up to 49 epochs.
+
+# %% [markdown]
+# #### Loss and Accuracy Curves
 #
-# Let's inspect the training curve of the champion fine-tuned configuration (`LR=0.01`).
-#
-# #### Part 2 Training Curves
+# Let's inspect the training curve of our best fine-tuned configuration (`LR=0.01`).
 
 # %%
 finetuned_history_dir = (
@@ -894,9 +893,7 @@ finetuned_history_dir = (
 ft_history_files = list(finetuned_history_dir.glob("*-metrics.csv"))
 
 if not ft_history_files:
-    raise FileNotFoundError(
-        f"History files not found in {finetuned_history_dir}"
-    )
+    raise FileNotFoundError(f"History files not found in {finetuned_history_dir}")
 
 dfs = [pd.read_csv(f) for f in ft_history_files]
 history = pd.concat(dfs, ignore_index=True)
@@ -922,13 +919,13 @@ fig, ax = plt.subplots(1, 2, figsize=(15, 5))
 
 loss_cols = [c for c in ["train_loss", "val_loss"] if c in epoch_data.columns]
 epoch_data[loss_cols].plot(ax=ax[0])
-ax[0].set_title("Training and Validation Loss (Finetuned)")
+ax[0].set_title("Training and Validation Loss (MobileNet V2 with DR 0.1, LR 0.01)")
 ax[0].set_xlabel("Epoch")
 ax[0].grid(True, alpha=0.3)
 
 avail_acc = [c for c in ["train_acc", "val_acc"] if c in epoch_data.columns]
 epoch_data[avail_acc].plot(ax=ax[1])
-ax[1].set_title("Training and Validation Accuracy (Finetuned)")
+ax[1].set_title("Training and Validation Accuracy (MobileNet V2 with DR 0.1, LR 0.01)")
 ax[1].set_xlabel("Epoch")
 ax[1].grid(True, alpha=0.3)
 
@@ -939,11 +936,14 @@ plt.savefig(
 plt.show()
 
 # %% [markdown]
+# Our train and validation loss and accuracy across epochs are now much more erratic compared to the baselines, likely due to the higher LR of 0.01 compared to the initial LR of 0.001.
+
+# %% [markdown]
 # ### 2B. Error Analysis
 #
 # #### Confusion Matrix Comparison
 #
-# Let's see how our finely tuned model's confusion matrix stacks up against the baseline.
+# Let's compare our finely tuned model's confusion matrix with that of the baseline.
 
 # %%
 import json
@@ -956,9 +956,7 @@ ft_cmat_path = (
 )
 
 if not ft_cmat_path.exists():
-    raise FileNotFoundError(
-        f"Finetuned confusion matrix not found at {ft_cmat_path}"
-    )
+    raise FileNotFoundError(f"Finetuned confusion matrix not found at {ft_cmat_path}")
 if not cmat_path.exists():
     raise FileNotFoundError(f"Baseline confusion matrix not found at {cmat_path}")
 
@@ -997,10 +995,7 @@ df_ft_metrics = get_cm_metrics(ft_cm_pivot)
 display(df_ft_metrics.round(4))
 
 # %% [markdown]
-# > continue here
-#
-# Some insights:
-# - ...
+# Though the model's overall accuracy and per-class accuracy somewhat increased, the confusion matrix comparison shows that the model with the fine-tuned LR of 0.01 wasn't able to address its core issue of failing to distinguish between _Cercospora Leaf Spot_ and _Mosaic_, thus holding it back from achieving a much higher accuracy.
 
 # %% [markdown]
 # #### Finetuned Model Inference
@@ -1066,7 +1061,7 @@ ft_splits = np.array(all_splits)
 # #### Finetuned Top Confident Errors
 
 # %%
-TOP_K = 10
+TOP_K = 20
 is_wrong = ft_preds != ft_targets
 wrong_indices = np.where(is_wrong)[0]
 
@@ -1093,8 +1088,7 @@ if len(wrong_indices) > 0:
         ax_sub.text(
             0.5,
             1.12,
-            f"Pred: {dm.classes[ft_preds[idx]]}\n"
-            f"({ft_probs[idx, ft_preds[idx]]:.2f})",
+            f"Pred: {dm.classes[ft_preds[idx]]}\n({ft_probs[idx, ft_preds[idx]]:.2f})",
             color="red",
             fontsize=10,
             ha="center",
@@ -1133,10 +1127,7 @@ else:
     logger.info("[Finetuned] No errors found in test set!")
 
 # %% [markdown]
-# > continue here
-#
-# Some insights:
-# - ...
+# Unfortunately, the fine-tuned model still exhibits the same problem of failing to distinguish between _Cercospora Leaf Spot_ and _Mosaic_, but this time with higher confidences in the incorrect label.
 
 # %% [markdown]
 # ### 2C. Interpretability
@@ -1147,7 +1138,7 @@ else:
 target_layer = ft_model.feature_extractor.backbone.conv_head
 lgc = LayerGradCam(ft_model, target_layer)
 
-num_samples = 5
+num_samples = 10
 num_classes = len(dm.classes)
 plt.figure(figsize=(20, 4 * num_classes))
 np.random.seed(DEFAULT_SEED)
@@ -1201,17 +1192,12 @@ plt.savefig(FIGURES_DL_DIR / "finetuned_grad_cam.png", bbox_inches="tight", dpi=
 plt.show()
 
 # %% [markdown]
-# > continue here
-#
-# Some insights:
-# - ...
+# Nothing much changed and the model wasn't able to address previous problems.
 
 # %% [markdown]
 # ## Conclusion
 #
 # > continue here
-#
-# - Final words...
 
 # %% [markdown]
 # ## References
