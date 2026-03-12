@@ -605,61 +605,76 @@ else:
 # %% [markdown]
 # ### T-distributed Stochastic Neighbor Embedding (t-SNE)
 #
-# For t-SNE, we went with `perplexity=30` (recommended default).
+# t-SNE is sensitive to the `perplexity` parameter, which balances local and global structure. Let's explore perplexities of 30, 50, 100, and 250 to see its effect on the resulting embedding.
 
 # %%
-tsne = TSNE(n_components=2, perplexity=30, random_state=DEFAULT_SEED)
-feat_2d = tsne.fit_transform(features)
-
-plt.figure(figsize=(14, 10))
+perplexities = [30, 50, 100, 250]
 colors = sns.color_palette("tab10", len(dm.classes))
 
-for i, cls in enumerate(dm.classes):
-    mask_train = (targets == i) & (splits == "Train")
-    plt.scatter(
-        feat_2d[mask_train, 0],
-        feat_2d[mask_train, 1],
-        color=colors[i],
-        marker="x",
-        s=25,
-        alpha=0.4,
-        label=None,
+for perp in perplexities:
+    logger.info(f"Computing t-SNE with perplexity={perp}...")
+    tsne = TSNE(
+        n_components=2,
+        perplexity=perp,
+        random_state=DEFAULT_SEED,
+        init="pca",
+        learning_rate="auto",
+        n_iter=2000,
     )
+    feat_2d = tsne.fit_transform(features)
 
-    mask_eval = (targets == i) & (splits != "Train")
-    plt.scatter(
-        feat_2d[mask_eval, 0],
-        feat_2d[mask_eval, 1],
-        color=colors[i],
-        marker="o",
-        s=70,
-        alpha=0.8,
-        edgecolors="white",
-        linewidth=0.5,
-        label=cls,
+    plt.figure(figsize=(14, 10))
+
+    for i, cls in enumerate(dm.classes):
+        mask_train = (targets == i) & (splits == "Train")
+        plt.scatter(
+            feat_2d[mask_train, 0],
+            feat_2d[mask_train, 1],
+            color=colors[i],
+            marker="x",
+            s=25,
+            alpha=0.4,
+            label=None,
+        )
+
+        mask_eval = (targets == i) & (splits != "Train")
+        plt.scatter(
+            feat_2d[mask_eval, 0],
+            feat_2d[mask_eval, 1],
+            color=colors[i],
+            marker="o",
+            s=70,
+            alpha=0.8,
+            edgecolors="white",
+            linewidth=0.5,
+            label=cls,
+        )
+
+    split_legend = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="gray",
+            lw=0,
+            markersize=8,
+            label="Eval Set (Val/Test)",
+        ),
+        Line2D([0], [0], marker="x", color="gray", lw=0, markersize=8, label="Train Set"),
+    ]
+    leg1 = plt.legend(handles=split_legend, loc="lower left", title="Splits")
+    plt.gca().add_artist(leg1)
+    plt.legend(loc="upper right", title="Classes", ncol=2)
+
+    plt.title(
+        f"t-SNE Visualization with Perplexity={perp}\n(MobileNet V2 with DR 0.1)"
     )
-
-split_legend = [
-    Line2D(
-        [0],
-        [0],
-        marker="o",
-        color="gray",
-        lw=0,
-        markersize=8,
-        label="Eval Set (Val/Test)",
-    ),
-    Line2D([0], [0], marker="x", color="gray", lw=0, markersize=8, label="Train Set"),
-]
-leg1 = plt.legend(handles=split_legend, loc="lower left", title="Splits")
-plt.gca().add_artist(leg1)
-plt.legend(loc="upper right", title="Classes", ncol=2)
-
-plt.title("t-SNE Visualization of Jute Leaf Data (MobileNet V2 with DR 0.1)")
-plt.xlabel("t-SNE 1")
-plt.ylabel("t-SNE 2")
-plt.savefig(FIGURES_DL_DIR / "tsne.png", bbox_inches="tight", dpi=DPI)
-plt.show()
+    plt.xlabel("t-SNE 1")
+    plt.ylabel("t-SNE 2")
+    plt.savefig(
+        FIGURES_DL_DIR / f"tsne_perp_{perp}.png", bbox_inches="tight", dpi=DPI
+    )
+    plt.show()
 
 # %% [markdown]
 # Some insights:
