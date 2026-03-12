@@ -652,7 +652,13 @@ for perp in perplexities:
 
     split_legend = [
         Line2D(
-            [0], [0], marker="o", color="gray", lw=0, markersize=8, label="Eval Set"
+            [0],
+            [0],
+            marker="o",
+            color="gray",
+            lw=0,
+            markersize=8,
+            label="Eval Set (Val/Test)",
         ),
         Line2D(
             [0], [0], marker="x", color="gray", lw=0, markersize=8, label="Train Set"
