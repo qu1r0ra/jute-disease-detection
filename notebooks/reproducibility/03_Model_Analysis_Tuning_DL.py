@@ -584,7 +584,7 @@ else:
 
 # %% [markdown]
 # Some insights:
-# - 11 of the top 20 most confident incorrect predictions were _Mosaic_ misclassified as _Cercospora Leaf Spot_, while 2 were _Cercospora Leaf Spot_ misclassified as _Mosaic_. 
+# - 11 of the top 20 most confident incorrect predictions were _Mosaic_ misclassified as _Cercospora Leaf Spot_, while 2 were _Cercospora Leaf Spot_ misclassified as _Mosaic_.
 #   - This is likely caused by the visual similarity of spots present in both classes, which is possibly why the model was greatly confused between them.
 #   - From a human standpoint, it is also pretty difficult to distinguish between the two diseases given low-resolution images of them.
 #     - Admittedly, we are not experts in jute leaf diseases, so we can't tell for sure whether jute leaf spots can be attributed solely to either of the two. If anything, the _Mosaic_ disease causes the leaf to turn yellow or gold, which can be a more reliable indicator of it. It may be suggestive of the model focusing too much on the spots rather than the yellowing of the leaves.
@@ -610,6 +610,7 @@ else:
 # %%
 perplexities = [30, 50, 100, 250]
 colors = sns.color_palette("tab10", len(dm.classes))
+tsne_results = {}
 
 for perp in perplexities:
     logger.info(f"Computing t-SNE with perplexity={perp}...")
@@ -619,12 +620,12 @@ for perp in perplexities:
         random_state=DEFAULT_SEED,
         init="pca",
         learning_rate="auto",
-        n_iter=2000,
+        max_iter=2000,
     )
     feat_2d = tsne.fit_transform(features)
+    tsne_results[perp] = feat_2d
 
     plt.figure(figsize=(14, 10))
-
     for i, cls in enumerate(dm.classes):
         mask_train = (targets == i) & (splits == "Train")
         plt.scatter(
@@ -636,7 +637,6 @@ for perp in perplexities:
             alpha=0.4,
             label=None,
         )
-
         mask_eval = (targets == i) & (splits != "Train")
         plt.scatter(
             feat_2d[mask_eval, 0],
@@ -652,29 +652,63 @@ for perp in perplexities:
 
     split_legend = [
         Line2D(
-            [0],
-            [0],
-            marker="o",
-            color="gray",
-            lw=0,
-            markersize=8,
-            label="Eval Set (Val/Test)",
+            [0], [0], marker="o", color="gray", lw=0, markersize=8, label="Eval Set"
         ),
-        Line2D([0], [0], marker="x", color="gray", lw=0, markersize=8, label="Train Set"),
+        Line2D(
+            [0], [0], marker="x", color="gray", lw=0, markersize=8, label="Train Set"
+        ),
     ]
     leg1 = plt.legend(handles=split_legend, loc="lower left", title="Splits")
     plt.gca().add_artist(leg1)
     plt.legend(loc="upper right", title="Classes", ncol=2)
-
-    plt.title(
-        f"t-SNE Visualization with Perplexity={perp}\n(MobileNet V2 with DR 0.1)"
-    )
+    plt.title(f"t-SNE Visualization with Perplexity={perp}")
     plt.xlabel("t-SNE 1")
     plt.ylabel("t-SNE 2")
-    plt.savefig(
-        FIGURES_DL_DIR / f"tsne_perp_{perp}.png", bbox_inches="tight", dpi=DPI
-    )
+    plt.savefig(FIGURES_DL_DIR / f"tsne_perp_{perp}.png", bbox_inches="tight", dpi=DPI)
     plt.show()
+
+# %% [markdown]
+# ### Comparison of Perplexities
+#
+# We visualize all perplexity values in a grid to verify cluster stability and convergence.
+
+# %%
+fig, axes = plt.subplots(2, 2, figsize=(20, 18))
+axes = axes.flatten()
+
+for idx, perp in enumerate(perplexities):
+    ax = axes[idx]
+    feat_2d = tsne_results[perp]
+
+    for i, cls in enumerate(dm.classes):
+        mask_eval = (targets == i) & (splits != "Train")
+        ax.scatter(
+            feat_2d[mask_eval, 0],
+            feat_2d[mask_eval, 1],
+            color=colors[i],
+            marker="o",
+            s=40,
+            alpha=0.8,
+            edgecolors="white",
+            linewidth=0.3,
+            label=cls if idx == 0 else None,
+        )
+
+    ax.set_title(f"Perplexity = {perp}", fontsize=14)
+    ax.axis("off")
+
+fig.suptitle(
+    "t-SNE Perplexity Comparison (Eval Set Clusters)\n(MobileNet V2 with DR 0.1)",
+    fontsize=20,
+    y=1.02,
+)
+fig.legend(loc="lower center", ncol=len(dm.classes), bbox_to_anchor=(0.5, -0.05))
+
+plt.tight_layout()
+plt.savefig(
+    FIGURES_DL_DIR / "tsne_perplexity_comparison.png", bbox_inches="tight", dpi=DPI
+)
+plt.show()
 
 # %% [markdown]
 # Some insights:
