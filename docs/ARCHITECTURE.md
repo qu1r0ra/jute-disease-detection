@@ -49,7 +49,7 @@ The DL pipeline is built using **PyTorch Lightning** for state-of-the-art reprod
 
 - **LightningModule (`Classifier`)**: The core class handling the training loop, optimization, logging, and metrics.
 - **Backbone System**: Uses a generic `TimmBackbone` to wrap any model from the `timm` library, allowing for easy experimentation with different architectures.
-- **Transfer Learning Strategy**: While Multi-Stage Transfer Learning (MSTL) using PlantVillage and PlantDoc was evaluated, our findings indicate that generic **ImageNet-1K pre-training** provides the most robust baseline. Consequently, our champion configurations focus on Level 1 transfer learning (ImageNet → Jute) to minimize over-specialization.
+- **Transfer Learning Strategy**: Generic **ImageNet-1K pre-training** provides the most robust baseline. Our final champion configuration for Jute Disease Detection utilizes **MobileNet V2** at **256x256** resolution, with **Learning Rate: 0.01**, **Weight Decay: 0.05**, and **Dropout: 0.1**. This configuration achieves the optimal balance of features without overfitting, even while hitting the dataset's inherent "single-label" performance ceiling.
 - **Lightning CLI**: Training is driven by configuration files in `configs/`, promoting "Configuration as Code".
 
 ### 4. Machine Learning Framework (Scikit-learn Adapters)

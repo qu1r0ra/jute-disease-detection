@@ -29,7 +29,8 @@ Welcome! This document provides crucial context, architectural design choices, a
 
 - **Ruff**: We use `ruff` for all formatting and linting.
 - **Line length**: Be mindful of line limits. If a line is too long, break it naturally.
-- **Mandatory Step**: _Always_ run `make format` after modifying `.py` files to ensure compliance before concluding a task.
+- **Flattened Notebook Indentation**: For reproducibility notebooks, we strictly avoid deep indentation (e.g., wrapping entire cells in `if/else`). We prefer early checks that raise exceptions ($FileNotFoundError$, etc.) if critical artifacts or configurations are missing. This keeps the core analysis logic at the top-level indentation for readability and consistent linting.
+- **Mandatory Step**: _Always_ run `make sync-nb && make format` after modifying `.py` or `.ipynb` entries to ensure both representations are identical and compliant.
 
 ### 2.3. Error Handling & CLI Patterns
 
