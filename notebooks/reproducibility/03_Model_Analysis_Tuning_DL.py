@@ -605,7 +605,7 @@ else:
 # %% [markdown]
 # ### T-distributed Stochastic Neighbor Embedding (t-SNE)
 #
-# t-SNE is sensitive to the `perplexity` parameter, which balances local and global structure. Let's explore perplexities of 30, 50, 100, and 250 to see its effect on the resulting embedding.
+# t-SNE is sensitive to the `perplexity` parameter, which balances local and global structure: the greater the perplexity, the greater the emphasis on global structure. Let's explore perplexities of 30, 50, 100, and 250 to see their effects on the embedding, providing us with multiple potential perspectives of the data.
 
 # %%
 perplexities = [30, 50, 100, 250]
@@ -704,7 +704,7 @@ for idx, perp in enumerate(perplexities):
     ax.axis("off")
 
 fig.suptitle(
-    "t-SNE Perplexity Comparison (Eval Set Clusters)\n(MobileNet V2 with DR 0.1)",
+    "t-SNE Perplexity Comparison\n(MobileNet V2 with DR 0.1)",
     fontsize=20,
     y=1.02,
 )
