@@ -43,8 +43,9 @@ model:
   lr: 0.001
   freeze_backbone: true
   feature_extractor:
-    class_path: jute_disease.models.dl.mobilevit.MobileViT
+    class_path: jute_disease.models.dl.backbone.TimmBackbone
     init_args:
+      model_name: mobilevit_s.cvnets_in1k
       pretrained: true
 
 data:

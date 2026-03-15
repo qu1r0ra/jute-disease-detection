@@ -46,8 +46,9 @@ def run_cross_validation(config: Path, folds: int | None = None) -> None:
 
         result = subprocess.run(cmd)
         if result.returncode != 0:
-            logger.error(f"Fold {fold_idx} failed with exit code {result.returncode}.")
-            sys.exit(result.returncode)
+            raise RuntimeError(
+                f"Fold {fold_idx} failed with exit code {result.returncode}."
+            )
 
         logger.info(f"Finished fold {fold_idx}.")
 
@@ -70,4 +71,7 @@ if __name__ == "__main__":
         help="Number of folds. Overrides the k_fold value in the config if provided.",
     )
     args = parser.parse_args()
-    run_cross_validation(args.config, args.folds)
+    try:
+        run_cross_validation(args.config, args.folds)
+    except Exception:
+        sys.exit(1)

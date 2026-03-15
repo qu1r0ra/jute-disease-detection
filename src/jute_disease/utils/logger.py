@@ -1,10 +1,28 @@
 import logging
 import os
+import shutil
 import sys
 from logging import Logger
+from pathlib import Path
 
 import wandb
 from dotenv import load_dotenv
+
+
+def flatten_log_version(log_dir: Path, target_name: str) -> None:
+    """Takes the latest parameter's `version_*` folder and flattens
+    its metrics out.
+    """
+    if not log_dir.exists():
+        return
+    versions = sorted([d for d in log_dir.glob("version_*") if d.is_dir()])
+    if not versions:
+        return
+    latest_version = versions[-1]
+    metrics_file = latest_version / "metrics.csv"
+    if metrics_file.exists():
+        shutil.move(str(metrics_file), str(log_dir / target_name))
+    shutil.rmtree(str(latest_version))
 
 
 def setup_logging(level: int = logging.INFO) -> None:

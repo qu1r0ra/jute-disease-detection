@@ -4,6 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 from jute_disease.utils import get_logger
+from jute_disease.utils.constants import ARTIFACTS_DIR, LOGS_DIR
 
 logger = get_logger(__name__)
 
@@ -13,11 +14,11 @@ def aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
     results = []
 
     for exp in exp_names:
-        log_dir = Path("artifacts/logs") / exp
+        log_dir = LOGS_DIR / exp
         if not log_dir.exists():
             continue
 
-        metrics_files = list(log_dir.glob("version_*/metrics.csv"))
+        metrics_files = list(log_dir.glob("*-metrics.csv"))
         if not metrics_files:
             continue
 
@@ -67,8 +68,8 @@ def main():
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("artifacts/experiment_summary.csv"),
-        help="Output CSV path.",
+        default=ARTIFACTS_DIR / "experiment_summary.csv",
+        help="Path for output CSV",
     )
     args = parser.parse_args()
 

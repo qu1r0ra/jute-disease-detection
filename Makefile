@@ -1,4 +1,4 @@
-.PHONY: help data setup-data split-data train-ml train-dl train-dl-check test test-all lint format clean sync-nb
+.PHONY: help data setup-data split-data train-ml train-dl train-dl-check test test-all lint format clean sync-nb full-check
 
 ifeq (, $(shell which uv))
     PYTHON = python3
@@ -30,6 +30,7 @@ help:
 	@echo "  make clean-artifacts  	- Remove all generated artifacts (models, checkpoints)"
 	@echo "  make clean-ml     		- Remove ML models and extracted features from artifacts"
 	@echo "  make sync-nb    		- Sync Jupyter Notebooks (.ipynb) with Jupytext (.py) scripts"
+	@echo "  make full-check   		- Run format, sync-nb, and test-all before committing"
 
 data:
 	$(PYTHON) src/jute_disease/data/utils.py init
@@ -62,10 +63,7 @@ train-cv:
 	$(PYTHON) scripts/train_cross_validation.py configs/baselines/mobilenet_v2.yaml --folds 5
 
 train-dl-512:
-	$(PYTHON) scripts/train_dl.py fit --config configs/experiments/mobilenet_v2_512.yaml
-	$(PYTHON) scripts/train_dl.py test --config configs/experiments/mobilenet_v2_512.yaml \
-		--ckpt_path=$$(ls -t artifacts/checkpoints/mobilenet_v2_512/*.ckpt | head -1)
-	$(PYTHON) scripts/aggregate_results.py --exp-names mobilenet_v2_512px --output artifacts/grid_search_mobilenet_v2_512px_metrics.csv
+	$(PYTHON) scripts/train_dl_512.py
 
 grid-search:
 	$(PYTHON) scripts/run_grid_search.py configs/grid/mobilenet_v2_grid.yaml
@@ -112,3 +110,5 @@ clean-ml:
 
 sync-nb:
 	uv run jupytext --sync notebooks/**/*.py
+
+full-check: format sync-nb test-all

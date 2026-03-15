@@ -28,10 +28,9 @@ def test_data_api() -> None:
 
 
 def test_models_dl_api() -> None:
-    from jute_disease.models.dl import Classifier, MobileViT, TimmBackbone
+    from jute_disease.models.dl import Classifier, TimmBackbone
 
     assert Classifier is not None
-    assert MobileViT is not None
     assert TimmBackbone is not None
 
 

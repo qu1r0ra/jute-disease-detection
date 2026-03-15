@@ -6,7 +6,7 @@ This document describes the architectural design and directory structure of the 
 
 ```text
 .
-├── artifacts/              # Generated models, checkpoints, logs, and experiment results
+├── artifacts/              # Models, checkpoints, logs, and experiment context
 ├── configs/                # Lightning CLI configuration files (.yaml) for DL models
 ├── data/                   # Dataset storage (by_class/, ml_split/, unlabeled/)
 ├── docs/                   # Project documentation and specifications
@@ -48,7 +48,8 @@ The project exposes unified CLI entry points defined in `pyproject.toml`:
 The DL pipeline is built using **PyTorch Lightning** for state-of-the-art reproducibility and boilerplate reduction.
 
 - **LightningModule (`Classifier`)**: The core class handling the training loop, optimization, logging, and metrics.
-- **Backbone System**: Uses a generic `TimmBackbone` to wrap any model from the `timm` library, allowing for easy experimentation with different architectures (e.g., MobileNetV2, ResNet-50, Inception v3, EfficientNet-B5, EfficientNet-B7). Supporting global/local input resolution via the `--data.image_size` parameter.
+- **Backbone System**: Uses a generic `TimmBackbone` to wrap any model from the `timm` library, allowing for easy experimentation with different architectures.
+- **Transfer Learning Strategy**: Generic **ImageNet-1K pre-training** provides the most robust baseline. Our final champion configuration for Jute Disease Detection utilizes **MobileNet V2** at **256x256** resolution, with **Learning Rate: 0.01**, **Weight Decay: 0.05**, and **Dropout: 0.1**. This configuration achieves the optimal balance of features without overfitting, even while hitting the dataset's inherent "single-label" performance ceiling.
 - **Lightning CLI**: Training is driven by configuration files in `configs/`, promoting "Configuration as Code".
 
 ### 4. Machine Learning Framework (Scikit-learn Adapters)
@@ -77,8 +78,9 @@ Both pipelines are evaluated identically using a combined **Experiment Aggregati
 
 ### 7. Code Quality & Standards
 
-- **Type Safety**: The codebase adheres to strict type checking using modern Python 3.10+ syntax (e.g., `list[str] | None`).
+- **Type Safety**: The codebase adheres to strict type checking using modern Python 3.10+ syntax (e.g., `list[str] | None`). **Mypy is scoped to `src/` only**; the `notebooks/` directory is explicitly excluded to facilitate rapid prototyping and exploratory analysis without type-strictness overhead.
 - **Formatting**: Code is formatted and linted using `ruff` to ensure PEP 8 compliance.
+- **CLI Patterns**: Scripts follow the "Raise in Logic, Exit in Main" pattern to allow for programmatic re-use and unit testing of automation functions.
 - **Testing**: A comprehensive test suite (`tests/`) covers unit tests (logic verification) and slower integration tests (end-to-end pipeline).
 
 ## Tools & Dependencies
