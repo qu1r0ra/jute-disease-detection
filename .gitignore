@@ -1,10 +1,13 @@
-# Miscellaneous
+# Additions
 artifacts/*
 !artifacts/logs/
 data/*
 !data/*.txt
+
+# Library artifacts
 lightning_logs/
 wandb/
+.cache_ggshield
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
