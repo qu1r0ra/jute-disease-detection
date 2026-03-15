@@ -1,3 +1,6 @@
+# Temporary
+docs/PAPER.tex
+
 # Additions
 artifacts/*
 !artifacts/logs/
