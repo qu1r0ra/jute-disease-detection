@@ -3,8 +3,12 @@ repos:
     rev: v6.0.0
     hooks:
       - id: check-added-large-files
+      - id: check-toml
       - id: check-yaml
+      - id: detect-private-key
       - id: end-of-file-fixer
+      - id: name-tests-test
+        args: [--pytest-test-first]
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -19,3 +23,4 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: [pydantic, types-PyYAML, types-requests]
+        exclude: ^notebooks/

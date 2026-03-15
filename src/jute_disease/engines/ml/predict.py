@@ -1,24 +1,25 @@
 # ruff: noqa: N806
 import argparse
 from pathlib import Path
+from typing import Any
 
 from PIL import Image
 
 from jute_disease.models.ml import (
+    BaseFeatureExtractor,
     CraftedFeatureExtractor,
     GaussianNaiveBayes,
     KNearestNeighbors,
     LogisticRegression,
     RandomForest,
     RawPixelFeatureExtractor,
-    SklearnClassifier,
     SupportVectorMachine,
 )
 from jute_disease.utils import ML_SPLIT_DIR, get_logger
 
 logger = get_logger(__name__)
 
-ML_CLASSIFIERS: dict[str, type[SklearnClassifier]] = {
+ML_CLASSIFIERS: dict[str, Any] = {
     "gnb": GaussianNaiveBayes,
     "knn": KNearestNeighbors,
     "lr": LogisticRegression,
@@ -61,6 +62,7 @@ def predict_ml() -> None:
         return
 
     # 2. Setup Feature Extractor
+    extractor: BaseFeatureExtractor
     if args.feature_type == "crafted":
         extractor = CraftedFeatureExtractor()
     else:

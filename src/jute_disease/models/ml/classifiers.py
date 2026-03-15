@@ -1,6 +1,8 @@
 # ruff: noqa: N803
 """Scikit-learn classifier wrappers for the jute disease ML pipeline."""
 
+from typing import Any
+
 import joblib
 import numpy as np
 from sklearn.base import ClassifierMixin
@@ -117,7 +119,7 @@ class GaussianNaiveBayes(SklearnClassifier):
         super().__init__(GaussianNB, **kwargs)
 
 
-ML_CLASSIFIERS: dict[str, type[SklearnClassifier]] = {
+ML_CLASSIFIERS: dict[str, Any] = {
     "gnb": GaussianNaiveBayes,
     "knn": KNearestNeighbors,
     "lr": LogisticRegression,

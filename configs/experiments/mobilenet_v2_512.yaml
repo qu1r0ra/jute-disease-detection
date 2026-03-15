@@ -16,7 +16,7 @@ trainer:
         log_model: true
     - class_path: lightning.pytorch.loggers.CSVLogger
       init_args:
-        save_dir: artifacts/logs
+        save_dir: artifacts/logs/resolution_exps
         name: mobilenet_v2_512px
   callbacks:
     - class_path: lightning.pytorch.callbacks.LearningRateMonitor

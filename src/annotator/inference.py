@@ -9,7 +9,7 @@ class InferenceService:
     def __init__(
         self, checkpoint_path: str | None = None, class_names: list[str] | None = None
     ) -> None:
-        self.model = None
+        self.model: Classifier | None = None
         self.class_names = class_names
         if checkpoint_path:
             self.load_model(checkpoint_path)

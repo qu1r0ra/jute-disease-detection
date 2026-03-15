@@ -1,12 +1,9 @@
 learning_rate:
-  - 0.005
-  - 0.001
-  - 0.0005
-
-weight_decay:
-  - 0.1
-  - 0.05
   - 0.01
+  - 0.005
+  - 0.001  # Baseline
+  - 0.0005
+  - 0.0001
 
 locked_params:
   name: "level_1_imagenet"
@@ -20,7 +17,8 @@ fixed_params:
   reduce_lr_factor: 0.1
   reduce_lr_patience: 3
   max_epochs: 50
-  early_stopping_patience: 5
+  early_stopping_patience: 20
+  weight_decay: 0.05
   loss_function: "CrossEntropyLoss"
   num_folds: 1
   num_classes: 6

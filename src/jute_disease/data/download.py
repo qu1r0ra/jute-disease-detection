@@ -21,7 +21,7 @@ def prepare_dataset_subsets(raw_dir: Path, target_dir: Path) -> None:
     logger.info(f"Preparing dataset in {target_dir}...")
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    images = []
+    images: list[Path] = []
     for ext in IMAGE_EXTENSIONS:
         images.extend(raw_dir.rglob(f"*{ext}"))
 

@@ -45,7 +45,7 @@ model:
   feature_extractor:
     class_path: jute_disease.models.dl.backbone.TimmBackbone
     init_args:
-      model_name: inception_v3
+      model_name: inception_v3.tv_in1k
       pretrained: true
 
 data:

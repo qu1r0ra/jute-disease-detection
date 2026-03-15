@@ -51,8 +51,7 @@ def run_all_ml(
                 logger.info(f"Finished {clf}/{feat}.")
 
     if failed:
-        logger.error(f"Failed experiments: {failed}")
-        sys.exit(1)
+        raise RuntimeError(f"Failed experiments: {failed}")
 
     logger.info("All ML experiments completed!")
 
@@ -79,4 +78,7 @@ if __name__ == "__main__":
         help="Disable balanced sample weights.",
     )
     args = parser.parse_args()
-    run_all_ml(args.classifiers, args.feature_types, balanced=not args.no_balanced)
+    try:
+        run_all_ml(args.classifiers, args.feature_types, balanced=not args.no_balanced)
+    except Exception:
+        sys.exit(1)

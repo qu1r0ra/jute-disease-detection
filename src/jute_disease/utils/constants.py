@@ -11,8 +11,16 @@ PLANTDOC_DIR = DATA_DIR / "external" / "plantdoc"
 PLANTVILLAGE_DIR = DATA_DIR / "external" / "plantvillage"
 
 
-ML_MODELS_DIR = ROOT_DIR / "artifacts" / "ml_models"
-ML_FEATURES_DIR = ROOT_DIR / "artifacts" / "features"
+ARTIFACTS_DIR = ROOT_DIR / "artifacts"
+LOGS_DIR = ARTIFACTS_DIR / "logs"
+CHECKPOINTS_DIR = ARTIFACTS_DIR / "checkpoints"
+ML_MODELS_DIR = ARTIFACTS_DIR / "ml_models"
+ML_FEATURES_DIR = ARTIFACTS_DIR / "features"
+
+ASSETS_DIR = ROOT_DIR / "assets"
+FIGURES_DIR = ASSETS_DIR / "figures"
+FIGURES_DL_DIR = FIGURES_DIR / "dl"
+FIGURES_GENERAL_DIR = FIGURES_DIR / "general"
 
 # Data configurations
 IMAGE_SIZE = 256
@@ -33,3 +41,6 @@ NUM_CLASSES = 6
 # Weights & Biases
 WANDB_ENTITY = "grade-descent"
 WANDB_PROJECT = "jute-disease-detection"
+
+# Visualization defaults
+DPI = 300
