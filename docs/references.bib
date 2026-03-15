@@ -1,303 +1,379 @@
-%%%%% Papers %%%%%
+%%%%% Main Papers %%%%%
 
 @inproceedings{haqueAdvancementsJuteLeaf2024,
-  title = {Advancements in {{Jute Leaf Disease Detection}}: {{A Comprehensive Study Utilizing Machine Learning}} and {{Deep Learning Techniques}}},
+  title      = {Advancements in {{Jute Leaf Disease Detection}}: {{A Comprehensive Study Utilizing Machine Learning}} and {{Deep Learning Techniques}}},
   shorttitle = {Advancements in {{Jute Leaf Disease Detection}}},
-  booktitle = {2024 {{IEEE International Conference}} on {{Power}}, {{Electrical}}, {{Electronics}} and {{Industrial Applications}} ({{PEEIACON}})},
-  author = {Haque, Rezaul and Miah, Md Miraz and Sultana, Shayma and Fardin, Hasib and Noman, Abdullah Al and {Al-Sakib}, Abdullah and Hasan, Md Kamrul and Rafy, Al and Shihabur, Rahman Md and Rahman, Shafiur},
-  year = 2024,
-  month = sep,
-  pages = {248--253},
-  doi = {10.1109/PEEIACON63629.2024.10800378},
-  urldate = {2026-01-24},
-  abstract = {Detecting diseases in jute leaves is difficult due to the variability in how the diseases appear. Manually identifying these diseases is challenging because it requires expert knowledge and visual inspections take a lot of time. Machine Learning (ML) offers a promising solution to these challenges by automating the detection process. However, research in this area is limited due to the lack of specific datasets. This study aims to address this by creating a comprehensive dataset of 10,800 high-quality images of jute leaf diseases. The main goal is to develop a robust system for classifying jute leaves into three categories: Yellow Mosaic, Powdery Mildew, and Healthy. Our methodology involved extensive image preprocessing, including resizing and various augmentation techniques, to enhance the dataset's diversity and ensure model robustness. We trained various ML and Deep Learning (DL) models and conducted a comparative analysis of their performance. Additionally, we compared our approach with the state-of-the-art methods. The results showed that DL models, particularly Inception V3, achieved an outstanding accuracy of 99.98\%, compared to 89.75\% for Random Forest (RF). This highlights the potential of DL techniques in improving the accuracy of jute leaf disease detection. Our findings contribute to better disease management strategies and increased productivity in jute cultivation.},
-  keywords = {Accuracy,Analytical models,crop management,Deep learning,Diseases,leaf disease,machine learning,plant pathology,Radio frequency,Random forests,Real-time systems,Robustness,Sustainable agriculture,Transfer learning,Visualization},
+  booktitle  = {2024 {{IEEE International Conference}} on {{Power}}, {{Electrical}}, {{Electronics}} and {{Industrial Applications}} ({{PEEIACON}})},
+  author     = {Haque, Rezaul and Miah, Md Miraz and Sultana, Shayma and Fardin, Hasib and Noman, Abdullah Al and {Al-Sakib}, Abdullah and Hasan, Md Kamrul and Rafy, Al and Shihabur, Rahman Md and Rahman, Shafiur},
+  year       = 2024,
+  month      = sep,
+  pages      = {248--253},
+  doi        = {10.1109/PEEIACON63629.2024.10800378},
+  urldate    = {2026-01-24},
+  abstract   = {Detecting diseases in jute leaves is difficult due to the variability in how the diseases appear. Manually identifying these diseases is challenging because it requires expert knowledge and visual inspections take a lot of time. Machine Learning (ML) offers a promising solution to these challenges by automating the detection process. However, research in this area is limited due to the lack of specific datasets. This study aims to address this by creating a comprehensive dataset of 10,800 high-quality images of jute leaf diseases. The main goal is to develop a robust system for classifying jute leaves into three categories: Yellow Mosaic, Powdery Mildew, and Healthy. Our methodology involved extensive image preprocessing, including resizing and various augmentation techniques, to enhance the dataset's diversity and ensure model robustness. We trained various ML and Deep Learning (DL) models and conducted a comparative analysis of their performance. Additionally, we compared our approach with the state-of-the-art methods. The results showed that DL models, particularly Inception V3, achieved an outstanding accuracy of 99.98\%, compared to 89.75\% for Random Forest (RF). This highlights the potential of DL techniques in improving the accuracy of jute leaf disease detection. Our findings contribute to better disease management strategies and increased productivity in jute cultivation.},
+  keywords   = {Accuracy,Analytical models,crop management,Deep learning,Diseases,leaf disease,machine learning,plant pathology,Radio frequency,Random forests,Real-time systems,Robustness,Sustainable agriculture,Transfer learning,Visualization}
+}
+
+%%%%% Architectures %%%%%
+
+@inproceedings{tan2019efficientnet,
+  title={Efficientnet: Rethinking model scaling for convolutional neural networks},
+  author={Tan, Mingxing and Le, Quoc},
+  booktitle={International conference on machine learning},
+  pages={6105--6114},
+  year={2019},
+  organization={PMLR}
+}
+
+@inproceedings{he2016deep,
+  title={Deep residual learning for image recognition},
+  author={He, Kaiming and Zhang, Xiangyu and Ren, Shaoqing and Sun, Jian},
+  booktitle={Proceedings of the IEEE conference on computer vision and pattern recognition},
+  pages={770--778},
+  year={2016}
+}
+
+@inproceedings{szegedy2016rethinking,
+  title={Rethinking the inception architecture for computer vision},
+  author={Szegedy, Christian and Vanhoucke, Vincent and Ioffe, Sergey and Shlens, Jon and Wojna, Zbigniew},
+  booktitle={Proceedings of the IEEE conference on computer vision and pattern recognition},
+  pages={2818--2826},
+  year={2016}
+}
+
+@article{mehta2021mobilevit,
+  title={Mobilevit: light-weight, general-purpose, and mobile-friendly vision transformer},
+  author={Mehta, Sachin and Rastegari, Mohammad},
+  journal={arXiv preprint arXiv:2110.02178},
+  year={2021}
+}
+
+@inproceedings{sandler2018mobilenetv2,
+  title={Mobilenetv2: Inverted residuals and linear bottlenecks},
+  author={Sandler, Mark and Howard, Andrew and Zhu, Menglong and Zhmoginov, Andrey and Chen, Liang-Chieh},
+  booktitle={Proceedings of the IEEE conference on computer vision and pattern recognition},
+  pages={4510--4520},
+  year={2018}
 }
 
 %%%%% Software %%%%%
 
 % Albumentations
-@Article{buslaev2020albumentations,
-    AUTHOR = {Buslaev, Alexander and Iglovikov, Vladimir I. and Khvedchenya, Eugene and Parinov, Alex and Druzhinin, Mikhail and Kalinin, Alexandr A.},
-    TITLE = {Albumentations: Fast and Flexible Image Augmentations},
-    JOURNAL = {Information},
-    VOLUME = {11},
-    YEAR = {2020},
-    NUMBER = {2},
-    ARTICLE-NUMBER = {125},
-    URL = {https://www.mdpi.com/2078-2489/11/2/125},
-    ISSN = {2078-2489},
-    DOI = {10.3390/info11020125}
+@article{buslaev2020albumentations,
+  author         = {Buslaev, Alexander and Iglovikov, Vladimir I. and Khvedchenya, Eugene and Parinov, Alex and Druzhinin, Mikhail and Kalinin, Alexandr A.},
+  title          = {Albumentations: Fast and Flexible Image Augmentations},
+  journal        = {Information},
+  volume         = {11},
+  year           = {2020},
+  number         = {2},
+  article-number = {125},
+  url            = {https://www.mdpi.com/2078-2489/11/2/125},
+  issn           = {2078-2489},
+  doi            = {10.3390/info11020125}
 }
 
 % Captum
 @misc{kokhlikyan2020captum,
-    title={Captum: A unified and generic model interpretability library for PyTorch},
-    author={Narine Kokhlikyan and Vivek Miglani and Miguel Martin and Edward Wang and Bilal Alsallakh and Jonathan Reynolds and Alexander Melnikov and Natalia Kliushkina and Carlos Araya and Siqi Yan and Orion Reblitz-Richardson},
-    year={2020},
-    eprint={2009.07896},
-    archivePrefix={arXiv},
-    primaryClass={cs.LG}
+  title         = {Captum: A unified and generic model interpretability library for PyTorch},
+  author        = {Narine Kokhlikyan and Vivek Miglani and Miguel Martin and Edward Wang and Bilal Alsallakh and Jonathan Reynolds and Alexander Melnikov and Natalia Kliushkina and Carlos Araya and Siqi Yan and Orion Reblitz-Richardson},
+  year          = {2020},
+  eprint        = {2009.07896},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.LG}
 }
 
 % Matplotlib
-@ARTICLE{hunter2007matplotlib,
-  author={Hunter, John D.},
-  journal={Computing in Science & Engineering},
-  title={Matplotlib: A 2D Graphics Environment},
-  year={2007},
-  volume={9},
-  number={3},
-  pages={90-95},
-  keywords={Graphics;Interpolation;Equations;Graphical user interfaces;Packaging;Image generation;User interfaces;Operating systems;Computer languages;Programming profession;Python;scripting languages;application development;scientific programming},
-  doi={10.1109/MCSE.2007.55}}
+@article{hunter2007matplotlib,
+  author   = {Hunter, John D.},
+  journal  = {Computing in Science & Engineering},
+  title    = {Matplotlib: A 2D Graphics Environment},
+  year     = {2007},
+  volume   = {9},
+  number   = {3},
+  pages    = {90-95},
+  keywords = {Graphics;Interpolation;Equations;Graphical user interfaces;Packaging;Image generation;User interfaces;Operating systems;Computer languages;Programming profession;Python;scripting languages;application development;scientific programming},
+  doi      = {10.1109/MCSE.2007.55}
+}
 
 % NumPy
-@Article{harris2020numpy,
- title         = {Array programming with {NumPy}},
- author        = {Charles R. Harris and K. Jarrod Millman and St{\'{e}}fan J.
-                 van der Walt and Ralf Gommers and Pauli Virtanen and David
-                 Cournapeau and Eric Wieser and Julian Taylor and Sebastian
-                 Berg and Nathaniel J. Smith and Robert Kern and Matti Picus
-                 and Stephan Hoyer and Marten H. van Kerkwijk and Matthew
-                 Brett and Allan Haldane and Jaime Fern{\'{a}}ndez del
-                 R{\'{i}}o and Mark Wiebe and Pearu Peterson and Pierre
-                 G{\'{e}}rard-Marchant and Kevin Sheppard and Tyler Reddy and
-                 Warren Weckesser and Hameer Abbasi and Christoph Gohlke and
-                 Travis E. Oliphant},
- year          = {2020},
- month         = sep,
- journal       = {Nature},
- volume        = {585},
- number        = {7825},
- pages         = {357--362},
- doi           = {10.1038/s41586-020-2649-2},
- publisher     = {Springer Science and Business Media {LLC}},
- url           = {https://doi.org/10.1038/s41586-020-2649-2}
+@article{harris2020numpy,
+  title     = {Array programming with {NumPy}},
+  author    = {Charles R. Harris and K. Jarrod Millman and St{\'{e}}fan J.
+               van der Walt and Ralf Gommers and Pauli Virtanen and David
+               Cournapeau and Eric Wieser and Julian Taylor and Sebastian
+               Berg and Nathaniel J. Smith and Robert Kern and Matti Picus
+               and Stephan Hoyer and Marten H. van Kerkwijk and Matthew
+               Brett and Allan Haldane and Jaime Fern{\'{a}}ndez del
+               R{\'{i}}o and Mark Wiebe and Pearu Peterson and Pierre
+               G{\'{e}}rard-Marchant and Kevin Sheppard and Tyler Reddy and
+               Warren Weckesser and Hameer Abbasi and Christoph Gohlke and
+               Travis E. Oliphant},
+  year      = {2020},
+  month     = sep,
+  journal   = {Nature},
+  volume    = {585},
+  number    = {7825},
+  pages     = {357--362},
+  doi       = {10.1038/s41586-020-2649-2},
+  publisher = {Springer Science and Business Media {LLC}},
+  url       = {https://doi.org/10.1038/s41586-020-2649-2}
 }
 
 % OpenCV
 @article{bradski2000opencv,
-    author = {Bradski, G.},
-    citeulike-article-id = {2236121},
-    journal = {Dr. Dobb's Journal of Software Tools},
-    keywords = {bibtex-import},
-    posted-at = {2008-01-15 19:21:54},
-    priority = {4},
-    title = {{The OpenCV Library}},
-    year = {2000}
+  author               = {Bradski, G.},
+  citeulike-article-id = {2236121},
+  journal              = {Dr. Dobb's Journal of Software Tools},
+  keywords             = {bibtex-import},
+  posted-at            = {2008-01-15 19:21:54},
+  priority             = {4},
+  title                = {{The OpenCV Library}},
+  year                 = {2000}
 }
 
 % Pandas
 @software{pandas2026pandas,
-  author       = {The pandas development team},
-  title        = {pandas-dev/pandas: Pandas},
-  month        = feb,
-  year         = 2026,
-  publisher    = {Zenodo},
-  version      = {v3.0.1},
-  doi          = {10.5281/zenodo.18675244},
-  url          = {https://doi.org/10.5281/zenodo.18675244},
-  swhid        = {swh:1:dir:34b406876f0403478de720d746bec110450d955d
-                   ;origin=https://doi.org/10.5281/zenodo.3509134;vis
-                   it=swh:1:snp:1528055e6b48606f9a0a0ca3cecd617ba7019
-                   59a;anchor=swh:1:rel:2024719dba5dc5bdf105b0e4071ba
-                   267e67a4bf3;path=pandas-dev-pandas-2c581ec
-                  },
+  author    = {The pandas development team},
+  title     = {pandas-dev/pandas: Pandas},
+  month     = feb,
+  year      = 2026,
+  publisher = {Zenodo},
+  version   = {v3.0.1},
+  doi       = {10.5281/zenodo.18675244},
+  url       = {https://doi.org/10.5281/zenodo.18675244},
+  swhid     = {swh:1:dir:34b406876f0403478de720d746bec110450d955d
+               ;origin=https://doi.org/10.5281/zenodo.3509134;vis
+               it=swh:1:snp:1528055e6b48606f9a0a0ca3cecd617ba7019
+               59a;anchor=swh:1:rel:2024719dba5dc5bdf105b0e4071ba
+               267e67a4bf3;path=pandas-dev-pandas-2c581ec
+               }
 }
 
 % PyTorch
 @inproceedings{ansel2024pytorch,
-    author = {Ansel, Jason and Yang, Edward and He, Horace and Gimelshein, Natalia and Jain, Animesh and Voznesensky, Michael and Bao, Bin and Bell, Peter and Berard, David and Burovski, Evgeni and Chauhan, Geeta and Chourdia, Anjali and Constable, Will and Desmaison, Alban and DeVito, Zachary and Ellison, Elias and Feng, Will and Gong, Jiong and Gschwind, Michael and Hirsh, Brian and Huang, Sherlock and Kalambarkar, Kshiteej and Kirsch, Laurent and Lazos, Michael and Lezcano, Mario and Liang, Yanbo and Liang, Jason and Lu, Yinghai and Luk, C. K. and Maher, Bert and Pan, Yunjie and Puhrsch, Christian and Reso, Matthias and Saroufim, Mark and Siraichi, Marcos Yukio and Suk, Helen and Zhang, Shunting and Suo, Michael and Tillet, Phil and Zhao, Xu and Wang, Eikan and Zhou, Keren and Zou, Richard and Wang, Xiaodong and Mathews, Ajit and Wen, William and Chanan, Gregory and Wu, Peng and Chintala, Soumith},
-    title = {PyTorch 2: Faster Machine Learning Through Dynamic Python Bytecode Transformation and Graph Compilation},
-    year = {2024},
-    isbn = {9798400703850},
-    publisher = {Association for Computing Machinery},
-    address = {New York, NY, USA},
-    url = {https://doi.org/10.1145/3620665.3640366},
-    doi = {10.1145/3620665.3640366},
-    abstract = {This paper introduces two extensions to the popular PyTorch machine learning framework, TorchDynamo and TorchInductor, which implement the torch.compile feature released in PyTorch 2. TorchDynamo is a Python-level just-in-time (JIT) compiler that enables graph compilation in PyTorch programs without sacrificing the flexibility of Python. It achieves this by dynamically modifying Python bytecode before execution and extracting sequences of PyTorch operations into an FX graph, which is then JIT compiled using one of many extensible backends. TorchInductor is the default compiler backend for TorchDynamo, which translates PyTorch programs into OpenAI's Triton for GPUs and C++ for CPUs. Results show that TorchDynamo is able to capture graphs more robustly than prior approaches while adding minimal overhead, and TorchInductor is able to provide a 2.27\texttimes{} inference and 1.41\texttimes{} training geometric mean speedup on an NVIDIA A100 GPU across 180+ real-world models, which outperforms six other compilers. These extensions provide a new way to apply optimizations through compilers in eager mode frameworks like PyTorch.},
-    booktitle = {Proceedings of the 29th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 2},
-    pages = {929–947},
-    numpages = {19},
-    location = {La Jolla, CA, USA},
-    series = {ASPLOS '24}
+  author    = {Ansel, Jason and Yang, Edward and He, Horace and Gimelshein, Natalia and Jain, Animesh and Voznesensky, Michael and Bao, Bin and Bell, Peter and Berard, David and Burovski, Evgeni and Chauhan, Geeta and Chourdia, Anjali and Constable, Will and Desmaison, Alban and DeVito, Zachary and Ellison, Elias and Feng, Will and Gong, Jiong and Gschwind, Michael and Hirsh, Brian and Huang, Sherlock and Kalambarkar, Kshiteej and Kirsch, Laurent and Lazos, Michael and Lezcano, Mario and Liang, Yanbo and Liang, Jason and Lu, Yinghai and Luk, C. K. and Maher, Bert and Pan, Yunjie and Puhrsch, Christian and Reso, Matthias and Saroufim, Mark and Siraichi, Marcos Yukio and Suk, Helen and Zhang, Shunting and Suo, Michael and Tillet, Phil and Zhao, Xu and Wang, Eikan and Zhou, Keren and Zou, Richard and Wang, Xiaodong and Mathews, Ajit and Wen, William and Chanan, Gregory and Wu, Peng and Chintala, Soumith},
+  title     = {PyTorch 2: Faster Machine Learning Through Dynamic Python Bytecode Transformation and Graph Compilation},
+  year      = {2024},
+  isbn      = {9798400703850},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/3620665.3640366},
+  doi       = {10.1145/3620665.3640366},
+  abstract  = {This paper introduces two extensions to the popular PyTorch machine learning framework, TorchDynamo and TorchInductor, which implement the torch.compile feature released in PyTorch 2. TorchDynamo is a Python-level just-in-time (JIT) compiler that enables graph compilation in PyTorch programs without sacrificing the flexibility of Python. It achieves this by dynamically modifying Python bytecode before execution and extracting sequences of PyTorch operations into an FX graph, which is then JIT compiled using one of many extensible backends. TorchInductor is the default compiler backend for TorchDynamo, which translates PyTorch programs into OpenAI's Triton for GPUs and C++ for CPUs. Results show that TorchDynamo is able to capture graphs more robustly than prior approaches while adding minimal overhead, and TorchInductor is able to provide a 2.27\texttimes{} inference and 1.41\texttimes{} training geometric mean speedup on an NVIDIA A100 GPU across 180+ real-world models, which outperforms six other compilers. These extensions provide a new way to apply optimizations through compilers in eager mode frameworks like PyTorch.},
+  booktitle = {Proceedings of the 29th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 2},
+  pages     = {929–947},
+  numpages  = {19},
+  location  = {La Jolla, CA, USA},
+  series    = {ASPLOS '24}
 }
 
 % PyTorch Lightning
 @software{falcon2026lightning,
-  author       = {Falcon, William and
-                  The PyTorch Lightning team},
-  title        = {PyTorch Lightning},
-  month        = jan,
-  year         = 2026,
-  publisher    = {Zenodo},
-  version      = {2.6.1},
-  doi          = {10.5281/zenodo.18432694},
-  url          = {https://doi.org/10.5281/zenodo.18432694},
-  swhid        = {swh:1:dir:657efefce6d8c12d566ac085d732128b420409f5
-                   ;origin=https://doi.org/10.5281/zenodo.3530844;vis
-                   it=swh:1:snp:88a874830ab5a55e27b3518a3d148dbee1bfb
-                   b65;anchor=swh:1:rel:e58c29aaca765d3d5374942dcd349
-                   9bd963680fd;path=Lightning-AI-pytorch-
-                   lightning-655a3a9
-                  },
+  author    = {Falcon, William and
+               The PyTorch Lightning team},
+  title     = {PyTorch Lightning},
+  month     = jan,
+  year      = 2026,
+  publisher = {Zenodo},
+  version   = {2.6.1},
+  doi       = {10.5281/zenodo.18432694},
+  url       = {https://doi.org/10.5281/zenodo.18432694},
+  swhid     = {swh:1:dir:657efefce6d8c12d566ac085d732128b420409f5
+               ;origin=https://doi.org/10.5281/zenodo.3530844;vis
+               it=swh:1:snp:88a874830ab5a55e27b3518a3d148dbee1bfb
+               b65;anchor=swh:1:rel:e58c29aaca765d3d5374942dcd349
+               9bd963680fd;path=Lightning-AI-pytorch-
+               lightning-655a3a9
+               }
 }
 
 % Scikit-Image
 @article{vanderwalt2014scikitimage,
- title = {scikit-image: image processing in {P}ython},
- author = {van der Walt, {S}t\'efan and {S}ch\"onberger, {J}ohannes {L}. and
-           {Nunez-Iglesias}, {J}uan and {B}oulogne, {F}ran\c{c}ois and {W}arner,
-           {J}oshua {D}. and {Y}ager, {N}eil and {G}ouillart, {E}mmanuelle and
-           {Y}u, {T}ony and the scikit-image contributors},
- year = {2014},
- month = {6},
- keywords = {Image processing, Reproducible research, Education,
-             Visualization, Open source, Python, Scientific programming},
- volume = {2},
- pages = {e453},
- journal = {PeerJ},
- issn = {2167-8359},
- url = {https://doi.org/10.7717/peerj.453},
- doi = {10.7717/peerj.453}
+  title    = {scikit-image: image processing in {P}ython},
+  author   = {van der Walt, {S}t\'efan and {S}ch\"onberger, {J}ohannes {L}. and
+              {Nunez-Iglesias}, {J}uan and {B}oulogne, {F}ran\c{c}ois and {W}arner,
+              {J}oshua {D}. and {Y}ager, {N}eil and {G}ouillart, {E}mmanuelle and
+              {Y}u, {T}ony and the scikit-image contributors},
+  year     = {2014},
+  month    = {6},
+  keywords = {Image processing, Reproducible research, Education,
+              Visualization, Open source, Python, Scientific programming},
+  volume   = {2},
+  pages    = {e453},
+  journal  = {PeerJ},
+  issn     = {2167-8359},
+  url      = {https://doi.org/10.7717/peerj.453},
+  doi      = {10.7717/peerj.453}
 }
 
 % Scikit-Learn
 @article{pedregosa2011scikitlearn,
-    title={Scikit-learn: Machine Learning in {P}ython},
-    author={Pedregosa, F. and Varoquaux, G. and Gramfort, A. and Michel, V.
-            and Thirion, B. and Grisel, O. and Blondel, M. and Prettenhofer, P.
-            and Weiss, R. and Dubourg, V. and Vanderplas, J. and Passos, A. and
-            Cournapeau, D. and Brucher, M. and Perrot, M. and Duchesnay, E.},
-    journal={Journal of Machine Learning Research},
-    volume={12},
-    pages={2825--2830},
-    year={2011}
+  title   = {Scikit-learn: Machine Learning in {P}ython},
+  author  = {Pedregosa, F. and Varoquaux, G. and Gramfort, A. and Michel, V.
+             and Thirion, B. and Grisel, O. and Blondel, M. and Prettenhofer, P.
+             and Weiss, R. and Dubourg, V. and Vanderplas, J. and Passos, A. and
+             Cournapeau, D. and Brucher, M. and Perrot, M. and Duchesnay, E.},
+  journal = {Journal of Machine Learning Research},
+  volume  = {12},
+  pages   = {2825--2830},
+  year    = {2011}
 }
 
 % Seaborn
 @article{waskom2021seaborn,
-    doi = {10.21105/joss.03021},
-    url = {https://doi.org/10.21105/joss.03021},
-    year = {2021},
-    publisher = {The Open Journal},
-    volume = {6},
-    number = {60},
-    pages = {3021},
-    author = {Waskom, Michael L.},
-    title = {seaborn: statistical data visualization},
-    journal = {Journal of Open Source Software}
+  doi       = {10.21105/joss.03021},
+  url       = {https://doi.org/10.21105/joss.03021},
+  year      = {2021},
+  publisher = {The Open Journal},
+  volume    = {6},
+  number    = {60},
+  pages     = {3021},
+  author    = {Waskom, Michael L.},
+  title     = {seaborn: statistical data visualization},
+  journal   = {Journal of Open Source Software}
 }
 
 % Timm
 @software{wightman2019timm,
-    author = {Ross Wightman},
-    title = {PyTorch Image Models},
-    year = 2019,
-    publisher = {Zenodo},
-    version = {1.0.11},
-    doi = {10.5281/zenodo.4414861},
-    url = {https://github.com/huggingface/pytorch-image-models}
+  author    = {Ross Wightman},
+  title     = {PyTorch Image Models},
+  year      = 2019,
+  publisher = {Zenodo},
+  version   = {1.0.11},
+  doi       = {10.5281/zenodo.4414861},
+  url       = {https://github.com/huggingface/pytorch-image-models}
 }
 
 % UMAP-Learn
 @article{mcinnes2018umap,
-  title={UMAP: Uniform Manifold Approximation and Projection},
-  author={McInnes, Leland and Healy, John and Saul, Nathaniel and Grossberger, Lukas},
-  journal={The Journal of Open Source Software},
-  volume={3},
-  number={29},
-  pages={861},
-  year={2018}
+  title   = {UMAP: Uniform Manifold Approximation and Projection},
+  author  = {McInnes, Leland and Healy, John and Saul, Nathaniel and Grossberger, Lukas},
+  journal = {The Journal of Open Source Software},
+  volume  = {3},
+  number  = {29},
+  pages   = {861},
+  year    = {2018}
 }
 
 % Weights and Biases
 @misc{biewald2020wandb,
-    title = {Experiment Tracking with Weights and Biases},
-    year = {2020},
-    note = {Software available from wandb.com},
-    url={https://www.wandb.com/},
-    author = {Biewald, Lukas},
+  title  = {Experiment Tracking with Weights and Biases},
+  year   = {2020},
+  note   = {Software available from wandb.com},
+  url    = {https://www.wandb.com/},
+  author = {Biewald, Lukas}
 }
 
 %%%%% Datasets %%%%%
 
 @article{islamComprehensiveImageDataset2026,
-  title = {A Comprehensive Image Dataset of Jute Diseases},
-  author = {Islam, Md. Masudul and Sheikh, Md. Ripon},
-  year = 2026,
-  month = feb,
-  journal = {Data in Brief},
-  volume = {64},
-  pages = {112334},
-  issn = {2352-3409},
-  doi = {10.1016/j.dib.2025.112334},
-  urldate = {2026-01-23},
+  title    = {A Comprehensive Image Dataset of Jute Diseases},
+  author   = {Islam, Md. Masudul and Sheikh, Md. Ripon},
+  year     = 2026,
+  month    = feb,
+  journal  = {Data in Brief},
+  volume   = {64},
+  pages    = {112334},
+  issn     = {2352-3409},
+  doi      = {10.1016/j.dib.2025.112334},
+  urldate  = {2026-01-23},
   abstract = {This Data Descriptor presents the Jute Diseases Image Dataset; a curated collection of 1390 high-resolution images aimed at supporting the development of machine learning models for timely identification and accurate diagnosis of jute (Corchorus) plant diseases. The dataset is categorized into five classes: Dieback (300), Holed (300), Mosaic (240), Stem Soft Rot (270), and Fresh (280) representing healthy leaves. Images were captured under varied natural lighting and directional conditions across diverse jute cultivation areas to enhance model generalizability. A rigorous pre-processing pipeline was applied, including uniform resizing to 1024 \texttimes{} 1024 pixels and removal of duplicate images to ensure data integrity. The dataset is organized into two components: a raw, pre-processed set and an augmented train-test split version, enabling immediate use in machine learning workflows. Additionally, Grad-CAM and Guided Grad-CAM techniques were applied to sample images to visualize and validate model attention on disease-relevant regions. This resource addresses the lack of labelled jute disease imagery and supports timely disease management, particularly for stakeholders in Bangladesh and other major jute-producing regions.},
   keywords = {Agriculture,Computer Vision,Crop disease,Image Dataset,Jute dataset,Jute disease},
-  file = {/home/qu1r0ra/Zotero/storage/CD8BWZIB/Islam and Sheikh - 2026 - A comprehensive image dataset of jute diseases.pdf;/home/qu1r0ra/Zotero/storage/KI7T7PUM/S2352340925010480.html}
+  file     = {/home/qu1r0ra/Zotero/storage/CD8BWZIB/Islam and Sheikh - 2026 - A comprehensive image dataset of jute diseases.pdf;/home/qu1r0ra/Zotero/storage/KI7T7PUM/S2352340925010480.html}
 }
 
 @article{islamJuteLeafDisease2026,
-  title = {Jute {{Leaf Disease Classification Dataset}}},
-  author = {Islam, Md Rakibul and Naimur Rahman, Kazi Md},
-  year = 2026,
-  month = jan,
-  volume = {1},
+  title     = {Jute {{Leaf Disease Classification Dataset}}},
+  author    = {Islam, Md Rakibul and Naimur Rahman, Kazi Md},
+  year      = 2026,
+  month     = jan,
+  volume    = {1},
   publisher = {Mendeley Data},
-  doi = {10.17632/5294gb7b5p.1},
-  urldate = {2026-01-24},
-  abstract = {This dataset contains 900 images of jute leaves, organized into three folders: Cercospora Leaf Spot, Golden Mosaic disease, and Healthy Leaf. Each folder represents one class and can be directly used for image classification and machine learning tasks. The images were collected from real-world conditions and show clear visual differences between healthy and diseased leaves, such as spots, color changes, and mosaic patterns. This makes the dataset suitable for research in plant disease detection, computer vision, and deep learning. An official Verification and Approval Form (PDF) is included with the dataset. This document confirms the authenticity and accuracy of the data and approves its use for research and educational purposes. This dataset can be used for training, testing, and evaluating machine learning models for agricultural and plant health applications.},
-  langid = {english},
+  doi       = {10.17632/5294gb7b5p.1},
+  urldate   = {2026-01-24},
+  abstract  = {This dataset contains 900 images of jute leaves, organized into three folders: Cercospora Leaf Spot, Golden Mosaic disease, and Healthy Leaf. Each folder represents one class and can be directly used for image classification and machine learning tasks. The images were collected from real-world conditions and show clear visual differences between healthy and diseased leaves, such as spots, color changes, and mosaic patterns. This makes the dataset suitable for research in plant disease detection, computer vision, and deep learning. An official Verification and Approval Form (PDF) is included with the dataset. This document confirms the authenticity and accuracy of the data and approves its use for research and educational purposes. This dataset can be used for training, testing, and evaluating machine learning models for agricultural and plant health applications.},
+  langid    = {english}
 }
 
 @article{jannatRealtimeJuteLeaf2025,
-  title = {Real-Time Jute Leaf Disease Classification Using an Explainable Lightweight {{CNN}} via a Supervised and Semi-Supervised Self-Training Approach},
-  author = {Jannat, Meftahul and Uddin, Md Shahab and Hasan, Mohammad Asif and Alam, Md Saimun and Paul, Avijit and Chowdhury, Muhammad E. H. and Haider, Julfikar},
-  year = 2025,
-  month = oct,
-  journal = {Frontiers in Plant Science},
-  volume = {16},
+  title     = {Real-Time Jute Leaf Disease Classification Using an Explainable Lightweight {{CNN}} via a Supervised and Semi-Supervised Self-Training Approach},
+  author    = {Jannat, Meftahul and Uddin, Md Shahab and Hasan, Mohammad Asif and Alam, Md Saimun and Paul, Avijit and Chowdhury, Muhammad E. H. and Haider, Julfikar},
+  year      = 2025,
+  month     = oct,
+  journal   = {Frontiers in Plant Science},
+  volume    = {16},
   publisher = {Frontiers},
-  issn = {1664-462X},
-  doi = {10.3389/fpls.2025.1647177},
-  urldate = {2026-02-05},
-  abstract = {IntroductionTimely detection of jute leaf diseases is vital for sustaining crop health and farmer livelihoods. Existing deep learning approaches often rely on large, annotated datasets, which are costly and time-consuming to produce.Methods and resultsTo address this challenge, a lightweight convolutional neural network integrated with a semi-supervised learning self-training framework was proposed to enable accurate classification with minimal labeled data. The model combines modified depthwise separable convolutions, an enhanced squeeze-and-excite block, and a modified mobile inverted bottleneck convolution block, achieving strong representational power with only 2.24M parameters (8.54 MB). On a self-collected dataset of jute leaf images across three classes (Cescospora leaf spot, golden mosaic, and healthy leaf), the proposed model achieved a best accuracy of 98.95\% under the supervised training with training, testing and validation split of 80:10:10. Remarkably, the model also attained a best accuracy of 97.89\% in the semi-supervised learning (SSL) setting with only 10\% labeled and 90\% unlabeled data, demonstrating that near-supervised performance can be maintained while substantially reducing the dependency on costly labeled datasets. The application of explainable AI method such as Grad-CAM provided interpretable visualizations of diseased regions, and deployment as a Flask-based web application demonstrated practical, real-time usability in resource-constrained agricultural environments.ConclusionThese results highlight the novelty of combining SSL with a lightweight CNN to deliver near-supervised performance, improved interpretability, and real-world applicability while substantially reducing the dependence on expert-labeled data.},
-  langid = {english},
-  keywords = {deep learning,grouped convolution,jute leaf disease,lightweight CNN,semi-supervised self-training,squeeze-and-excite},
+  issn      = {1664-462X},
+  doi       = {10.3389/fpls.2025.1647177},
+  urldate   = {2026-02-05},
+  abstract  = {IntroductionTimely detection of jute leaf diseases is vital for sustaining crop health and farmer livelihoods. Existing deep learning approaches often rely on large, annotated datasets, which are costly and time-consuming to produce.Methods and resultsTo address this challenge, a lightweight convolutional neural network integrated with a semi-supervised learning self-training framework was proposed to enable accurate classification with minimal labeled data. The model combines modified depthwise separable convolutions, an enhanced squeeze-and-excite block, and a modified mobile inverted bottleneck convolution block, achieving strong representational power with only 2.24M parameters (8.54 MB). On a self-collected dataset of jute leaf images across three classes (Cescospora leaf spot, golden mosaic, and healthy leaf), the proposed model achieved a best accuracy of 98.95\% under the supervised training with training, testing and validation split of 80:10:10. Remarkably, the model also attained a best accuracy of 97.89\% in the semi-supervised learning (SSL) setting with only 10\% labeled and 90\% unlabeled data, demonstrating that near-supervised performance can be maintained while substantially reducing the dependency on costly labeled datasets. The application of explainable AI method such as Grad-CAM provided interpretable visualizations of diseased regions, and deployment as a Flask-based web application demonstrated practical, real-time usability in resource-constrained agricultural environments.ConclusionThese results highlight the novelty of combining SSL with a lightweight CNN to deliver near-supervised performance, improved interpretability, and real-world applicability while substantially reducing the dependence on expert-labeled data.},
+  langid    = {english},
+  keywords  = {deep learning,grouped convolution,jute leaf disease,lightweight CNN,semi-supervised self-training,squeeze-and-excite}
 }
 
 @article{mridhaJutePlantLeaves2024,
-  title = {Jute {{Plant Leaves}}},
-  author = {Mridha, Mehedi Hasan},
-  year = 2024,
-  month = may,
-  volume = {1},
+  title     = {Jute {{Plant Leaves}}},
+  author    = {Mridha, Mehedi Hasan},
+  year      = 2024,
+  month     = may,
+  volume    = {1},
   publisher = {Mendeley Data},
-  doi = {10.17632/z87b9hnkh7.1},
-  urldate = {2026-02-03},
-  abstract = {The "Jute Plant Leaves" dataset consists of high-quality RGB photos of jute plant leaves (Corchorus spp.) of Bangladesh. Jute is an economically significant crop grown for its fibrous stems, which are used in the manufacture of textiles, paper, and other items. The leaves of jute plants serve an important role in photosynthesis, nutritional intake, and plant health. The collection includes a variety of leaf properties such as form, color, texture, venation patterns, and physiological aspects. The "Jute Plant Leaves" dataset is useful to academics and practitioners in agriculture, botany, ecology, computer vision, and other domains. It is a valuable resource for researching the morphology, anatomy, physiology, and ecological relevance of jute leaves. Furthermore, the dataset can be used to create and test computer vision algorithms for leaf categorization, disease detection, growth tracking, and other purposes.},
+  doi       = {10.17632/z87b9hnkh7.1},
+  urldate   = {2026-02-03},
+  abstract  = {The "Jute Plant Leaves" dataset consists of high-quality RGB photos of jute plant leaves (Corchorus spp.) of Bangladesh. Jute is an economically significant crop grown for its fibrous stems, which are used in the manufacture of textiles, paper, and other items. The leaves of jute plants serve an important role in photosynthesis, nutritional intake, and plant health. The collection includes a variety of leaf properties such as form, color, texture, venation patterns, and physiological aspects. The "Jute Plant Leaves" dataset is useful to academics and practitioners in agriculture, botany, ecology, computer vision, and other domains. It is a valuable resource for researching the morphology, anatomy, physiology, and ecological relevance of jute leaves. Furthermore, the dataset can be used to create and test computer vision algorithms for leaf categorization, disease detection, growth tracking, and other purposes.},
+  langid    = {english}
+}
+
+@inproceedings{singhPlantDocDatasetVisual2020,
+  title      = {{{PlantDoc}}: {{A Dataset}} for {{Visual Plant Disease Detection}}},
+  shorttitle = {{{PlantDoc}}},
+  booktitle  = {Proceedings of the 7th {{ACM IKDD CoDS}} and 25th {{COMAD}}},
+  author     = {Singh, Davinder and Jain, Naman and Jain, Pranjali and Kayal, Pratik and Kumawat, Sudhakar and Batra, Nipun},
+  year       = 2020,
+  month      = jan,
+  series     = {{{CoDS COMAD}} 2020},
+  pages      = {249--253},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  doi        = {10.1145/3371158.3371196},
+  urldate    = {2026-02-08},
+  abstract   = {India loses 35\% of the annual crop yield due to plant diseases. Early detection of plant diseases remains difficult due to the lack of lab infrastructure and expertise. In this paper, we explore the possibility of computer vision approaches for scalable and early plant disease detection. The lack of availability of sufficiently large-scale non-lab data set remains a major challenge for enabling vision based plant disease detection. Against this background, we present PlantDoc: a dataset for visual plant disease detection. Our dataset contains 2,598 data points in total across 13 plant species and up to 17 classes of diseases, involving approximately 300 human hours of effort in annotating internet scraped images. To show the efficacy of our dataset, we learn 3 models for the task of plant disease classification. Our results show that modelling using our dataset can increase the classification accuracy by up to 31\%. We believe that our dataset can help reduce the entry barrier of computer vision techniques in plant disease detection.},
+  isbn       = {978-1-4503-7738-6},
+}
+
+@article{mohantyUsingDeepLearning2016,
+  title = {Using {{Deep Learning}} for {{Image-Based Plant Disease Detection}}},
+  author = {Mohanty, Sharada P. and Hughes, David P. and Salath{\'e}, Marcel},
+  year = 2016,
+  month = sep,
+  journal = {Frontiers in Plant Science},
+  volume = {7},
+  publisher = {Frontiers},
+  issn = {1664-462X},
+  doi = {10.3389/fpls.2016.01419},
+  urldate = {2026-03-12},
+  abstract = {Crop diseases are a major threat to food security, but their rapid identification remains difficult in many parts of the world due to the lack of the necessary infrastructure. The combination of increasing global smartphone penetration and recent advances in computer vision made possible by deep learning has paved the way for smartphone-assisted disease diagnosis. Using a public dataset of 54,306 images of diseased and healthy plant leaves collected under controlled conditions, we train a deep convolutional neural network to identify 14 crop species and 26 diseases (or absence thereof). The trained model achieves an accuracy of 99.35\% on a held-out test set, demonstrating the feasibility of this approach. Overall, the approach of training deep learning models on increasingly large and publicly available image datasets presents a clear path towards smartphone-assisted crop disease diagnosis on a massive global scale.},
   langid = {english},
+  keywords = {Crop diseases,deep learning,digital epidemiology,Disease diagnosis,machine learning},
 }
 
 %%%%% Others %%%%%
 
 % t-SNE
 @article{wattenberg2016tsne,
-  author = {Wattenberg, Martin and Viégas, Fernanda and Johnson, Ian},
-  title = {How to Use t-SNE Effectively},
+  author  = {Wattenberg, Martin and Viégas, Fernanda and Johnson, Ian},
+  title   = {How to Use t-SNE Effectively},
   journal = {Distill},
-  year = {2016},
-  url = {http://distill.pub/2016/misread-tsne},
-  doi = {10.23915/distill.00002}
+  year    = {2016},
+  url     = {http://distill.pub/2016/misread-tsne},
+  doi     = {10.23915/distill.00002}
 }
 
 % UMAP
 @article{coenen2019umap,
-  author = {Coenen, Andy and Pearce, Adam},
-  title = {Understanding UMAP},
+  author    = {Coenen, Andy and Pearce, Adam},
+  title     = {Understanding UMAP},
   publisher = {Google PAIR},
-  year = {2019},
-  url = {https://pair-code.github.io/understanding-umap/}
+  year      = {2019},
+  url       = {https://pair-code.github.io/understanding-umap/}
 }

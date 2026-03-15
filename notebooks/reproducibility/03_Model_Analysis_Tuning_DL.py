@@ -584,7 +584,7 @@ else:
 
 # %% [markdown]
 # Some insights:
-# - 11 of the top 20 most confident incorrect predictions were _Mosaic_ misclassified as _Cercospora Leaf Spot_, while 2 were _Cercospora Leaf Spot_ misclassified as _Mosaic_. 
+# - 11 of the top 20 most confident incorrect predictions were _Mosaic_ misclassified as _Cercospora Leaf Spot_, while 2 were _Cercospora Leaf Spot_ misclassified as _Mosaic_.
 #   - This is likely caused by the visual similarity of spots present in both classes, which is possibly why the model was greatly confused between them.
 #   - From a human standpoint, it is also pretty difficult to distinguish between the two diseases given low-resolution images of them.
 #     - Admittedly, we are not experts in jute leaf diseases, so we can't tell for sure whether jute leaf spots can be attributed solely to either of the two. If anything, the _Mosaic_ disease causes the leaf to turn yellow or gold, which can be a more reliable indicator of it. It may be suggestive of the model focusing too much on the spots rather than the yellowing of the leaves.
@@ -600,65 +600,121 @@ else:
 # %% [markdown]
 # ### 1C. Latent Space Analysis
 #
-# Some interesting stuff! Here, we will visualize our high-dimensional Jute leaf data in two dimensions with **t-SNE** and **UMAP**. Put simply, t-SNE is better at preserving local structures, while UMAP is generally faster and better at preserving global structure.
+# Some interesting stuff! Here, we will visualize our high-dimensional Jute leaf data in two dimensions with **t-SNE** and **UMAP**. Put simply, t-SNE is more flexible while UMAP is faster and better at preserving the data's global structure.
 
 # %% [markdown]
 # ### T-distributed Stochastic Neighbor Embedding (t-SNE)
 #
-# For t-SNE, we went with `perplexity=30` (recommended default).
+# t-SNE is sensitive to the `perplexity` parameter, which balances local and global structure: the greater the perplexity, the more global structure is preserved. Let's explore perplexities of 30, 50, 100, and 250 to see their effects on the embedding, providing us with multiple potential perspectives of the data.
 
 # %%
-tsne = TSNE(n_components=2, perplexity=30, random_state=DEFAULT_SEED)
-feat_2d = tsne.fit_transform(features)
-
-plt.figure(figsize=(14, 10))
+perplexities = [30, 50, 100, 250]
 colors = sns.color_palette("tab10", len(dm.classes))
+tsne_results = {}
 
-for i, cls in enumerate(dm.classes):
-    mask_train = (targets == i) & (splits == "Train")
-    plt.scatter(
-        feat_2d[mask_train, 0],
-        feat_2d[mask_train, 1],
-        color=colors[i],
-        marker="x",
-        s=25,
-        alpha=0.4,
-        label=None,
+for perp in perplexities:
+    logger.info(f"Computing t-SNE with perplexity={perp}...")
+    tsne = TSNE(
+        n_components=2,
+        perplexity=perp,
+        random_state=DEFAULT_SEED,
+        init="pca",
+        learning_rate="auto",
+        max_iter=2000,
     )
+    feat_2d = tsne.fit_transform(features)
+    tsne_results[perp] = feat_2d
 
-    mask_eval = (targets == i) & (splits != "Train")
-    plt.scatter(
-        feat_2d[mask_eval, 0],
-        feat_2d[mask_eval, 1],
-        color=colors[i],
-        marker="o",
-        s=70,
-        alpha=0.8,
-        edgecolors="white",
-        linewidth=0.5,
-        label=cls,
-    )
+    plt.figure(figsize=(14, 10))
+    for i, cls in enumerate(dm.classes):
+        mask_train = (targets == i) & (splits == "Train")
+        plt.scatter(
+            feat_2d[mask_train, 0],
+            feat_2d[mask_train, 1],
+            color=colors[i],
+            marker="x",
+            s=25,
+            alpha=0.4,
+            label=None,
+        )
+        mask_eval = (targets == i) & (splits != "Train")
+        plt.scatter(
+            feat_2d[mask_eval, 0],
+            feat_2d[mask_eval, 1],
+            color=colors[i],
+            marker="o",
+            s=70,
+            alpha=0.8,
+            edgecolors="white",
+            linewidth=0.5,
+            label=cls,
+        )
 
-split_legend = [
-    Line2D(
-        [0],
-        [0],
-        marker="o",
-        color="gray",
-        lw=0,
-        markersize=8,
-        label="Eval Set (Val/Test)",
-    ),
-    Line2D([0], [0], marker="x", color="gray", lw=0, markersize=8, label="Train Set"),
-]
-leg1 = plt.legend(handles=split_legend, loc="lower left", title="Splits")
-plt.gca().add_artist(leg1)
-plt.legend(loc="upper right", title="Classes", ncol=2)
+    split_legend = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="gray",
+            lw=0,
+            markersize=8,
+            label="Eval Set (Val/Test)",
+        ),
+        Line2D(
+            [0], [0], marker="x", color="gray", lw=0, markersize=8, label="Train Set"
+        ),
+    ]
+    leg1 = plt.legend(handles=split_legend, loc="lower left", title="Splits")
+    plt.gca().add_artist(leg1)
+    plt.legend(loc="upper right", title="Classes", ncol=2)
+    plt.title(f"t-SNE Visualization with Perplexity={perp}")
+    plt.xlabel("t-SNE 1")
+    plt.ylabel("t-SNE 2")
+    plt.savefig(FIGURES_DL_DIR / f"tsne_perp_{perp}.png", bbox_inches="tight", dpi=DPI)
+    plt.show()
 
-plt.title("t-SNE Visualization of Jute Leaf Data (MobileNet V2 with DR 0.1)")
-plt.xlabel("t-SNE 1")
-plt.ylabel("t-SNE 2")
-plt.savefig(FIGURES_DL_DIR / "tsne.png", bbox_inches="tight", dpi=DPI)
+# %% [markdown]
+# ### Comparison of Perplexities
+#
+# We visualize all perplexity values in a grid to verify cluster stability and convergence.
+
+# %%
+fig, axes = plt.subplots(2, 2, figsize=(20, 18))
+axes = axes.flatten()
+
+for idx, perp in enumerate(perplexities):
+    ax = axes[idx]
+    feat_2d = tsne_results[perp]
+
+    for i, cls in enumerate(dm.classes):
+        mask_eval = (targets == i) & (splits != "Train")
+        ax.scatter(
+            feat_2d[mask_eval, 0],
+            feat_2d[mask_eval, 1],
+            color=colors[i],
+            marker="o",
+            s=40,
+            alpha=0.8,
+            edgecolors="white",
+            linewidth=0.3,
+            label=cls if idx == 0 else None,
+        )
+
+    ax.set_title(f"Perplexity = {perp}", fontsize=14)
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+fig.suptitle(
+    "t-SNE Perplexity Comparison\n(MobileNet V2 with DR 0.1)",
+    fontsize=20,
+    y=1.02,
+)
+fig.legend(loc="lower center", ncol=len(dm.classes), bbox_to_anchor=(0.5, -0.05))
+
+plt.tight_layout()
+plt.savefig(
+    FIGURES_DL_DIR / "tsne_perplexity_comparison.png", bbox_inches="tight", dpi=DPI
+)
 plt.show()
 
 # %% [markdown]
@@ -672,49 +728,120 @@ plt.show()
 # %% [markdown]
 # ### Uniform Manifold Approximation and Projection (UMAP)
 #
-# For UMAP, we went with `n_neighbors=15` and `min_dist=0.1` (recommended defaults by `umap-learn`). `n_neighbors` controls how UMAP balances local versus global structure (similar to perplexity), while `min_dist` determines how tightly UMAP is allowed to pack points together.
+# Like t-SNE, UMAP is sensitive to its hyperparameter `n_neighbors`, which controls the balance between local and global structure. We explore values of 15, 50, 100, and 200 to see how the manifold structure evolves as we consider larger neighborhood sizes.
 
 # %%
-reducer = umap.UMAP(
-    n_neighbors=15, min_dist=0.1, n_components=2, random_state=DEFAULT_SEED
+n_neighbors_list = [15, 50, 100, 200]
+umap_results = {}
+
+for n_neigh in n_neighbors_list:
+    logger.info(f"Computing UMAP with n_neighbors={n_neigh}...")
+    reducer = umap.UMAP(
+        n_neighbors=n_neigh,
+        min_dist=0.1,
+        n_components=2,
+        random_state=DEFAULT_SEED,
+    )
+    feat_umap = reducer.fit_transform(features)
+    umap_results[n_neigh] = feat_umap
+
+    plt.figure(figsize=(14, 10))
+
+    for i, cls in enumerate(dm.classes):
+        mask_train = (targets == i) & (splits == "Train")
+        plt.scatter(
+            feat_umap[mask_train, 0],
+            feat_umap[mask_train, 1],
+            color=colors[i],
+            marker="x",
+            s=25,
+            alpha=0.4,
+            label=None,
+        )
+
+        mask_eval = (targets == i) & (splits != "Train")
+        plt.scatter(
+            feat_umap[mask_eval, 0],
+            feat_umap[mask_eval, 1],
+            color=colors[i],
+            marker="o",
+            s=70,
+            alpha=0.8,
+            edgecolors="white",
+            linewidth=0.5,
+            label=cls,
+        )
+
+    split_legend = [
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="gray",
+            lw=0,
+            markersize=8,
+            label="Eval Set (Val/Test)",
+        ),
+        Line2D(
+            [0], [0], marker="x", color="gray", lw=0, markersize=8, label="Train Set"
+        ),
+    ]
+    leg1 = plt.legend(handles=split_legend, loc="lower left", title="Splits")
+    plt.gca().add_artist(leg1)
+    plt.legend(loc="upper right", title="Classes", ncol=2)
+
+    plt.title(
+        f"UMAP Visualization with n_neighbors={n_neigh}\n(MobileNet V2 with DR 0.1)"
+    )
+    plt.xlabel("UMAP 1")
+    plt.ylabel("UMAP 2")
+    plt.savefig(
+        FIGURES_DL_DIR / f"umap_neigh_{n_neigh}.png", bbox_inches="tight", dpi=DPI
+    )
+    plt.show()
+
+# %% [markdown]
+# ### Comparison of Neighborhood Sizes
+#
+# We visualize all `n_neighbors` values in a grid to verify global structure stability.
+
+# %%
+fig, axes = plt.subplots(2, 2, figsize=(20, 18))
+axes = axes.flatten()
+
+for idx, n_neigh in enumerate(n_neighbors_list):
+    ax = axes[idx]
+    feat_umap = umap_results[n_neigh]
+
+    for i, cls in enumerate(dm.classes):
+        mask_eval = (targets == i) & (splits != "Train")
+        ax.scatter(
+            feat_umap[mask_eval, 0],
+            feat_umap[mask_eval, 1],
+            color=colors[i],
+            marker="o",
+            s=40,
+            alpha=0.8,
+            edgecolors="white",
+            linewidth=0.3,
+            label=cls if idx == 0 else None,
+        )
+
+    ax.set_title(f"n_neighbors = {n_neigh}", fontsize=14)
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+fig.suptitle(
+    "UMAP Neighborhood Comparison\n(MobileNet V2 with DR 0.1)",
+    fontsize=20,
+    y=1.02,
 )
-feat_umap = reducer.fit_transform(features)
+fig.legend(loc="lower center", ncol=len(dm.classes), bbox_to_anchor=(0.5, -0.05))
 
-plt.figure(figsize=(14, 10))
-
-for i, cls in enumerate(dm.classes):
-    mask_train = (targets == i) & (splits == "Train")
-    plt.scatter(
-        feat_umap[mask_train, 0],
-        feat_umap[mask_train, 1],
-        color=colors[i],
-        marker="x",
-        s=25,
-        alpha=0.4,
-        label=None,
-    )
-
-    mask_eval = (targets == i) & (splits != "Train")
-    plt.scatter(
-        feat_umap[mask_eval, 0],
-        feat_umap[mask_eval, 1],
-        color=colors[i],
-        marker="o",
-        s=70,
-        alpha=0.8,
-        edgecolors="white",
-        linewidth=0.5,
-        label=cls,
-    )
-
-leg1 = plt.legend(handles=split_legend, loc="lower left", title="Splits")
-plt.gca().add_artist(leg1)
-plt.legend(loc="upper right", title="Classes", ncol=2)
-
-plt.title("UMAP Visualization of Jute Leaf Data (MobileNet V2 with DR 0.1)")
-plt.xlabel("UMAP 1")
-plt.ylabel("UMAP 2")
-plt.savefig(FIGURES_DL_DIR / "umap.png", bbox_inches="tight", dpi=DPI)
+plt.tight_layout()
+plt.savefig(
+    FIGURES_DL_DIR / "umap_neighborhood_comparison.png", bbox_inches="tight", dpi=DPI
+)
 plt.show()
 
 # %% [markdown]
