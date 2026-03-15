@@ -7,6 +7,9 @@ DATA_DIR = ROOT_DIR / "data"
 BY_CLASS_DIR = DATA_DIR / "by_class"
 ML_SPLIT_DIR = DATA_DIR / "ml_split"
 UNLABELED_DIR = DATA_DIR / "unlabeled"
+PLANTDOC_DIR = DATA_DIR / "external" / "plantdoc"
+PLANTVILLAGE_DIR = DATA_DIR / "external" / "plantvillage"
+
 
 ARTIFACTS_DIR = ROOT_DIR / "artifacts"
 LOGS_DIR = ARTIFACTS_DIR / "logs"

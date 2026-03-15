@@ -44,6 +44,9 @@ split-data:
 train-ml:
 	$(PYTHON) scripts/train_all_ml.py
 
+tune-ml:
+	$(PYTHON) scripts/tune_all_ml.py
+
 train-dl:
 	$(PYTHON) scripts/train_all_dl.py
 

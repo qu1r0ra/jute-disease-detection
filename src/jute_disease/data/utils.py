@@ -67,10 +67,12 @@ def split_data(force: bool = False) -> None:
     for class_folder in class_folders:
         class_name = class_folder.name
 
-        images = []
+        images = set()
         for ext in IMAGE_EXTENSIONS:
-            images.extend(list(class_folder.glob(f"*{ext}")))
-
+            # images.extend(list(class_folder.glob(f"*{ext}")))
+            images.update(class_folder.glob(f"*{ext}"))
+        images = list(images)
+        
         if not images:
             logger.warning(f"No images found for class '{class_name}'. Skipping.")
             continue
