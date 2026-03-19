@@ -190,9 +190,9 @@ else:
 # %% [markdown]
 # At this point, we have finished training the DL baselines. If training went well, you should have obtained results similar to ours, which can be viewed [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/Baseline%20DL%20Models/workspace).
 #
-# Looking at the validation F1 graph:
+# Looking at the validation accuracy graph:
 #
-# ![Validation F1 Score Comparison: Baseline DL Models](../../assets/figures/dl/val_f1_baseline.png)
+# ![Validation F1 Score Comparison: Baseline DL Models](../../assets/figures/dl/val_acc_baseline.png)
 #
 # For context, we used the ff. pre-trained models:
 #
@@ -209,10 +209,10 @@ else:
 
 # %% [markdown]
 # Some insights:
-# - **EfficientNet-B5** achieved the greatest top-1 validation F1. It has the second most parameters, so it is somewhat expected.
+# - **EfficientNet-B5** achieved the highest top-1 (checkpoint with the lowest validation loss) validation accuracy. It has the second most parameters, so it is somewhat expected.
 # - It is followed by **MobileNet V2**. Interestingly, MobileNetV2 achieved a performance comparable to EfficientNet-B5 despite having the least parameters. Hence, we decided to push through with MobileNet V2 for grid search. It is also more economical for us.
-# - **MobileViT (small)** achieved the third-greatest top-1 validation F1. It has the second-least parameters.
-# - Interestingly, **EfficientNet-B7** achieved the worst top-1 validation F1 despite having a similar architecture to EfficientNet-B5, but with more than double its size (and thus, the most parameters).
+# - **MobileViT (small)** achieved the third-highest top-1 validation accuracy. It has the second-least parameters.
+# - Interestingly, **EfficientNet-B7** achieved the worst top-1 validation accuracy despite having a similar architecture to EfficientNet-B5, but with more than double its size (and thus, the most parameters).
 
 # %% [markdown] id="b53753d7"
 # ## Checkpoints for Grid Search
@@ -267,16 +267,15 @@ download_plant_doc()
 #
 
 # %% [markdown]
-# Oof, that's pretty annoying to analyze. Maybe looking at the test accuracy graph and a list of models sorted by test accuracy will help:
+# That's pretty difficult to analyze by eye. We aggregated the CSV log metrics to obtain the top-1 validation accuracy of each model. We will use it to determine which one to further optimize moving forward.
 #
 # > Such is the pain of relying solely on WandB visualizations. After our first full run and several other mistakes, we realized the importance of saving experiment logs and metrics into a local CSV or parquet file to give us flexibility to visualize data in our own way.
-#
-# ![MobileNet V2 Grid Test Accuracy Graph](../../assets/figures/dl/test_acc_mobilenet_v2_grid.png)
-#
-# ![MobileNet V2 Grid Models Sorted by Test Accuracy](../../assets/figures/dl/grid_models_sorted_test_acc.png)
+
+# %%
+# (insert code visualizing phase 1 aggregated_grid_metrics, sorted by validation acc and f1)
 
 # %% [markdown]
-# For context, the test accuracy of each model was computed on the best checkpoint obtained during training. By default, PyTorch Lightning determines the best checkpoint as the one that achieved the lowest validation loss, though you could set the criterion yourself. We went with the default.
+# For context, PyTorch Lightning determines the best checkpoint as the one that achieved the lowest validation loss, though you could set the criterion yourself. We went with the default.
 #
 # Looking at the graphs, we got the ff. insights:
 # - Level 1 MobileNet V2 checkpoints (MobileNet V2 pre-trained on ImageNet-1K with no fine-tuning whatsoever) led to the best test accuracies, followed by level 3 checkpoints (fine-tuned on PlantVillage then PlantDoc), and lastly, level 2 checkpoints (fine-tuned on PlantVillage). This went against our hypothesis that fine-tuning on related datasets would improve model performance.
