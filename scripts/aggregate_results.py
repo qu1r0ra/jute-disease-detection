@@ -1,3 +1,5 @@
+"""Aggregate CSV metrics from multiple experiments into a summary report."""
+
 import argparse
 from pathlib import Path
 

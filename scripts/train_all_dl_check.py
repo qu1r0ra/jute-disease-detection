@@ -1,3 +1,5 @@
+"""Fast sanity check for all Deep Learning configurations using fast_dev_run."""
+
 import argparse
 import subprocess
 import sys

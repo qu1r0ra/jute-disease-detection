@@ -1,3 +1,5 @@
+"""Execute training and evaluation for Deep Learning at 512px resolution."""
+
 import os
 import subprocess
 import sys

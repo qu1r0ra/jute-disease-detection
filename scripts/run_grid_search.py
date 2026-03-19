@@ -1,3 +1,5 @@
+"""Run hyperparameter optimization searches for Deep Learning models."""
+
 import argparse
 import os
 import subprocess

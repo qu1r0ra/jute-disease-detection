@@ -1,3 +1,5 @@
+"""Classical ML training CLI."""
+
 import argparse
 
 from jute_disease.engines.ml.train import train_ml
