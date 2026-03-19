@@ -272,7 +272,24 @@ download_plant_doc()
 # > Such is the pain of relying solely on WandB visualizations. After our first full run and several other mistakes, we realized the importance of saving experiment logs and metrics into a local CSV or parquet file to give us flexibility to visualize data in our own way.
 
 # %%
-# (insert code visualizing phase 1 aggregated_grid_metrics, sorted by validation acc and f1)
+import pandas as pd
+from IPython.display import display
+
+from jute_disease.utils.constants import LOGS_DIR
+
+metrics_path = LOGS_DIR / "phase1_transfer_grid" / "aggregated_grid_metrics.csv"
+if metrics_path.exists():
+    df = pd.read_csv(metrics_path)
+    df_sorted = df.sort_values(by=["val_acc", "val_f1"], ascending=[False, False])
+
+    print("Phase 1 Grid Search Results (Sorted by Validation Performance):")
+    display(
+        df_sorted[
+            ["Experiment", "val_acc", "val_f1", "val_loss", "test_acc", "test_f1"]
+        ]
+    )
+else:
+    print(f"Metrics file not found at {metrics_path}")
 
 # %% [markdown]
 # For context, PyTorch Lightning determines the best checkpoint as the one that achieved the lowest validation loss, though you could set the criterion yourself. We went with the default.
