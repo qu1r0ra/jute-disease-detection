@@ -1,5 +1,3 @@
-"""Script to run full training, testing, and evaluation for DL at 512px resolution."""
-
 import os
 import subprocess
 import sys
@@ -18,7 +16,6 @@ CLI_SCRIPT = "scripts/train_dl.py"
 
 
 def run_dl_512() -> None:
-    """Execute training, evaluation, and aggregation sequentially."""
     if not CONFIG_PATH.exists():
         raise FileNotFoundError(f"Config file not found: {CONFIG_PATH}")
 
@@ -46,7 +43,6 @@ def run_dl_512() -> None:
     env = os.environ.copy()
     env["WANDB_RUN_ID"] = run_id
 
-    # 1. Fit
     fit_cmd = [
         "uv",
         "run",
@@ -62,7 +58,6 @@ def run_dl_512() -> None:
         raise RuntimeError(f"Failed during fit with exit code {result.returncode}.")
     flatten_log_version(log_dir, "train-metrics.csv")
 
-    # 2. Test
     ckpt_dir = CHECKPOINTS_DIR / "mobilenet_v2_512"
     if not ckpt_dir.exists():
         raise FileNotFoundError(f"Checkpoint directory not found: {ckpt_dir}")
@@ -90,7 +85,6 @@ def run_dl_512() -> None:
         raise RuntimeError(f"Failed during test with exit code {result.returncode}.")
     flatten_log_version(log_dir, "test-metrics.csv")
 
-    # 3. Aggregate
     agg_cmd = [
         "uv",
         "run",

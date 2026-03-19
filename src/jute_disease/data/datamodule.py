@@ -27,7 +27,6 @@ from jute_disease.utils import (
 class DataModule(LightningDataModule):
     """
     A unified DataModule for Jute disease detection and external pre-training datasets.
-    Optimized for multi-GPU training and fast K-Fold iteration.
     """
 
     def __init__(
@@ -57,7 +56,7 @@ class DataModule(LightningDataModule):
         self.sampler: WeightedRandomSampler | None = None
         self._classes: list[str] | None = None
 
-        # K-Fold
+        # K-fold cross validation
         self._splits: list[tuple[np.ndarray, np.ndarray]] | None = None
         self._pool_labels: list[int] | None = None
         self._train_pool: ConcatDataset | None = None
