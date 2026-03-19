@@ -203,14 +203,14 @@ comp_df = comp_df.sort_values("Dropout Rate")
 ax_bar = sns.barplot(
     data=comp_df,
     x="Dropout Rate",
-    y="test_acc",
+    y="val_acc",
     hue="Resolution",
     palette="viridis",
 )
 plt.ylim(0.8, 0.95)
-plt.title("Impact of Image Resolution on Test Accuracy (MobileNetV2 with DR 0.1)")
+plt.title("Impact of Image Resolution on Validation Accuracy (MobileNetV2 with DR 0.1)")
 plt.xlabel("Dropout Rate")
-plt.ylabel("Test Accuracy")
+plt.ylabel("Validation Accuracy")
 plt.grid(axis="y", linestyle="--", alpha=0.7)
 
 for p in ax_bar.patches:
@@ -230,9 +230,7 @@ FIGURES_DL_DIR.mkdir(parents=True, exist_ok=True)
 plt.savefig(FIGURES_DL_DIR / "resolution_impact.png", bbox_inches="tight", dpi=DPI)
 plt.show()
 
-display(
-    comp_df[["Experiment", "test_acc", "test_f1", "test_loss"]].reset_index(drop=True)
-)
+display(comp_df[["Experiment", "val_acc", "val_f1", "val_loss"]].reset_index(drop=True))
 
 # %% [markdown]
 # Some insights:
@@ -333,7 +331,7 @@ plt.show()
 #   - This is possibly explained by how our data is heavily augmented during training but not during validation, making it more difficult for the model to get correct predictions on the training set per epoch.
 #   - Furthermore, due to dropout, some neurons are deactivated during training, making the task more difficult.
 # - Train accuracy appears to be consistently lower than validation accuracy. This is possibly explained by the same reasons above. Fortunately, the gap between the two appears to decrease over time, indicating that the model was able to generalize better over time.
-# - Train loss appears to be more erratic compared to validation loss. Moreover, higher dropout rates appear to lead to a slightly higher train loss and lower train accuracy during training (but nothing suggestive of test performance). This is possibly explained by the same reasons in the first point.
+# - Train loss appears to be more erratic compared to validation loss. Moreover, higher dropout rates appear to lead to a slightly higher train loss and lower train accuracy during training (but nothing suggestive of validation performance). This is possibly explained by the same reasons in the first point.
 # - The loss and accuracy curves of different models appear to follow the same pattern.
 #   - This is likely because we seeded the data splitting and augmentations, making them reproducible and thus, resulting in similar curves.
 #
@@ -580,7 +578,7 @@ if len(wrong_indices) > 0:
     )
     plt.show()
 else:
-    logger.info("No errors found in test set!")
+    logger.info("No errors found in dataset!")
 
 # %% [markdown]
 # Some insights:
@@ -955,9 +953,9 @@ plt.show()
 # ### 2A. Model Performance
 
 # %% [markdown]
-# #### Test Accuracy across Learning Rates
+# #### Validation Accuracy across Learning Rates
 #
-# Let's visualize test accuracy across all the learning rates we tested to see which learning rate may be better suited for our task.
+# Let's visualize validation accuracy across all the learning rates we tested to see which learning rate may be better suited for our task.
 
 # %%
 ft_metrics_path = LOGS_DIR / "phase2_finetune_grid" / "aggregated_grid_metrics.csv"
@@ -983,15 +981,17 @@ plt.figure(figsize=(10, 6))
 ax = sns.barplot(
     data=df_ft,
     x="Learning Rate",
-    y="test_acc",
+    y="val_acc",
     hue="Learning Rate",
     palette="Oranges_r",
     legend=False,
 )
 plt.ylim(0.85, 0.95)
-plt.title("Test Accuracy across Finetuning Learning Rates (MobileNet V2 with DR 0.1)")
+plt.title(
+    "Validation Accuracy across Finetuning Learning Rates (MobileNet V2 with DR 0.1)"
+)
 plt.xlabel("Learning Rate")
-plt.ylabel("Test Accuracy")
+plt.ylabel("Validation Accuracy")
 plt.grid(axis="y", linestyle="--", alpha=0.7)
 
 for p in ax.patches:
@@ -1015,12 +1015,12 @@ plt.savefig(
 )
 plt.show()
 
-disp_cols = ["Learning Rate", "epoch", "test_acc", "test_f1", "test_loss"]
+disp_cols = ["Learning Rate", "epoch", "val_acc", "val_f1", "val_loss"]
 display(df_ft[disp_cols].reset_index(drop=True))
 
 # %% [markdown]
 # Some insights:
-# - A learning rate of `0.01` appears to be the best for our task, leading to the highest test accuracy of around **91.4%**. This is a slight jump from the previous best accuracy of **88.3%**.
+# - A learning rate of `0.01` appears to be the best for our task, leading to the highest validation accuracy of around **88.8%**.
 # - Decreasing the learning rate appears to hurt model performance for our task. It also took the longest, taking up to 49 epochs.
 
 # %% [markdown]
@@ -1137,7 +1137,7 @@ df_ft_metrics = get_cm_metrics(ft_cm_pivot)
 display(df_ft_metrics.round(4))
 
 # %% [markdown]
-# Though the model's overall accuracy and per-class accuracy somewhat increased, the confusion matrix comparison shows that the model with the fine-tuned LR of 0.01 wasn't able to address its core issue of failing to distinguish between _Cercospora Leaf Spot_ and _Mosaic_, thus holding it back from achieving a much higher accuracy.
+# Though the model's overall accuracy and per-class accuracy somewhat increased, the confusion matrix comparison shows that the model with the fine-tuned LR of 0.01 wasn't able to address its core issue of failing to distinguish between _Cercospora Leaf Spot_ and _Mosaic_, thus holding it back from achieving a much higher validation accuracy.
 
 # %% [markdown]
 # #### Finetuned Model Inference
@@ -1267,7 +1267,7 @@ if len(wrong_indices) > 0:
     )
     plt.show()
 else:
-    logger.info("[Finetuned] No errors found in test set!")
+    logger.info("[Finetuned] No errors found in dataset!")
 
 # %% [markdown]
 # Unfortunately, the fine-tuned model still exhibits the same problem of failing to distinguish between _Cercospora Leaf Spot_ and _Mosaic_, but this time with higher confidences in the incorrect label.
