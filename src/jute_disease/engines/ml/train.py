@@ -1,4 +1,3 @@
-# ruff: noqa: N806
 import os
 
 import numpy as np

@@ -1,3 +1,5 @@
+"""Analyze and visualize image resolution distribution in the dataset."""
+
 import os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path

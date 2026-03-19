@@ -1,3 +1,5 @@
+"""Run test evaluation on all trained classical ML models."""
+
 import argparse
 
 from jute_disease.engines.ml.test import test_ml

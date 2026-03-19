@@ -30,7 +30,7 @@ def train_pretext_task(
     """
     seed_everything(seed)
 
-    # 1. Setup Data
+    # Data
     logger.info(f"Initializing DataModule for {data_dir}...")
     dm = DataModule(data_dir=data_dir, val_split=0.2, batch_size=batch_size, seed=seed)
     dm.setup()
@@ -38,26 +38,24 @@ def train_pretext_task(
     num_classes = dm.num_classes
     logger.info(f"Found {num_classes} classes.")
 
-    # 2. Setup Backbone
+    # Backbone
     logger.info(f"Initializing {model_name} backbone...")
     backbone = TimmBackbone(model_name=model_name, pretrained=pretrained)
 
-    # Override weights if provided (e.g. from PlantVillage checkpoint)
     if base_backbone_weights is not None:
         logger.info("Loading custom backbone weights...")
-        # Note: base_backbone_weights should be the state_dict of the BACKBONE only
         msg = backbone.load_state_dict(base_backbone_weights, strict=True)
         logger.info(f"Backbone load status: {msg}")
 
-    # 3. Setup Classifier
+    # Classifier
     model = Classifier(
         feature_extractor=backbone,
         num_classes=num_classes,
         lr=lr,
-        freeze_backbone=False,  # Unfreeze for transfer learning
+        freeze_backbone=False,
     )
 
-    # 4. Setup Trainer
+    # Trainer
     task_name = Path(output_path).stem
     logger_wandb = WandbLogger(project="jute-pretraining", name=task_name)
 
@@ -82,15 +80,14 @@ def train_pretext_task(
         log_every_n_steps=100,
     )
 
-    # 5. Train
     logger.info("Starting Training...")
     trainer.fit(model, datamodule=dm)
 
-    # 6. Save Best
     if isinstance(trainer.checkpoint_callback, ModelCheckpoint):
         best_path = trainer.checkpoint_callback.best_model_path
     else:
         best_path = None
+
     if best_path:
         logger.info(f"Best model saved at: {best_path}")
         target_path = Path(output_path)
