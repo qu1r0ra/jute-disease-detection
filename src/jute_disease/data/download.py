@@ -56,7 +56,6 @@ def download_and_prepare_kaggle_data(dataset_name: str, kaggle_id: str) -> None:
 
 
 def download_plant_village() -> None:
-    """Download the Plant Village dataset and prepare it."""
     download_and_prepare_kaggle_data(
         "PlantVillage",
         "mohitsingh1804/plantvillage",
@@ -64,7 +63,6 @@ def download_plant_village() -> None:
 
 
 def download_plant_doc() -> None:
-    """Download the PlantDoc dataset and prepare it."""
     download_and_prepare_kaggle_data(
         "PlantDoc",
         "nirmalsankalana/plantdoc-dataset",

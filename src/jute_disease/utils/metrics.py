@@ -22,5 +22,4 @@ EVAL_METRICS = MetricCollection(
 def format_metrics(
     metrics_dict: dict[str, torch.Tensor], prefix: str = ""
 ) -> dict[str, float]:
-    """Format MetricCollection output into a dict of floats with an optional prefix."""
     return {f"{prefix}{k}": float(v) for k, v in metrics_dict.items()}
