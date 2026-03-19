@@ -1,6 +1,3 @@
-# ruff: noqa: N803
-"""Scikit-learn classifier wrappers for the jute disease ML pipeline."""
-
 from typing import Any
 
 import joblib

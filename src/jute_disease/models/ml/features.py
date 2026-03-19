@@ -1,11 +1,9 @@
-# ruff: noqa: N806
 from abc import ABC, abstractmethod
 
 import cv2
 import numpy as np
 from PIL import Image
 from skimage.feature import graycomatrix, graycoprops, hog, local_binary_pattern
-from skimage.filters import gabor_kernel
 from torchvision.datasets import ImageFolder
 from tqdm import tqdm
 
@@ -52,7 +50,7 @@ class CraftedFeatureExtractor(BaseFeatureExtractor):
         for theta in [0, np.pi/4, np.pi/2, 3*np.pi/4]:
             kernel = cv2.getGaborKernel((21, 21), 5.0, theta, 10.0, 0.5, 0, ktype=cv2.CV_32F)
             self.gabor_kernels.append(kernel)
-        
+
     def extract(self, img: Image.Image | np.ndarray) -> np.ndarray:
         """Extract combined color and texture feature vector."""
         if isinstance(img, Image.Image):
@@ -113,7 +111,7 @@ class CraftedFeatureExtractor(BaseFeatureExtractor):
         #     gabor_features.append(np.mean(fimg))
         #     gabor_features.append(np.std(fimg))
         # gabor_features = np.array(gabor_features)
-        
+
         combined = np.hstack(
             [color_moments, color_hist, lbp_hist, glcm_features, hog_features]
         )

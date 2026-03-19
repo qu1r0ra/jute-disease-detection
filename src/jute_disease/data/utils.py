@@ -1,5 +1,3 @@
-"""Jute dataset management — directory setup and train/val/test splitting."""
-
 import argparse
 import random
 import shutil
@@ -71,7 +69,7 @@ def split_data(force: bool = False) -> None:
         image_paths: set[Path] = set()
         for ext in IMAGE_EXTENSIONS:
             image_paths.update(class_folder.glob(f"*{ext}"))
-        images = list(image_paths)
+        images: list[Path] = list(image_paths)
 
         if not images:
             logger.warning(f"No images found for class '{class_name}'. Skipping.")

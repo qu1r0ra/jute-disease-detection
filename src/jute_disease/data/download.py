@@ -1,5 +1,3 @@
-"""Download and prepare external datasets for pre-training."""
-
 import shutil
 from pathlib import Path
 
