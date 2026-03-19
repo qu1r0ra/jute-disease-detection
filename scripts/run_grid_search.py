@@ -40,6 +40,7 @@ def _aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
         if "val_loss" in df.columns:
             val_df = df.dropna(subset=["val_loss"])
             if not val_df.empty:
+                # Extract best metrics based on validation loss
                 best_row = val_df.loc[val_df["val_loss"].idxmin()].to_dict()
                 for key, val in best_row.items():
                     if (
@@ -49,7 +50,6 @@ def _aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
                     ):
                         summary[key] = val
 
-        # Ensure we have train_acc even if not in the best validation row
         for col in ["train_acc", "train_loss"]:
             if col in df.columns and (col not in summary or pd.isna(summary[col])):
                 summary[col] = df[col].max() if "acc" in col else df[col].min()
@@ -145,6 +145,7 @@ def run_grid_search(
     model_name = Path(base_config_path).stem.capitalize()
     logger.info(f"Using base model config: {base_config_path} ({model_name})")
 
+    # Define search space from grid config
     transfer_levels = grid_config.get("transfer_learning_levels", [])
     dropout_rates = grid_config.get("dropout_rates", [])
 
@@ -233,6 +234,7 @@ def run_grid_search(
                 logger.info(f"Testing Phase 2 experiment {exp_name}...")
 
                 ckpt_dir = CHECKPOINTS_DIR / exp_name
+                # Locate the newly trained model checkpoint
                 ckpts = list(ckpt_dir.glob("*.ckpt"))
                 if not ckpts:
                     logger.error(
@@ -344,7 +346,7 @@ def run_grid_search(
 
             logger.info(f"Testing Phase 1 experiment {exp_name}...")
 
-            ckpt_dir = CHECKPOINTS_DIR / exp_name
+            # Identify best checkpoint for evaluation
             ckpts = list(ckpt_dir.glob("*.ckpt"))
             if not ckpts:
                 logger.error(

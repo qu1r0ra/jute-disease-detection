@@ -42,6 +42,8 @@ def run_dl_512() -> None:
     log_dir = Path(csv_save_dir) / csv_name
 
     run_id = wandb.util.generate_id()
+    # Sync WandB run ID for fit and test
+
     env = os.environ.copy()
     env["WANDB_RUN_ID"] = run_id
 
@@ -87,6 +89,7 @@ def run_dl_512() -> None:
         raise RuntimeError(f"Failed during test with exit code {result.returncode}.")
     flatten_log_version(log_dir, "test-metrics.csv")
 
+    # Run final metric aggregation
     agg_cmd = [
         "uv",
         "run",

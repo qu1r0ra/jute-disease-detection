@@ -35,6 +35,7 @@ def check_all_dl(
         model_name = config.stem
         logger.info(f"Verifying {model_name} (fast_dev_run)...")
 
+        # Run a minimal check to verify data pipelines and configuration integrity
         cmd = [
             "uv",
             "run",
