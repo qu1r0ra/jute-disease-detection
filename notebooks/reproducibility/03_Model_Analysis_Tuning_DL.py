@@ -230,7 +230,9 @@ FIGURES_DL_DIR.mkdir(parents=True, exist_ok=True)
 plt.savefig(FIGURES_DL_DIR / "resolution_impact.png", bbox_inches="tight", dpi=DPI)
 plt.show()
 
-display(comp_df[["Experiment", "val_acc", "val_f1", "val_loss"]].reset_index(drop=True))
+display(
+    comp_df[["Experiment", "val_acc", "val_f1", "val_loss", "test_acc", "test_f1"]].reset_index(drop=True)
+)
 
 # %% [markdown]
 # Some insights:
@@ -1015,7 +1017,7 @@ plt.savefig(
 )
 plt.show()
 
-disp_cols = ["Learning Rate", "epoch", "val_acc", "val_f1", "val_loss"]
+disp_cols = ["Learning Rate", "epoch", "val_acc", "val_f1", "val_loss", "test_acc", "test_f1"]
 display(df_ft[disp_cols].reset_index(drop=True))
 
 # %% [markdown]
