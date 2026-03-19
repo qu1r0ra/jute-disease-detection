@@ -236,9 +236,7 @@ display(
 
 # %% [markdown]
 # Some insights:
-# - Training on 512x512 pixel images appears to lead to worse performance compared to training on 256x256 pixel images.
-# - A dropout rate of 0.1 appears to lead to a higher test F1 compared to their 0.0 counterparts, though likely statistically insignificant given our sample. This may suggest that slightly increased regularization may improve our model's performance on unseen data.
-# - Our current best test accuracy is **88.3%**, achieved by a MobileNet V2 pre-trained on ImageNet-1K with a dropout rate of **0.1**.
+# - Training on 512x512 pixel images appears to lead to a worse validation performance compared to training on 256x256 pixel images.
 #
 # Hence, our initial hypothesis of training on higher-resolution images is disproven, though not in a formal statistical manner.
 
@@ -988,7 +986,6 @@ ax = sns.barplot(
     palette="Oranges_r",
     legend=False,
 )
-plt.ylim(0.85, 0.95)
 plt.title(
     "Validation Accuracy across Finetuning Learning Rates (MobileNet V2 with DR 0.1)"
 )
@@ -1017,13 +1014,13 @@ plt.savefig(
 )
 plt.show()
 
-disp_cols = ["Learning Rate", "epoch", "val_acc", "val_f1", "val_loss", "test_acc", "test_f1"]
+disp_cols = ["Learning Rate", "val_acc", "val_f1", "test_acc", "test_f1"]
 display(df_ft[disp_cols].reset_index(drop=True))
 
 # %% [markdown]
 # Some insights:
-# - A learning rate of `0.01` appears to be the best for our task, leading to the highest validation accuracy of around **88.8%**.
-# - Decreasing the learning rate appears to hurt model performance for our task. It also took the longest, taking up to 49 epochs.
+# - A learning rate of `0.01` appears to be the best for our task, leading to the highest validation accuracy and F1 values.
+#   - However, `0.005` and even `0.001` aren't that far off. Since we weren't able to perform k-fold cross-validation (we wanted to conserve compute units), we can't rigorously conclude that `0.01` is the best.
 
 # %% [markdown]
 # #### Loss and Accuracy Curves
