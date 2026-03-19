@@ -8,7 +8,8 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: .venv
+#     language: python
 #     name: python3
 # ---
 
@@ -273,7 +274,7 @@ download_plant_doc()
 
 # %%
 import pandas as pd
-from IPython.display import display
+from IPython.display import display as ipy_display
 
 from jute_disease.utils.constants import LOGS_DIR
 
@@ -282,8 +283,8 @@ if metrics_path.exists():
     df = pd.read_csv(metrics_path)
     df_sorted = df.sort_values(by=["val_acc", "val_f1"], ascending=[False, False])
 
-    print("Phase 1 Grid Search Results (Sorted by Validation Performance):")
-    display(
+    print("Phase 1 Grid Search Results (Sorted by Validation Accuracy, then F1):")
+    ipy_display(
         df_sorted[
             ["Experiment", "val_acc", "val_f1", "val_loss", "test_acc", "test_f1"]
         ]
@@ -294,13 +295,12 @@ else:
 # %% [markdown]
 # For context, PyTorch Lightning determines the best checkpoint as the one that achieved the lowest validation loss, though you could set the criterion yourself. We went with the default.
 #
-# Looking at the graphs, we got the ff. insights:
-# - Level 1 MobileNet V2 checkpoints (MobileNet V2 pre-trained on ImageNet-1K with no fine-tuning whatsoever) led to the best test accuracies, followed by level 3 checkpoints (fine-tuned on PlantVillage then PlantDoc), and lastly, level 2 checkpoints (fine-tuned on PlantVillage). This went against our hypothesis that fine-tuning on related datasets would improve model performance.
-# - Within the same checkpoint groups:
-#   - Dropout rates of 0.0 and 0.1 led to greater test accuracies than their 0.2 counterparts. This may suggest that dropout rates of 0.2 or higher may hurt model performance, though this has yet to be statistically tested.
-#   - A dropout rate of 0.1 led to the greatest test accuracies, followed by 0.0 and 0.2.
+# Looking at the table above, we got the ff. insights:
+# - Level 1 MobileNet V2 checkpoints (MobileNet V2 pre-trained on ImageNet-1K with no fine-tuning whatsoever) achieved the best test accuracies, followed by level 3 checkpoints (fine-tuned on PlantVillage then PlantDoc), and lastly, level 2 checkpoints (fine-tuned on PlantVillage). This went against our hypothesis that fine-tuning on related datasets would improve model performance.
+# - The level 1 MobileNet V2 with a dropout rate of 0.0 achieved the best validation accuracy and F1. However, they weren't that much greater compared to their 0.1 and 0.2 dropout rate counterparts, so it may have just been by chance.
+#   - We decided to go with the dropout rate of 0.1 over 0.0 since their differences in validation performances are negligible, and we have the belief that adding a bit of regularization via dropout is better than having no dropout at all.
 #
-# Thus, we concluded that the MobileNet V2 pre-trained on ImageNet-1K with a dropout rate of 0.1 was the best DL model to push through with (and potentially continue fine-tuning on) for our task of jute leaf disease classification.
+# Hence, we concluded that the MobileNet V2 pre-trained on ImageNet-1K with a dropout rate of 0.1 was the best variant to push through with (and potentially continue fine-tuning on) for our task of jute leaf disease classification.
 #
 # At this point, we decided to conduct error analysis and see what can be improved.
 
