@@ -208,6 +208,23 @@ else:
 #
 # Note that the Hugging Face models above may have been pre-trained in different environments and with different techniques. Still, we made sure all our models were eventually pre-trained on ImageNet, hence the `_in1k` suffixes.
 
+# %%
+import pandas as pd
+from IPython.display import display as ipy_display
+from jute_disease.utils.constants import LOGS_DIR
+
+baseline_metrics_path = LOGS_DIR / "dl_baselines" / "aggregated_metrics.csv"
+if baseline_metrics_path.exists():
+    df_baseline = pd.read_csv(baseline_metrics_path)
+    df_baseline_sorted = df_baseline.sort_values(by=["val_acc", "val_f1"], ascending=[False, False])
+
+    print("Baseline Model Results (Sorted by Validation Performance):")
+    ipy_display(
+        df_baseline_sorted[
+            ["Experiment", "val_acc", "val_f1", "val_loss", "test_acc", "test_f1"]
+        ]
+    )
+
 # %% [markdown]
 # Some insights:
 # - **EfficientNet-B5** achieved the highest top-1 (checkpoint with the lowest validation loss) validation accuracy. It has the second most parameters, so it is somewhat expected.
