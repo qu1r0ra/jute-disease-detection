@@ -207,6 +207,8 @@ else:
 # | MobileNet V2 | [mobilenetv2_100.ra_in1k](https://huggingface.co/timm/mobilenetv2_100.ra_in1k) | ~3.50M |
 #
 # Note that the Hugging Face models above may have been pre-trained in different environments and with different techniques. Still, we made sure all our models were eventually pre-trained on ImageNet, hence the `_in1k` suffixes.
+#
+# To make analysis easier, let's print a table of model metrics ordered by validation accuracy then F1:
 
 # %%
 import pandas as pd
@@ -221,16 +223,18 @@ if baseline_metrics_path.exists():
     print("Baseline Model Results (Sorted by Validation Performance):")
     ipy_display(
         df_baseline_sorted[
-            ["Experiment", "val_acc", "val_f1", "val_loss", "test_acc", "test_f1"]
+            ["Experiment", "val_acc", "val_f1", "test_acc", "test_f1"]
         ]
     )
 
 # %% [markdown]
 # Some insights:
-# - **EfficientNet-B5** achieved the highest top-1 (checkpoint with the lowest validation loss) validation accuracy. It has the second most parameters, so it is somewhat expected.
-# - It is followed by **MobileNet V2**. Interestingly, MobileNetV2 achieved a performance comparable to EfficientNet-B5 despite having the least parameters. Hence, we decided to push through with MobileNet V2 for grid search. It is also more economical for us.
-# - **MobileViT (small)** achieved the third-highest top-1 validation accuracy. It has the second-least parameters.
+# - **EfficientNet-B5** achieved the highest top-1 validation accuracy and validation F1. It has the second most parameters, so it is somewhat expected.
+# - It is followed by **MobileNet V2**. Interestingly, it achieved a performance comparable to EfficientNet-B5 despite having the least parameters. We decided to push through with MobileNet V2 for grid search. It is also more economical for us.
+# - **MobileViT (small)** achieved the third-highest top-1 validation accuracy. It has the second-least parameters. It is followed by Inception v3 then ResNet-50.
 # - Interestingly, **EfficientNet-B7** achieved the worst top-1 validation accuracy despite having a similar architecture to EfficientNet-B5, but with more than double its size (and thus, the most parameters).
+#
+# Hence, we will be pushing through with MobileNet V2 as our DL architecture for our subsequent experiments.
 
 # %% [markdown] id="b53753d7"
 # ## Checkpoints for Grid Search
@@ -248,7 +252,7 @@ download_plant_doc()
 #
 # `ImageNet (pre-trained) -> PlantVillage (fine-tuning)`
 #
-# For the fine-tuning stages, we will not freeze any parameters. Moreover, we will discard the classifier head and replace it with a new one with the number of neurons equal to the number of classes for the PlantVillage dataset (38).
+# For the fine-tuning stages, we will not freeze any parameters. Moreover, we will discard the classifier head and replace it with a new one with the number of neurons equal to the number of classes for the PlantVillage dataset: 38.
 
 # %% id="bc2b9c26"
 # !uv run python src/jute_disease/engines/dl/pretrain.py \
@@ -262,7 +266,7 @@ download_plant_doc()
 #
 # Note the `--base_weights` argument. We are effectively resuming from the level 2 checkpoint.
 #
-# Like level 2, we will not freeze any parameters and we will discard the classifier head, replacing it with a new one with the number of neurons equal to the number of classes for the PlantDoc dataset (27).
+# Like level 2, we will not freeze any parameters and we will discard the classifier head, replacing it with a new one with the number of neurons equal to the number of classes for the PlantDoc dataset: 27.
 
 # %% id="69798b96"
 # !uv run python src/jute_disease/engines/dl/pretrain.py \
@@ -303,7 +307,7 @@ if metrics_path.exists():
     print("Phase 1 Grid Search Results (Sorted by Validation Accuracy, then F1):")
     ipy_display(
         df_sorted[
-            ["Experiment", "val_acc", "val_f1", "val_loss", "test_acc", "test_f1"]
+            ["Experiment", "val_acc", "val_f1", "test_acc", "test_f1"]
         ]
     )
 else:
