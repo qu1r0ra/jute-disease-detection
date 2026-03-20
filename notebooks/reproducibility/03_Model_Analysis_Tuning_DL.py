@@ -137,7 +137,7 @@ else:
 #
 # #### Impact of a Higher Image Resolution on Model Performance
 #
-# Let's begin by analyzing how training on a higher image resolution impacts our model's performance. Recall that our models were originally trained on 256x256 pixel images and that we trained 512x512 pixel counterparts for the pre-trained MobileNet V2 with dropout rates 0.0 and 0.1 for comparison.
+# Let's begin by analyzing how training on a higher image resolution impacts our model's validation performance. Recall that our models were originally trained on 256x256 pixel images and that we trained 512x512 pixel counterparts for the pre-trained MobileNet V2 with dropout rates 0.0 and 0.1 for comparison.
 
 # %%
 import matplotlib.pyplot as plt
@@ -203,14 +203,14 @@ comp_df = comp_df.sort_values("Dropout Rate")
 ax_bar = sns.barplot(
     data=comp_df,
     x="Dropout Rate",
-    y="test_acc",
+    y="val_acc",
     hue="Resolution",
     palette="viridis",
 )
 plt.ylim(0.8, 0.95)
-plt.title("Impact of Image Resolution on Test Accuracy (MobileNetV2 with DR 0.1)")
+plt.title("Impact of Image Resolution on Validation Accuracy (MobileNetV2 with DR 0.1)")
 plt.xlabel("Dropout Rate")
-plt.ylabel("Test Accuracy")
+plt.ylabel("Validation Accuracy")
 plt.grid(axis="y", linestyle="--", alpha=0.7)
 
 for p in ax_bar.patches:
@@ -231,14 +231,14 @@ plt.savefig(FIGURES_DL_DIR / "resolution_impact.png", bbox_inches="tight", dpi=D
 plt.show()
 
 display(
-    comp_df[["Experiment", "test_acc", "test_f1", "test_loss"]].reset_index(drop=True)
+    comp_df[["Experiment", "val_acc", "val_f1", "test_acc", "test_f1"]].reset_index(
+        drop=True
+    )
 )
 
 # %% [markdown]
 # Some insights:
-# - Training on 512x512 pixel images appears to lead to worse performance compared to training on 256x256 pixel images.
-# - A dropout rate of 0.1 appears to lead to a higher test F1 compared to their 0.0 counterparts, though likely statistically insignificant given our sample. This may suggest that slightly increased regularization may improve our model's performance on unseen data.
-# - Our current best test accuracy is **88.3%**, achieved by a MobileNet V2 pre-trained on ImageNet-1K with a dropout rate of **0.1**.
+# - Training on 512x512 pixel images appears to lead to a worse validation accuracy and F1 compared to training on 256x256 pixel images.
 #
 # Hence, our initial hypothesis of training on higher-resolution images is disproven, though not in a formal statistical manner.
 
@@ -333,7 +333,7 @@ plt.show()
 #   - This is possibly explained by how our data is heavily augmented during training but not during validation, making it more difficult for the model to get correct predictions on the training set per epoch.
 #   - Furthermore, due to dropout, some neurons are deactivated during training, making the task more difficult.
 # - Train accuracy appears to be consistently lower than validation accuracy. This is possibly explained by the same reasons above. Fortunately, the gap between the two appears to decrease over time, indicating that the model was able to generalize better over time.
-# - Train loss appears to be more erratic compared to validation loss. Moreover, higher dropout rates appear to lead to a slightly higher train loss and lower train accuracy during training (but nothing suggestive of test performance). This is possibly explained by the same reasons in the first point.
+# - Train loss appears to be more erratic compared to validation loss. Moreover, higher dropout rates appear to lead to a slightly higher train loss and lower train accuracy during training (but nothing suggestive of validation performance). This is possibly explained by the same reasons in the first point.
 # - The loss and accuracy curves of different models appear to follow the same pattern.
 #   - This is likely because we seeded the data splitting and augmentations, making them reproducible and thus, resulting in similar curves.
 #
@@ -580,7 +580,7 @@ if len(wrong_indices) > 0:
     )
     plt.show()
 else:
-    logger.info("No errors found in test set!")
+    logger.info("No errors found in dataset!")
 
 # %% [markdown]
 # Some insights:
@@ -605,7 +605,7 @@ else:
 # %% [markdown]
 # ### T-distributed Stochastic Neighbor Embedding (t-SNE)
 #
-# t-SNE is sensitive to the `perplexity` parameter, which balances local and global structure: the greater the perplexity, the more global structure is preserved. Let's explore perplexities of 30, 50, 100, and 250 to see their effects on the embedding, providing us with multiple potential perspectives of the data.
+# t-SNE is sensitive to the `perplexity` parameter, which balances local and global structure. The greater the perplexity, the more the global structure is preserved. Let's explore perplexities of 30, 50, 100, and 250 to see their effects on the embedding, providing us with multiple potential perspectives of the data.
 
 # %%
 perplexities = [30, 50, 100, 250]
@@ -674,9 +674,7 @@ for perp in perplexities:
     plt.show()
 
 # %% [markdown]
-# ### Comparison of Perplexities
-#
-# We visualize all perplexity values in a grid to verify cluster stability and convergence.
+# Let's visualize all `perplexity` values in a grid to verify cluster stability and convergence.
 
 # %%
 fig, axes = plt.subplots(2, 2, figsize=(20, 18))
@@ -718,9 +716,12 @@ plt.savefig(
 plt.show()
 
 # %% [markdown]
-# Some insights:
-# - There are some well-clustered classes such as _General Damage_, _Stem Rot_, _Dieback_. _Healthy_ is also pretty well-clustered, but has three distinct clusters. These are the same classes that the model was able to distinguish significantly well with accuracies above 95%, thus explaining its performance.
-# - There is a lone cluster of healthy images at the top right, isolated from other points. These may possibly be the images of healthy jute leaves taken with a clean background.
+# Across different perplexity values:
+# - There are some well-clustered classes such as _General Damage_, _Stem Rot_, _Dieback_.
+# - _Healthy_ is also pretty well-clustered, but generally has three distinct clusters. These are the same classes that the model was able to distinguish significantly well with accuracies above 95%, thus explaining its performance.
+#
+# Focusing on `perplexity=30`:
+# - There is a lone cluster of _Healthy_ images somewhere near the top middle, isolated from other points. These may possibly be the images of healthy jute leaves taken with a clean background.
 #   - As we saw from EDA, most of our jute leaf datasets had images collected from farms, but we also included a dataset which had images of healthy jute leaves taken on top of a table.
 # - There's an area where _Cercospora Leaf Spot_ and _Mosaic_ latent features are mixed. This is possibly a consequence of the model focusing too much on leaf spots.
 #   - Moreover, there are two clear _Mosaic_ clusters below it, which may possibly be _Mosaic_ examples without spots or other ambiguities. We hypothesize that the _Mosaic_ examples mixed with the _Cercospora Leaf Spot_ examples are those that have been confused as the latter due to the extracted features.
@@ -801,9 +802,7 @@ for n_neigh in n_neighbors_list:
     plt.show()
 
 # %% [markdown]
-# ### Comparison of Neighborhood Sizes
-#
-# We visualize all `n_neighbors` values in a grid to verify global structure stability.
+# Let's visualize all `n_neighbors` values in a grid to verify global structure stability.
 
 # %%
 fig, axes = plt.subplots(2, 2, figsize=(20, 18))
@@ -846,11 +845,16 @@ plt.show()
 
 # %% [markdown]
 # Some insights:
-# - There are three clearly isolated latent space 'islands.'
+# - Compared to t-SNE visualizations, there is a greater variance in how global and local structures were balanced across the 4 chosen values for `n_neighbors`
+#   - `n_neighbors=15` greatly emphasized local structure. Points are densely clustered in isolated islands.
+#   - `n_neighbors=200` emphasized global structure. Points are more equally-spaced but still maintain their general clusters. Interestingly, this is where the isolated island of _Healthy_ samples disappeared and mixed in with the other _Healthy_ samples.
+# - Similar to t-SNE, we can see a somewhat distinct clustering for _Dieback_, _General Damage_, _Stem Rot_, and _Healthy_.
+#
+# Focusing on `n_neighbors=15`:
+# - There are three isolated islands.
 #   - The top-left consists of all classes except _Cercospora Leaf Spot_.
 #   - The top-right consists solely of _Healthy_ samples.
 #   - The bottom-left consists of _Healthy_, _Cercospora Leaf Spot_, and _Mosaic_ samples.
-# - Similar to t-SNE, we can see a somewhat distinct clustering for _Dieback_, _General Damage_, _Stem Rot_, and _Healthy_.
 # - Yet again, we see 3 different clusters for _Healthy_, with an isolated one at the top-right. We also see the mixture of _Cercospora Leaf Spot_ and _Mosaic_ latent space features at the bottom-left island.
 
 # %% [markdown]
@@ -955,9 +959,9 @@ plt.show()
 # ### 2A. Model Performance
 
 # %% [markdown]
-# #### Test Accuracy across Learning Rates
+# #### Validation Accuracy across Learning Rates
 #
-# Let's visualize test accuracy across all the learning rates we tested to see which learning rate may be better suited for our task.
+# Let's visualize validation accuracy across all the learning rates we tested to see which learning rate may be better suited for our task.
 
 # %%
 ft_metrics_path = LOGS_DIR / "phase2_finetune_grid" / "aggregated_grid_metrics.csv"
@@ -983,15 +987,16 @@ plt.figure(figsize=(10, 6))
 ax = sns.barplot(
     data=df_ft,
     x="Learning Rate",
-    y="test_acc",
+    y="val_acc",
     hue="Learning Rate",
     palette="Oranges_r",
     legend=False,
 )
-plt.ylim(0.85, 0.95)
-plt.title("Test Accuracy across Finetuning Learning Rates (MobileNet V2 with DR 0.1)")
+plt.title(
+    "Validation Accuracy across Finetuning Learning Rates (MobileNet V2 with DR 0.1)"
+)
 plt.xlabel("Learning Rate")
-plt.ylabel("Test Accuracy")
+plt.ylabel("Validation Accuracy")
 plt.grid(axis="y", linestyle="--", alpha=0.7)
 
 for p in ax.patches:
@@ -1015,13 +1020,13 @@ plt.savefig(
 )
 plt.show()
 
-disp_cols = ["Learning Rate", "epoch", "test_acc", "test_f1", "test_loss"]
+disp_cols = ["Learning Rate", "val_acc", "val_f1", "test_acc", "test_f1"]
 display(df_ft[disp_cols].reset_index(drop=True))
 
 # %% [markdown]
 # Some insights:
-# - A learning rate of `0.01` appears to be the best for our task, leading to the highest test accuracy of around **91.4%**. This is a slight jump from the previous best accuracy of **88.3%**.
-# - Decreasing the learning rate appears to hurt model performance for our task. It also took the longest, taking up to 49 epochs.
+# - A learning rate of `0.01` appears to be the best for our task, leading to the highest validation accuracy and F1 values.
+#   - However, `0.005` and even `0.001` aren't that far off. Since we weren't able to perform k-fold cross-validation (we wanted to conserve compute units), we can't rigorously conclude that `0.01` is the best.
 
 # %% [markdown]
 # #### Loss and Accuracy Curves
@@ -1078,7 +1083,7 @@ plt.savefig(
 plt.show()
 
 # %% [markdown]
-# Our train and validation loss and accuracy across epochs are now much more erratic compared to the baselines, likely due to the higher LR of 0.01 compared to the initial LR of 0.001.
+# We still have similar insights as before, but now, our train and validation loss and accuracy across epochs are now much more erratic compared to the baselines, likely due to the higher LR of 0.01 compared to the initial LR of 0.001.
 
 # %% [markdown]
 # ### 2B. Error Analysis
@@ -1137,7 +1142,7 @@ df_ft_metrics = get_cm_metrics(ft_cm_pivot)
 display(df_ft_metrics.round(4))
 
 # %% [markdown]
-# Though the model's overall accuracy and per-class accuracy somewhat increased, the confusion matrix comparison shows that the model with the fine-tuned LR of 0.01 wasn't able to address its core issue of failing to distinguish between _Cercospora Leaf Spot_ and _Mosaic_, thus holding it back from achieving a much higher accuracy.
+# Though the model's overall accuracy and per-class accuracy somewhat increased, the confusion matrix comparison shows that the model with the fine-tuned LR of 0.01 wasn't able to address its core issue of failing to distinguish between _Cercospora Leaf Spot_ and _Mosaic_, thus holding it back from achieving a much higher validation accuracy.
 
 # %% [markdown]
 # #### Finetuned Model Inference
@@ -1267,7 +1272,7 @@ if len(wrong_indices) > 0:
     )
     plt.show()
 else:
-    logger.info("[Finetuned] No errors found in test set!")
+    logger.info("[Finetuned] No errors found in dataset!")
 
 # %% [markdown]
 # Unfortunately, the fine-tuned model still exhibits the same problem of failing to distinguish between _Cercospora Leaf Spot_ and _Mosaic_, but this time with higher confidences in the incorrect label.
@@ -1336,7 +1341,7 @@ plt.savefig(FIGURES_DL_DIR / "finetuned_grad_cam.png", bbox_inches="tight", dpi=
 plt.show()
 
 # %% [markdown]
-# Nothing much changed and the model wasn't able to address previous problems.
+# Ouch, nothing much changed as the model wasn't able to address its core issues.
 
 # %% [markdown]
 # ## Conclusion

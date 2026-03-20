@@ -30,8 +30,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ipykernel>=7.2.0",
+    "ipywidgets>=8.1.8",
     "jupytext>=1.19.1",
-    "mypy>=1.19.1",
     "pre-commit>=4.5.1",
     "pydantic>=2.12.5",
     "pytest>=9.0.2",
@@ -52,15 +52,4 @@ testpaths = ["tests"]
 addopts = "-m 'not slow'"
 markers = [
     "slow: marks tests as slow (deselected by default; run with -m slow)",
-]
-
-[tool.mypy]
-python_version = "3.11"
-check_untyped_defs = true
-ignore_missing_imports = true
-explicit_package_bases = true
-namespace_packages = true
-mypy_path = "src"
-exclude = [
-    "notebooks/",
 ]

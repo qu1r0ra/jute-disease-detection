@@ -9,12 +9,13 @@ sys.path.insert(0, str(repo_root))
 
 import pytest  # noqa: E402
 
+from jute_disease.utils.constants import CHECKPOINTS_DIR
 from scripts.run_grid_search import run_grid_search  # noqa: E402
 
 
 @pytest.fixture
 def phase_1_grid(tmp_path: Path) -> Path:
-    config_content = """
+    config_content = f"""
 transfer_learning_levels:
   - name: "level_1_imagenet"
     weights_path: "imagenet"
@@ -34,7 +35,7 @@ fixed_params:
 
 @pytest.fixture
 def phase_2_grid(tmp_path: Path) -> Path:
-    config_content = """
+    config_content = f"""
 learning_rate:
   - 0.005
 
@@ -44,7 +45,7 @@ weight_decay:
 locked_params:
   name: "level_3_plantdoc"
   weights_path: >-
-    artifacts/checkpoints/pretrained/mobilenet_v2-plantvillage-plantdoc.ckpt
+    {CHECKPOINTS_DIR / "pretrained" / "mobilenet_v2-plantvillage-plantdoc.ckpt"}
   dropout_rate: 0.3
 
 fixed_params:
@@ -65,7 +66,7 @@ def test_run_grid_search_phase1(
     mock_agg = MagicMock()
     monkeypatch.setattr("scripts.run_grid_search._aggregate_metrics", mock_agg)
 
-    mock_glob = MagicMock(return_value=[Path("artifacts/checkpoints/dummy/best.ckpt")])
+    mock_glob = MagicMock(return_value=[CHECKPOINTS_DIR / "dummy" / "best.ckpt"])
     monkeypatch.setattr(Path, "glob", mock_glob)
 
     base_config = tmp_path / "mobilenet_v2.yaml"
@@ -102,7 +103,7 @@ def test_run_grid_search_phase2(
     mock_agg = MagicMock()
     monkeypatch.setattr("scripts.run_grid_search._aggregate_metrics", mock_agg)
 
-    mock_glob = MagicMock(return_value=[Path("artifacts/checkpoints/dummy/best.ckpt")])
+    mock_glob = MagicMock(return_value=[CHECKPOINTS_DIR / "dummy" / "best.ckpt"])
     monkeypatch.setattr(Path, "glob", mock_glob)
 
     base_config = tmp_path / "mobilenet_v2.yaml"
@@ -122,8 +123,7 @@ def test_run_grid_search_phase2(
     assert any("pretrained=False" in c for c in fit_cmd)
     ckpt_str = "--model.feature_extractor.init_args.checkpoint_path="
     expected = (
-        f"{ckpt_str}artifacts/checkpoints/pretrained/"
-        "mobilenet_v2-plantvillage-plantdoc.ckpt"
+        f"{ckpt_str}{CHECKPOINTS_DIR / 'pretrained' / 'mobilenet_v2-plantvillage-plantdoc.ckpt'}"
     )
     assert any(expected in c for c in fit_cmd)
     assert any("lr=0.005" in c for c in fit_cmd)

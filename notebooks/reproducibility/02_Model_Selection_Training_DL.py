@@ -8,7 +8,8 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: .venv
+#     language: python
 #     name: python3
 # ---
 
@@ -190,9 +191,9 @@ else:
 # %% [markdown]
 # At this point, we have finished training the DL baselines. If training went well, you should have obtained results similar to ours, which can be viewed [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/Baseline%20DL%20Models/workspace).
 #
-# Looking at the validation F1 graph:
+# Looking at the validation accuracy graph:
 #
-# ![Validation F1 Score Comparison: Baseline DL Models](../../assets/figures/dl/val_f1_baseline.png)
+# ![Validation F1 Score Comparison: Baseline DL Models](../../assets/figures/dl/val_acc_baseline.png)
 #
 # For context, we used the ff. pre-trained models:
 #
@@ -206,13 +207,35 @@ else:
 # | MobileNet V2 | [mobilenetv2_100.ra_in1k](https://huggingface.co/timm/mobilenetv2_100.ra_in1k) | ~3.50M |
 #
 # Note that the Hugging Face models above may have been pre-trained in different environments and with different techniques. Still, we made sure all our models were eventually pre-trained on ImageNet, hence the `_in1k` suffixes.
+#
+# To make analysis easier, let's print a table of model metrics ordered by validation accuracy then F1:
+
+# %%
+import pandas as pd
+from IPython.display import display as ipy_display
+
+from jute_disease.utils.constants import LOGS_DIR
+
+baseline_metrics_path = LOGS_DIR / "dl_baselines" / "aggregated_metrics.csv"
+if baseline_metrics_path.exists():
+    df_baseline = pd.read_csv(baseline_metrics_path)
+    df_baseline_sorted = df_baseline.sort_values(
+        by=["val_acc", "val_f1"], ascending=[False, False]
+    )
+
+    print("Baseline Model Results (Sorted by Validation Performance):")
+    ipy_display(
+        df_baseline_sorted[["Experiment", "val_acc", "val_f1", "test_acc", "test_f1"]]
+    )
 
 # %% [markdown]
 # Some insights:
-# - **EfficientNet-B5** achieved the greatest top-1 validation F1. It has the second most parameters, so it is somewhat expected.
-# - It is followed by **MobileNet V2**. Interestingly, MobileNetV2 achieved a performance comparable to EfficientNet-B5 despite having the least parameters. Hence, we decided to push through with MobileNet V2 for grid search. It is also more economical for us.
-# - **MobileViT (small)** achieved the third-greatest top-1 validation F1. It has the second-least parameters.
-# - Interestingly, **EfficientNet-B7** achieved the worst top-1 validation F1 despite having a similar architecture to EfficientNet-B5, but with more than double its size (and thus, the most parameters).
+# - **EfficientNet-B5** achieved the highest top-1 validation accuracy and validation F1. It has the second most parameters, so it is somewhat expected.
+# - It is followed by **MobileNet V2**. Interestingly, it achieved a performance comparable to EfficientNet-B5 despite having the least parameters. We decided to push through with MobileNet V2 for grid search. It is also more economical for us.
+# - **MobileViT (small)** achieved the third-highest top-1 validation accuracy. It has the second-least parameters. It is followed by Inception v3 then ResNet-50.
+# - Interestingly, **EfficientNet-B7** achieved the worst top-1 validation accuracy despite having a similar architecture to EfficientNet-B5, but with more than double its size (and thus, the most parameters).
+#
+# Hence, we will be pushing through with MobileNet V2 as our DL architecture for our subsequent experiments.
 
 # %% [markdown] id="b53753d7"
 # ## Checkpoints for Grid Search
@@ -230,7 +253,7 @@ download_plant_doc()
 #
 # `ImageNet (pre-trained) -> PlantVillage (fine-tuning)`
 #
-# For the fine-tuning stages, we will not freeze any parameters. Moreover, we will discard the classifier head and replace it with a new one with the number of neurons equal to the number of classes for the PlantVillage dataset (38).
+# For the fine-tuning stages, we will not freeze any parameters. Moreover, we will discard the classifier head and replace it with a new one with the number of neurons equal to the number of classes for the PlantVillage dataset: 38.
 
 # %% id="bc2b9c26"
 # !uv run python src/jute_disease/engines/dl/pretrain.py \
@@ -244,7 +267,7 @@ download_plant_doc()
 #
 # Note the `--base_weights` argument. We are effectively resuming from the level 2 checkpoint.
 #
-# Like level 2, we will not freeze any parameters and we will discard the classifier head, replacing it with a new one with the number of neurons equal to the number of classes for the PlantDoc dataset (27).
+# Like level 2, we will not freeze any parameters and we will discard the classifier head, replacing it with a new one with the number of neurons equal to the number of classes for the PlantDoc dataset: 27.
 
 # %% id="69798b96"
 # !uv run python src/jute_disease/engines/dl/pretrain.py \
@@ -267,24 +290,35 @@ download_plant_doc()
 #
 
 # %% [markdown]
-# Oof, that's pretty annoying to analyze. Maybe looking at the test accuracy graph and a list of models sorted by test accuracy will help:
+# That's pretty difficult to analyze by eye. We aggregated the CSV log metrics to obtain the top-1 validation accuracy of each model. We will use it to determine which one to further optimize moving forward.
 #
 # > Such is the pain of relying solely on WandB visualizations. After our first full run and several other mistakes, we realized the importance of saving experiment logs and metrics into a local CSV or parquet file to give us flexibility to visualize data in our own way.
-#
-# ![MobileNet V2 Grid Test Accuracy Graph](../../assets/figures/dl/test_acc_mobilenet_v2_grid.png)
-#
-# ![MobileNet V2 Grid Models Sorted by Test Accuracy](../../assets/figures/dl/grid_models_sorted_test_acc.png)
+
+# %%
+import pandas as pd
+from IPython.display import display as ipy_display
+
+from jute_disease.utils.constants import LOGS_DIR
+
+metrics_path = LOGS_DIR / "phase1_transfer_grid" / "aggregated_grid_metrics.csv"
+if metrics_path.exists():
+    df = pd.read_csv(metrics_path)
+    df_sorted = df.sort_values(by=["val_acc", "val_f1"], ascending=[False, False])
+
+    print("Phase 1 Grid Search Results (Sorted by Validation Accuracy, then F1):")
+    ipy_display(df_sorted[["Experiment", "val_acc", "val_f1", "test_acc", "test_f1"]])
+else:
+    print(f"Metrics file not found at {metrics_path}")
 
 # %% [markdown]
-# For context, the test accuracy of each model was computed on the best checkpoint obtained during training. By default, PyTorch Lightning determines the best checkpoint as the one that achieved the lowest validation loss, though you could set the criterion yourself. We went with the default.
+# For context, PyTorch Lightning determines the best checkpoint as the one that achieved the lowest validation loss, though you could set the criterion yourself. We went with the default.
 #
-# Looking at the graphs, we got the ff. insights:
-# - Level 1 MobileNet V2 checkpoints (MobileNet V2 pre-trained on ImageNet-1K with no fine-tuning whatsoever) led to the best test accuracies, followed by level 3 checkpoints (fine-tuned on PlantVillage then PlantDoc), and lastly, level 2 checkpoints (fine-tuned on PlantVillage). This went against our hypothesis that fine-tuning on related datasets would improve model performance.
-# - Within the same checkpoint groups:
-#   - Dropout rates of 0.0 and 0.1 led to greater test accuracies than their 0.2 counterparts. This may suggest that dropout rates of 0.2 or higher may hurt model performance, though this has yet to be statistically tested.
-#   - A dropout rate of 0.1 led to the greatest test accuracies, followed by 0.0 and 0.2.
+# Looking at the table above, we got the ff. insights:
+# - Level 1 MobileNet V2 checkpoints (MobileNet V2 pre-trained on ImageNet-1K with no fine-tuning whatsoever) achieved the best test accuracies, followed by level 3 checkpoints (fine-tuned on PlantVillage then PlantDoc), and lastly, level 2 checkpoints (fine-tuned on PlantVillage). This went against our hypothesis that fine-tuning on related datasets would improve model performance.
+# - The level 1 MobileNet V2 with a dropout rate of 0.0 achieved the best validation accuracy and F1. However, they weren't that much greater compared to their 0.1 and 0.2 dropout rate counterparts, so it may have just been by chance.
+#   - We decided to go with the dropout rate of 0.1 over 0.0 since their differences in validation performances are negligible, and we have the belief that adding a bit of regularization via dropout is better than having no dropout at all.
 #
-# Thus, we concluded that the MobileNet V2 pre-trained on ImageNet-1K with a dropout rate of 0.1 was the best DL model to push through with (and potentially continue fine-tuning on) for our task of jute leaf disease classification.
+# Hence, we concluded that the MobileNet V2 pre-trained on ImageNet-1K with a dropout rate of 0.1 was the best variant to push through with (and potentially continue fine-tuning on) for our task of jute leaf disease classification.
 #
 # At this point, we decided to conduct error analysis and see what can be improved.
 

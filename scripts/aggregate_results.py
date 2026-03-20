@@ -20,6 +20,7 @@ def aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
         if not log_dir.exists():
             continue
 
+        # Concatenate fit and test metrics from all versions
         metrics_files = list(log_dir.glob("*-metrics.csv"))
         if not metrics_files:
             continue
@@ -32,6 +33,7 @@ def aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
         if "val_loss" in df.columns:
             val_df = df.dropna(subset=["val_loss"])
             if not val_df.empty:
+                # Pick best epoch based on validation loss
                 best_row = val_df.loc[val_df["val_loss"].idxmin()].to_dict()
                 for key, val in best_row.items():
                     if key.startswith(("val_", "train_")) or key in ["epoch", "step"]:
@@ -44,6 +46,7 @@ def aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
         if "test_loss" in df.columns:
             test_df = df.dropna(subset=["test_loss"])
             if not test_df.empty:
+                # Get final metrics from the test run
                 test_metrics = test_df.iloc[-1].to_dict()
                 for key, val in test_metrics.items():
                     if key.startswith("test_"):

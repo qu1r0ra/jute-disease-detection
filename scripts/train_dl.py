@@ -8,7 +8,6 @@ from jute_disease.models.dl.classifier import Classifier
 
 
 def main() -> None:
-    """Entry point for the unified Deep Learning CLI."""
     load_dotenv()
     LightningCLI(
         model_class=Classifier,

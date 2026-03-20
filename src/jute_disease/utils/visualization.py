@@ -12,9 +12,6 @@ def denormalize(
     mean: tuple[float, float, float] = (0.485, 0.456, 0.406),
     std: tuple[float, float, float] = (0.229, 0.224, 0.225),
 ) -> np.ndarray:
-    """
-    Denormalize a tensor image for visualization.
-    """
     mean = np.array(mean).reshape(1, 1, 3)
     std = np.array(std).reshape(1, 1, 3)
 
@@ -30,15 +27,6 @@ def visualize_augmentations(
     num_augmentations: int = 7,
     figsize: tuple[int, int] = (15, 15),
 ):
-    """
-    Visualize original images and their augmented versions.
-
-    Args:
-        dataset: The dataset.
-        num_samples: Number of original images to sample.
-        num_augmentations: Number of augmented versions to show per sample.
-        figsize: Figure size.
-    """
     fig, axes = plt.subplots(num_samples, num_augmentations + 1, figsize=figsize)
     plt.tight_layout()
 

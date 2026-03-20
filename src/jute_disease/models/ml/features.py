@@ -47,8 +47,10 @@ class CraftedFeatureExtractor(BaseFeatureExtractor):
 
         self.gabor_kernels = []
         # Orientations: 0, 45, 90, 135 degrees
-        for theta in [0, np.pi/4, np.pi/2, 3*np.pi/4]:
-            kernel = cv2.getGaborKernel((21, 21), 5.0, theta, 10.0, 0.5, 0, ktype=cv2.CV_32F)
+        for theta in [0, np.pi / 4, np.pi / 2, 3 * np.pi / 4]:
+            kernel = cv2.getGaborKernel(
+                (21, 21), 5.0, theta, 10.0, 0.5, 0, ktype=cv2.CV_32F
+            )
             self.gabor_kernels.append(kernel)
 
     def extract(self, img: Image.Image | np.ndarray) -> np.ndarray:

@@ -58,6 +58,7 @@ def run_all_dl(
         log_dir = Path(csv_save_dir) / csv_name
 
         run_id = wandb.util.generate_id()
+        # Ensure WandB and CSVLogger share the same run context
         env = os.environ.copy()
         env["WANDB_RUN_ID"] = run_id
 
@@ -86,6 +87,7 @@ def run_all_dl(
                 f"No checkpoint found for {model_name} in {ckpt_dir}."
             )
 
+        # Pick the best checkpoint from the training stage
         best_ckpt = ckpts[0]
 
         test_cmd = [
