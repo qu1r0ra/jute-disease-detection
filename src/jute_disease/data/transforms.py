@@ -67,7 +67,6 @@ def _get_base_val_ops(size: int) -> A.Compose:
     )
 
 
-# Global Normalization Pipeline
 NORMALIZATION_OPS = A.Compose(
     [
         A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], p=1.0),
@@ -89,13 +88,11 @@ def create_pipeline(size: int, is_train: bool, is_dl: bool) -> AlbumentationsAda
     return AlbumentationsAdapter(A.Compose(transforms, seed=DEFAULT_SEED))
 
 
-# Standard 256px baseline
 ml_train_transforms = create_pipeline(IMAGE_SIZE, is_train=True, is_dl=False)
 ml_val_transforms = create_pipeline(IMAGE_SIZE, is_train=False, is_dl=False)
 
 dl_train_transforms = create_pipeline(IMAGE_SIZE, is_train=True, is_dl=True)
 dl_val_transforms = create_pipeline(IMAGE_SIZE, is_train=False, is_dl=True)
 
-# High-Resolution 512px variants
 dl_train_transforms_512 = create_pipeline(512, is_train=True, is_dl=True)
 dl_val_transforms_512 = create_pipeline(512, is_train=False, is_dl=True)
