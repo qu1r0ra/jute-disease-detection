@@ -137,7 +137,7 @@ else:
 #
 # #### Impact of a Higher Image Resolution on Model Performance
 #
-# Let's begin by analyzing how training on a higher image resolution impacts our model's performance. Recall that our models were originally trained on 256x256 pixel images and that we trained 512x512 pixel counterparts for the pre-trained MobileNet V2 with dropout rates 0.0 and 0.1 for comparison.
+# Let's begin by analyzing how training on a higher image resolution impacts our model's validation performance. Recall that our models were originally trained on 256x256 pixel images and that we trained 512x512 pixel counterparts for the pre-trained MobileNet V2 with dropout rates 0.0 and 0.1 for comparison.
 
 # %%
 import matplotlib.pyplot as plt
@@ -231,12 +231,12 @@ plt.savefig(FIGURES_DL_DIR / "resolution_impact.png", bbox_inches="tight", dpi=D
 plt.show()
 
 display(
-    comp_df[["Experiment", "val_acc", "val_f1", "val_loss", "test_acc", "test_f1"]].reset_index(drop=True)
+    comp_df[["Experiment", "val_acc", "val_f1", "test_acc", "test_f1"]].reset_index(drop=True)
 )
 
 # %% [markdown]
 # Some insights:
-# - Training on 512x512 pixel images appears to lead to a worse validation performance compared to training on 256x256 pixel images.
+# - Training on 512x512 pixel images appears to lead to a worse validation accuracy and F1 compared to training on 256x256 pixel images.
 #
 # Hence, our initial hypothesis of training on higher-resolution images is disproven, though not in a formal statistical manner.
 
@@ -603,7 +603,7 @@ else:
 # %% [markdown]
 # ### T-distributed Stochastic Neighbor Embedding (t-SNE)
 #
-# t-SNE is sensitive to the `perplexity` parameter, which balances local and global structure: the greater the perplexity, the more global structure is preserved. Let's explore perplexities of 30, 50, 100, and 250 to see their effects on the embedding, providing us with multiple potential perspectives of the data.
+# t-SNE is sensitive to the `perplexity` parameter, which balances local and global structure. The greater the perplexity, the more the global structure is preserved. Let's explore perplexities of 30, 50, 100, and 250 to see their effects on the embedding, providing us with multiple potential perspectives of the data.
 
 # %%
 perplexities = [30, 50, 100, 250]
@@ -672,9 +672,7 @@ for perp in perplexities:
     plt.show()
 
 # %% [markdown]
-# ### Comparison of Perplexities
-#
-# We visualize all perplexity values in a grid to verify cluster stability and convergence.
+# Let's visualize all `perplexity` values in a grid to verify cluster stability and convergence.
 
 # %%
 fig, axes = plt.subplots(2, 2, figsize=(20, 18))
@@ -716,9 +714,12 @@ plt.savefig(
 plt.show()
 
 # %% [markdown]
-# Some insights:
-# - There are some well-clustered classes such as _General Damage_, _Stem Rot_, _Dieback_. _Healthy_ is also pretty well-clustered, but has three distinct clusters. These are the same classes that the model was able to distinguish significantly well with accuracies above 95%, thus explaining its performance.
-# - There is a lone cluster of healthy images at the top right, isolated from other points. These may possibly be the images of healthy jute leaves taken with a clean background.
+# Across different perplexity values:
+# - There are some well-clustered classes such as _General Damage_, _Stem Rot_, _Dieback_.
+# - _Healthy_ is also pretty well-clustered, but generally has three distinct clusters. These are the same classes that the model was able to distinguish significantly well with accuracies above 95%, thus explaining its performance.
+#
+# Focusing on `perplexity=30`:
+# - There is a lone cluster of _Healthy_ images somewhere near the top middle, isolated from other points. These may possibly be the images of healthy jute leaves taken with a clean background.
 #   - As we saw from EDA, most of our jute leaf datasets had images collected from farms, but we also included a dataset which had images of healthy jute leaves taken on top of a table.
 # - There's an area where _Cercospora Leaf Spot_ and _Mosaic_ latent features are mixed. This is possibly a consequence of the model focusing too much on leaf spots.
 #   - Moreover, there are two clear _Mosaic_ clusters below it, which may possibly be _Mosaic_ examples without spots or other ambiguities. We hypothesize that the _Mosaic_ examples mixed with the _Cercospora Leaf Spot_ examples are those that have been confused as the latter due to the extracted features.
@@ -799,9 +800,7 @@ for n_neigh in n_neighbors_list:
     plt.show()
 
 # %% [markdown]
-# ### Comparison of Neighborhood Sizes
-#
-# We visualize all `n_neighbors` values in a grid to verify global structure stability.
+# Let's visualize all `n_neighbors` values in a grid to verify global structure stability.
 
 # %%
 fig, axes = plt.subplots(2, 2, figsize=(20, 18))
@@ -844,11 +843,16 @@ plt.show()
 
 # %% [markdown]
 # Some insights:
-# - There are three clearly isolated latent space 'islands.'
+# - Compared to t-SNE visualizations, there is a greater variance in how global and local structures were balanced across the 4 chosen values for `n_neighbors`
+#   - `n_neighbors=15` greatly emphasized local structure. Points are densely clustered in isolated islands.
+#   - `n_neighbors=200` emphasized global structure. Points are more equally-spaced but still maintain their general clusters. Interestingly, this is where the isolated island of _Healthy_ samples disappeared and mixed in with the other _Healthy_ samples.
+# - Similar to t-SNE, we can see a somewhat distinct clustering for _Dieback_, _General Damage_, _Stem Rot_, and _Healthy_.
+#
+# Focusing on `n_neighbors=15`:
+# - There are three isolated islands.
 #   - The top-left consists of all classes except _Cercospora Leaf Spot_.
 #   - The top-right consists solely of _Healthy_ samples.
 #   - The bottom-left consists of _Healthy_, _Cercospora Leaf Spot_, and _Mosaic_ samples.
-# - Similar to t-SNE, we can see a somewhat distinct clustering for _Dieback_, _General Damage_, _Stem Rot_, and _Healthy_.
 # - Yet again, we see 3 different clusters for _Healthy_, with an isolated one at the top-right. We also see the mixture of _Cercospora Leaf Spot_ and _Mosaic_ latent space features at the bottom-left island.
 
 # %% [markdown]
@@ -1077,7 +1081,7 @@ plt.savefig(
 plt.show()
 
 # %% [markdown]
-# Our train and validation loss and accuracy across epochs are now much more erratic compared to the baselines, likely due to the higher LR of 0.01 compared to the initial LR of 0.001.
+# We still have similar insights as before, but now, our train and validation loss and accuracy across epochs are now much more erratic compared to the baselines, likely due to the higher LR of 0.01 compared to the initial LR of 0.001.
 
 # %% [markdown]
 # ### 2B. Error Analysis
@@ -1335,7 +1339,7 @@ plt.savefig(FIGURES_DL_DIR / "finetuned_grad_cam.png", bbox_inches="tight", dpi=
 plt.show()
 
 # %% [markdown]
-# Nothing much changed and the model wasn't able to address previous problems.
+# Ouch, nothing much changed as the model wasn't able to address its core issues.
 
 # %% [markdown]
 # ## Conclusion
