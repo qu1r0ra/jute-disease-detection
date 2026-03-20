@@ -346,6 +346,7 @@ def run_grid_search(
 
             logger.info(f"Testing Phase 1 experiment {exp_name}...")
 
+            ckpt_dir = CHECKPOINTS_DIR / exp_name
             # Identify best checkpoint for evaluation
             ckpts = list(ckpt_dir.glob("*.ckpt"))
             if not ckpts:

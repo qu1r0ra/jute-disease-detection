@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from jute_disease.models.dl.backbone import TimmBackbone
+from jute_disease.utils.constants import CHECKPOINTS_DIR
 
 
 @pytest.mark.slow
@@ -12,7 +13,7 @@ def test_pretrained_checkpoints_key_matching(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Verify pretrained checkpoints load without massive missing keys."""
-    ckpt_dir = Path("artifacts/checkpoints/pretrained")
+    ckpt_dir = CHECKPOINTS_DIR / "pretrained"
     if not ckpt_dir.exists():
         pytest.skip("Pretrained checkpoints directory not found.")
 
