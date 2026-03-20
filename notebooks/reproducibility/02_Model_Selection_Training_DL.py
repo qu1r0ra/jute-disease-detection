@@ -225,9 +225,7 @@ if baseline_metrics_path.exists():
 
     print("Baseline Model Results (Sorted by Validation Performance):")
     ipy_display(
-        df_baseline_sorted[
-            ["Experiment", "val_acc", "val_f1", "test_acc", "test_f1"]
-        ]
+        df_baseline_sorted[["Experiment", "val_acc", "val_f1", "test_acc", "test_f1"]]
     )
 
 # %% [markdown]
@@ -308,11 +306,7 @@ if metrics_path.exists():
     df_sorted = df.sort_values(by=["val_acc", "val_f1"], ascending=[False, False])
 
     print("Phase 1 Grid Search Results (Sorted by Validation Accuracy, then F1):")
-    ipy_display(
-        df_sorted[
-            ["Experiment", "val_acc", "val_f1", "test_acc", "test_f1"]
-        ]
-    )
+    ipy_display(df_sorted[["Experiment", "val_acc", "val_f1", "test_acc", "test_f1"]])
 else:
     print(f"Metrics file not found at {metrics_path}")
 

@@ -231,9 +231,9 @@ plt.savefig(FIGURES_DL_DIR / "resolution_impact.png", bbox_inches="tight", dpi=D
 plt.show()
 
 display(
-    comp_df[
-        ["Experiment", "val_acc", "val_f1", "test_acc", "test_f1"]
-    ].reset_index(drop=True)
+    comp_df[["Experiment", "val_acc", "val_f1", "test_acc", "test_f1"]].reset_index(
+        drop=True
+    )
 )
 
 # %% [markdown]
