@@ -33,7 +33,7 @@ def test_ml(
 ) -> None:
     seed_everything(seed)
 
-    # 1. Load Model
+    # Load Model
     classifier_cls = ML_CLASSIFIERS[classifier]
     model = classifier_cls.load(f"{classifier}_{feature_type}")
     if model is None:
@@ -42,11 +42,11 @@ def test_ml(
 
     logger.info(f"Loaded {classifier} for evaluation.")
 
-    # 2. Setup Feature Extractor
+    # Setup Feature Extractor
     extractor_cls = FEATURE_EXTRACTORS[feature_type]
     extractor = extractor_cls()
 
-    # 3. Load Test Data
+    # Load Test Data
     test_dir = ML_SPLIT_DIR / "test"
     if not test_dir.exists():
         logger.error(f"Test directory not found at {test_dir}")
@@ -55,10 +55,10 @@ def test_ml(
     test_ds = ImageFolder(root=test_dir, transform=ml_val_transforms)
     class_names = test_ds.classes
 
-    # 4. Extract Features
+    # Extract Features
     X_test, y_test = extract_features(test_ds, extractor=extractor, cache_name="test")
 
-    # 5. Predict and Evaluate
+    # Predict and Evaluate
     logger.info("Running predictions on test set...")
     y_pred = model.predict(X_test)
 
@@ -73,7 +73,7 @@ def test_ml(
         + classification_report(y_test, y_pred, target_names=class_names)
     )
 
-    # 6. Log to WandB
+    # Log to WandB
     if os.getenv("WANDB_MODE") != "disabled":
         setup_wandb()
         wandb.init(
