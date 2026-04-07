@@ -10,7 +10,7 @@ import wandb
 import yaml
 
 from jute_disease.utils import flatten_log_version, get_logger
-from jute_disease.utils.constants import CHECKPOINTS_DIR, LOGS_DIR
+from jute_disease.utils.constants import ARTIFACTS_DIR, CHECKPOINTS_DIR, LOGS_DIR
 
 logger = get_logger(__name__)
 

@@ -26,7 +26,7 @@ def mock_dataset_root(tmp_path: Path) -> Path:
 
 
 def test_datamodule_setup_fit(mock_dataset_root: Path) -> None:
-    dm = DataModule(data_dir=mock_dataset_root, batch_size=2)
+    dm = DataModule(data_dir=mock_dataset_root, batch_size=2, pin_memory=False)
     dm.setup(stage="fit")
 
     assert dm.jute_train is not None
@@ -38,7 +38,7 @@ def test_datamodule_setup_fit(mock_dataset_root: Path) -> None:
 
 
 def test_datamodule_setup_test(mock_dataset_root: Path) -> None:
-    dm = DataModule(data_dir=mock_dataset_root, batch_size=2)
+    dm = DataModule(data_dir=mock_dataset_root, batch_size=2, pin_memory=False)
     dm.setup(stage="test")
 
     assert dm.jute_test is not None
@@ -47,7 +47,7 @@ def test_datamodule_setup_test(mock_dataset_root: Path) -> None:
 
 
 def test_datamodule_dataloaders(mock_dataset_root: Path) -> None:
-    dm = DataModule(data_dir=mock_dataset_root, batch_size=2)
+    dm = DataModule(data_dir=mock_dataset_root, batch_size=2, pin_memory=False)
     dm.setup()
     dm.setup(stage="test")
 
@@ -64,7 +64,7 @@ def test_datamodule_kfold_setup(mock_dataset_root: Path) -> None:
     # K-fold setup now merges 'train' and 'val' subfolders
     # Total samples = 10 (train) + 10 (val) = 20
     # 5 folds -> 16 training, 4 validation
-    dm = DataModule(data_dir=mock_dataset_root, batch_size=2, k_fold=5, fold_index=0)
+    dm = DataModule(data_dir=mock_dataset_root, batch_size=2, k_fold=5, fold_index=0, pin_memory=False)
     dm.setup(stage="fit")
 
     assert dm.jute_train is not None
@@ -76,7 +76,7 @@ def test_datamodule_kfold_setup(mock_dataset_root: Path) -> None:
 
 def test_datamodule_set_fold(mock_dataset_root: Path) -> None:
     """Test that set_fold switches the active subsets and indices."""
-    dm = DataModule(data_dir=mock_dataset_root, k_fold=5, fold_index=0)
+    dm = DataModule(data_dir=mock_dataset_root, k_fold=5, fold_index=0, pin_memory=False)
     dm.setup(stage="fit")
 
     assert hasattr(dm.jute_train, "indices")
@@ -95,7 +95,7 @@ def test_datamodule_weighted_sampler(mock_dataset_root: Path) -> None:
         img = Image.fromarray(np.random.randint(0, 256, (32, 32, 3), dtype=np.uint8))
         img.save(mock_dataset_root / "train" / "healthy" / f"extra_{i}.jpg")
 
-    dm = DataModule(data_dir=mock_dataset_root, batch_size=2, use_weighted_sampler=True)
+    dm = DataModule(data_dir=mock_dataset_root, batch_size=2, use_weighted_sampler=True, pin_memory=False)
     dm.setup(stage="fit")
 
     assert dm.sampler is not None
@@ -115,7 +115,7 @@ def test_datamodule_random_split(tmp_path: Path) -> None:
             img.save(cls_dir / f"img_{i}.jpg")
 
     # 30 images total, 20% val -> 24 train, 6 val
-    dm = DataModule(data_dir=data_dir, val_split=0.2, batch_size=2)
+    dm = DataModule(data_dir=data_dir, val_split=0.2, batch_size=2, pin_memory=False)
     dm.setup(stage="fit")
 
     assert dm.jute_train is not None
@@ -127,7 +127,7 @@ def test_datamodule_random_split(tmp_path: Path) -> None:
 
 def test_datamodule_custom_resolution(mock_dataset_root: Path) -> None:
     """Test that DataModule respects custom image resolutions."""
-    dm = DataModule(data_dir=mock_dataset_root, image_size=512)
+    dm = DataModule(data_dir=mock_dataset_root, image_size=512, pin_memory=False)
     dm.setup(stage="fit")
 
     # Get a batch and check the resolution
