@@ -3,6 +3,7 @@
 import pytest
 import torch
 import torch.nn as nn
+from unittest.mock import MagicMock
 
 from jute_disease.models.dl import Classifier, TimmBackbone
 from jute_disease.utils.constants import DEFAULT_LR, NUM_CLASSES
@@ -14,14 +15,26 @@ def backbone() -> TimmBackbone:
 
 
 @pytest.fixture
-def classifier(backbone: TimmBackbone) -> Classifier:
-    return Classifier(
+def mock_trainer() -> MagicMock:
+    trainer = MagicMock()
+    # Mock some expected trainer behaviors
+    trainer.should_stop = False
+    trainer.global_step = 0
+    return trainer
+
+
+@pytest.fixture
+def classifier(backbone: TimmBackbone, mock_trainer: MagicMock) -> Classifier:
+    model = Classifier(
         feature_extractor=backbone,
         num_classes=NUM_CLASSES,
         lr=DEFAULT_LR,
         freeze_backbone=False,
         compile_model=False,
     )
+    # Attach mock trainer to satisfy self.log calls in steps
+    model.trainer = mock_trainer
+    return model
 
 
 def test_classifier_requires_out_features() -> None:

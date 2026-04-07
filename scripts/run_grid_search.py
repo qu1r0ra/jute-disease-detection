@@ -10,7 +10,7 @@ import wandb
 import yaml
 
 from jute_disease.utils import flatten_log_version, get_logger
-from jute_disease.utils.constants import CHECKPOINTS_DIR, LOGS_DIR
+from jute_disease.utils.constants import ARTIFACTS_DIR, CHECKPOINTS_DIR, LOGS_DIR
 
 logger = get_logger(__name__)
 
@@ -20,7 +20,7 @@ def _aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
     results = []
 
     for exp in exp_names:
-        log_dir = Path("artifacts/logs") / exp
+        log_dir = LOGS_DIR / exp
         if not log_dir.exists():
             continue
 
@@ -378,9 +378,8 @@ def run_grid_search(
 
     _aggregate_metrics(
         run_exp_names,
-        output_csv=Path(
-            f"artifacts/grid_search_{model_name.lower()}_phase1_metrics.csv"
-        ),
+        output_csv=ARTIFACTS_DIR
+        / f"grid_search_{model_name.lower()}_phase1_metrics.csv",
     )
 
 
