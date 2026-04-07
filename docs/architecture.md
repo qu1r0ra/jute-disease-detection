@@ -6,25 +6,18 @@ This document describes the architectural design and directory structure of the 
 
 ```text
 .
-├── artifacts/              # Models, checkpoints, logs, and experiment context
+├── artifacts/              # Models, checkpoints, and logs
 ├── configs/                # Lightning CLI configuration files (.yaml) for DL models
-├── data/                   # Dataset storage (by_class/, ml_split/, unlabeled/)
+├── data/                   # Dataset storage (class labels, split scripts)
 ├── docs/                   # Project documentation and specifications
-│   ├── agents/             # AI agent-specific directives and context
-│   └── ARCHITECTURE.md     # Technical design and architecture overview
+│   └── architecture.md     # Technical design and architecture overview
+├── misc/                   # Project context and meta-documentation
 ├── notebooks/              # Jupyter notebooks for EDA, prototyping, and reproducibility
-├── scripts/                # Utility scripts for batch training, grid search, and validation
+├── scripts/                # Utility scripts for training, grid search, and validation
 ├── src/                    # Source code package
-│   ├── annotator/          # Flask-based web application for image annotation
-│   └── jute_disease/       # Main library package
-│       ├── data/           # LightningDataModules, transforms, and data utilities
-│       ├── engines/        # Training/Inference entry points (DL CLI, ML Training)
-│       ├── models/         # Model definitions (DL: MobileNetV2, ML: Classifiers)
-│       └── utils/          # Shared utilities (logging, seeding, constants)
-├── tests/                  # Hierarchical test suite
-│   ├── annotator/          # Web application tests
-│   └── jute_disease/       # Core library tests (mirrors src/jute_disease)
-└── AGENTS.md               # Root entry point for AI assistants
+│   ├── annotator/          # Legacy image annotation tool (Deprecated)
+│   └── jute_disease/       # Main library package (DL and Classical ML)
+└── tests/                  # Hierarchical test suite
 ```
 
 ## Core Design Principles
