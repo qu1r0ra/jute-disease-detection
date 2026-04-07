@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: "If you use this repository or its accompanying paper, please cite it as follows."
+type: software
+title: "An Application of Machine Learning and Deep Learning on Small-Scale Jute Leaf Disease Datasets"
+version: 1.0.0
+date-released: 2026-04-07
+license: "Apache-2.0"
+authors:
+  - family-names: "Bunyi"
+    given-names: "Christian Joseph"
+    orcid: "https://orcid.org/0009-0009-6703-0144"
+  - family-names: "Umali"
+    given-names: "Immanuel"
+url: "https://github.com/qu1r0ra/jute-disease-detection"
+repository-code: "https://github.com/qu1r0ra/jute-disease-detection"
+abstract: "A research codebase and accompanying study on classical machine learning and deep learning methods for jute leaf disease classification using a unified small-scale dataset built from multiple open-access sources."
+keywords:
+  - "jute"
+  - "plant disease classification"
+  - "computer vision"
+  - "machine learning"
+  - "deep learning"
+  - "transfer learning"
+
+preferred-citation:
+  type: report
+  title: "An Application of Machine Learning and Deep Learning on Small-Scale Jute Leaf Disease Datasets"
+  authors:
+    - family-names: "Bunyi"
+      given-names: "Christian Joseph"
+      orcid: "https://orcid.org/0009-0009-6703-0144"
+    - family-names: "Umali"
+      given-names: "Immanuel"
+  year: 2026
+  institution:
+    name: "De La Salle University"
+    city: "Manila"
+    country: "PH"
+  notes: "Technical Report"
