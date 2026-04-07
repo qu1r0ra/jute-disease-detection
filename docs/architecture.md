@@ -6,18 +6,19 @@ This document describes the architectural design and directory structure of the 
 
 ```text
 .
-├── artifacts/              # Models, checkpoints, and logs
-├── configs/                # Lightning CLI configuration files (.yaml) for DL models
-├── data/                   # Dataset storage (class labels, split scripts)
-├── docs/                   # Project documentation and specifications
-│   └── architecture.md     # Technical design and architecture overview
-├── misc/                   # Project context and meta-documentation
-├── notebooks/              # Jupyter notebooks for EDA, prototyping, and reproducibility
-├── scripts/                # Utility scripts for training, grid search, and validation
-├── src/                    # Source code package
-│   ├── annotator/          # Legacy image annotation tool (Deprecated)
-│   └── jute_disease/       # Main library package (DL and Classical ML)
-└── tests/                  # Hierarchical test suite
+├── artifacts/          # Models, checkpoints, and experiment logs
+├── assets/             # Project visualizations (ML/DL figures)
+├── configs/            # Lightning CLI configuration files (.yaml)
+├── data/               # Dataset storage and class definitions
+├── docs/               # Technical documentation and specifications
+│   └── architecture.md # Core technical design and implementation details
+├── misc/               # Project context and meta-documentation
+├── notebooks/          # Notebooks for EDA and reproducibility
+├── scripts/            # Automation scripts for training and evaluation
+├── src/
+│   ├── annotator/      # Legacy image annotation tool (Deprecated)
+│   └── jute_disease/   # Main library package (DL & Classical ML)
+└── tests/              # Unit and integration test suite
 ```
 
 ## Core Design Principles
@@ -75,6 +76,14 @@ Both pipelines are evaluated identically using a combined **Experiment Aggregati
 - **Formatting**: Code is formatted and linted using `ruff` to ensure PEP 8 compliance.
 - **CLI Patterns**: Scripts follow the "Raise in Logic, Exit in Main" pattern to allow for programmatic re-use and unit testing of automation functions.
 - **Testing**: A comprehensive test suite (`tests/`) covers unit tests (logic verification) and slower integration tests (end-to-end pipeline).
+
+### 8. Artifact Management
+
+The project uses a structured approach to saving experiment outputs in the `artifacts/` directory.
+
+- **Checkpoints**: PyTorch Lightning automatically saves the best `.ckpt` files based on validation loss/accuracy.
+- **Metrics**: Local experiments save metrics to `experiment_name/metrics.csv`. These are prioritized for reproducibility when cloud logging (WandB) is unavailable.
+- **Model Exports**: Classical ML models are serialized as `.joblib` files within the `artifacts/` hierarchy, ensuring they are versioned alongside the feature extraction pipelines that generated them.
 
 ## Tools & Dependencies
 

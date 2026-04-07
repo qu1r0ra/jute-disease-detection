@@ -27,17 +27,19 @@ A high-level overview of the repository organization:
 
 ```text
 .
-├── artifacts/          # Generated checkpoints, models, and logs
-├── configs/            # Training configurations (.yaml) for Lightning CLI
+├── artifacts/          # Models, checkpoints, and experiment logs
+├── assets/             # Project visualizations (ML/DL figures)
+├── configs/            # Lightning CLI configuration files (.yaml)
+├── data/               # Dataset storage and class definitions
 ├── docs/               # Technical documentation and specifications
 │   └── architecture.md # Core technical design and implementation details
 ├── misc/               # Project context and meta-documentation
-├── notebooks/          # Jupyter notebooks for EDA, tuning, and reproducibility
-├── scripts/            # Automation scripts (batch training, grid search)
+├── notebooks/          # Notebooks for EDA and reproducibility
+├── scripts/            # Automation scripts for training and evaluation
 ├── src/
 │   ├── annotator/      # Legacy image annotation tool (Deprecated)
-│   └── jute_disease/   # Main package (DL & Classical ML engines)
-└── tests/              # Comprehensive test suite
+│   └── jute_disease/   # Main library package (DL & Classical ML)
+└── tests/              # Unit and integration test suite
 ```
 
 > [!NOTE]
