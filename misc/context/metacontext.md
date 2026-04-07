@@ -35,6 +35,8 @@ This file documents key technical decisions and findings from the project. It en
 
 - **Asset Flattening**: The `assets/` directory was flattened by removing the `figures/` subfolder. Visualizations are now organized directly under `assets/ml/` and `assets/dl/`.
 - **Configuration Centralization**: `src/jute_disease/utils/constants.py` was updated to reflect the new directory structure, replacing `FIGURES_` prefixes with `ML_ASSETS_DIR` and `DL_ASSETS_DIR`.
+- **Golden Fiber Branding**: The `README.md` was overhauled with high-impact visuals and research-backed "Golden Fiber" context for public presentation.
+- **Citation Infrastructure**: Integrated `CITATION.cff` and standard BibTeX in `README.md` for automated repository citation.
 - **Annotator**: The legacy annotator tool in `src/annotator/` is kept for archival purposes and potential future development but is NOT part of the primary training or evaluation pipeline.
 
 ## Implementation Standards
