@@ -151,7 +151,7 @@ from jute_disease.utils.constants import (
     BATCH_SIZE,
     DEFAULT_SEED,
     DPI,
-    FIGURES_DL_DIR,
+    DL_ASSETS_DIR,
     LOGS_DIR,
     ML_SPLIT_DIR,
     NUM_WORKERS,
@@ -226,8 +226,8 @@ for p in ax_bar.patches:
             textcoords="offset points",
         )
 
-FIGURES_DL_DIR.mkdir(parents=True, exist_ok=True)
-plt.savefig(FIGURES_DL_DIR / "resolution_impact.png", bbox_inches="tight", dpi=DPI)
+DL_ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+plt.savefig(DL_ASSETS_DIR / "resolution_impact.png", bbox_inches="tight", dpi=DPI)
 plt.show()
 
 display(
@@ -323,7 +323,7 @@ ax[1].grid(True, alpha=0.3)
 
 plt.tight_layout()
 plt.savefig(
-    FIGURES_DL_DIR / "baseline_loss_accuracy_curves.png", bbox_inches="tight", dpi=DPI
+    DL_ASSETS_DIR / "baseline_loss_accuracy_curves.png", bbox_inches="tight", dpi=DPI
 )
 plt.show()
 
@@ -404,9 +404,9 @@ plt.xlabel("Predicted Class")
 plt.xticks(rotation=45, ha="right")
 plt.yticks(rotation=0)
 
-FIGURES_DL_DIR.mkdir(parents=True, exist_ok=True)
+DL_ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 plt.savefig(
-    FIGURES_DL_DIR / "baseline_confusion_matrix.png",
+    DL_ASSETS_DIR / "baseline_confusion_matrix.png",
     bbox_inches="tight",
     dpi=DPI,
 )
@@ -576,7 +576,7 @@ if len(wrong_indices) > 0:
         color="gray",
     )
     plt.savefig(
-        FIGURES_DL_DIR / f"top_{n_display}_errors.png", bbox_inches="tight", dpi=DPI
+        DL_ASSETS_DIR / f"top_{n_display}_errors.png", bbox_inches="tight", dpi=DPI
     )
     plt.show()
 else:
@@ -670,7 +670,7 @@ for perp in perplexities:
     plt.title(f"t-SNE Visualization with Perplexity={perp}")
     plt.xlabel("t-SNE 1")
     plt.ylabel("t-SNE 2")
-    plt.savefig(FIGURES_DL_DIR / f"tsne_perp_{perp}.png", bbox_inches="tight", dpi=DPI)
+    plt.savefig(DL_ASSETS_DIR / f"tsne_perp_{perp}.png", bbox_inches="tight", dpi=DPI)
     plt.show()
 
 # %% [markdown]
@@ -711,7 +711,7 @@ fig.legend(loc="lower center", ncol=len(dm.classes), bbox_to_anchor=(0.5, -0.05)
 
 plt.tight_layout()
 plt.savefig(
-    FIGURES_DL_DIR / "tsne_perplexity_comparison.png", bbox_inches="tight", dpi=DPI
+    DL_ASSETS_DIR / "tsne_perplexity_comparison.png", bbox_inches="tight", dpi=DPI
 )
 plt.show()
 
@@ -797,7 +797,7 @@ for n_neigh in n_neighbors_list:
     plt.xlabel("UMAP 1")
     plt.ylabel("UMAP 2")
     plt.savefig(
-        FIGURES_DL_DIR / f"umap_neigh_{n_neigh}.png", bbox_inches="tight", dpi=DPI
+        DL_ASSETS_DIR / f"umap_neigh_{n_neigh}.png", bbox_inches="tight", dpi=DPI
     )
     plt.show()
 
@@ -839,7 +839,7 @@ fig.legend(loc="lower center", ncol=len(dm.classes), bbox_to_anchor=(0.5, -0.05)
 
 plt.tight_layout()
 plt.savefig(
-    FIGURES_DL_DIR / "umap_neighborhood_comparison.png", bbox_inches="tight", dpi=DPI
+    DL_ASSETS_DIR / "umap_neighborhood_comparison.png", bbox_inches="tight", dpi=DPI
 )
 plt.show()
 
@@ -919,7 +919,7 @@ plt.suptitle(
     y=1.02,
 )
 plt.tight_layout()
-plt.savefig(FIGURES_DL_DIR / "grad_cam.png", bbox_inches="tight", dpi=DPI)
+plt.savefig(DL_ASSETS_DIR / "grad_cam.png", bbox_inches="tight", dpi=DPI)
 plt.show()
 
 # %% [markdown]
@@ -1012,9 +1012,9 @@ for p in ax.patches:
             textcoords="offset points",
         )
 
-FIGURES_DL_DIR.mkdir(parents=True, exist_ok=True)
+DL_ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 plt.savefig(
-    FIGURES_DL_DIR / "finetuned_lr_impact.png",
+    DL_ASSETS_DIR / "finetuned_lr_impact.png",
     bbox_inches="tight",
     dpi=DPI,
 )
@@ -1078,7 +1078,7 @@ ax[1].grid(True, alpha=0.3)
 
 plt.tight_layout()
 plt.savefig(
-    FIGURES_DL_DIR / "finetuned_training_history.png", bbox_inches="tight", dpi=DPI
+    DL_ASSETS_DIR / "finetuned_training_history.png", bbox_inches="tight", dpi=DPI
 )
 plt.show()
 
@@ -1129,9 +1129,9 @@ axes[1].set_ylabel("Actual Class")
 axes[1].set_xlabel("Predicted Class")
 axes[1].tick_params(axis="x", rotation=45)
 
-FIGURES_DL_DIR.mkdir(parents=True, exist_ok=True)
+DL_ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 plt.savefig(
-    FIGURES_DL_DIR / "part2_confusion_matrix_comparison.png",
+    DL_ASSETS_DIR / "part2_confusion_matrix_comparison.png",
     bbox_inches="tight",
     dpi=DPI,
 )
@@ -1266,7 +1266,7 @@ if len(wrong_indices) > 0:
         color="gray",
     )
     plt.savefig(
-        FIGURES_DL_DIR / f"finetuned_top_{n_display}_errors.png",
+        DL_ASSETS_DIR / f"finetuned_top_{n_display}_errors.png",
         bbox_inches="tight",
         dpi=DPI,
     )
@@ -1337,7 +1337,7 @@ plt.suptitle(
     y=1.02,
 )
 plt.tight_layout()
-plt.savefig(FIGURES_DL_DIR / "finetuned_grad_cam.png", bbox_inches="tight", dpi=DPI)
+plt.savefig(DL_ASSETS_DIR / "finetuned_grad_cam.png", bbox_inches="tight", dpi=DPI)
 plt.show()
 
 # %% [markdown]
