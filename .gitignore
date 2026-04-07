@@ -6,6 +6,7 @@ artifacts/*
 !artifacts/logs/
 data/*
 !data/*.txt
+misc/personal/
 
 # Library artifacts
 lightning_logs/
