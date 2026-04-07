@@ -86,12 +86,9 @@ class Classifier(LightningModule):
         y_hat = self(x)
         loss = self.loss(y_hat, y)
 
-        if self.trainer is not None:
-            self.log("train_loss", loss, prog_bar=True)
-            self.train_metrics(y_hat, y)
-            self.log_dict(self.train_metrics, prog_bar=True, on_step=False, on_epoch=True)
-        else:
-            self.train_metrics(y_hat, y)
+        self.log("train_loss", loss, prog_bar=True)
+        self.train_metrics(y_hat, y)
+        self.log_dict(self.train_metrics, prog_bar=True, on_step=False, on_epoch=True)
 
         return loss
 
@@ -102,12 +99,9 @@ class Classifier(LightningModule):
         y_hat = self(x)
         loss = self.loss(y_hat, y)
 
-        if self.trainer is not None:
-            self.log("val_loss", loss, prog_bar=True)
-            self.val_metrics(y_hat, y)
-            self.log_dict(self.val_metrics, prog_bar=True, on_step=False, on_epoch=True)
-        else:
-            self.val_metrics(y_hat, y)
+        self.log("val_loss", loss, prog_bar=True)
+        self.val_metrics(y_hat, y)
+        self.log_dict(self.val_metrics, prog_bar=True, on_step=False, on_epoch=True)
 
         return loss
 
@@ -118,12 +112,9 @@ class Classifier(LightningModule):
         y_hat = self(x)
         loss = self.loss(y_hat, y)
 
-        if self.trainer is not None:
-            self.log("test_loss", loss)
-            self.test_metrics(y_hat, y)
-            self.log_dict(self.test_metrics, on_step=False, on_epoch=True)
-        else:
-            self.test_metrics(y_hat, y)
+        self.log("test_loss", loss)
+        self.test_metrics(y_hat, y)
+        self.log_dict(self.test_metrics, on_step=False, on_epoch=True)
 
         self.test_preds.append(y_hat.argmax(dim=-1).detach().cpu())
         self.test_targets.append(y.detach().cpu())
