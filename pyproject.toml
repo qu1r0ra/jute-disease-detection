@@ -7,8 +7,6 @@ requires-python = ">=3.11"
 dependencies = [
     "albumentationsx[headless]>=2.0.14",
     "captum>=0.7.0",
-    "flask>=3.1.2",
-    "flask-sqlalchemy>=3.1.1",
     "kagglehub>=0.4.2",
     "lightning[pytorch-extra]>=2.6.0",
     "matplotlib>=3.10.8",
