@@ -3,7 +3,8 @@ message: "If you use this repository or its accompanying paper, please cite it a
 type: software
 title: "Benchmarking Classical Machine Learning and Transfer Learning for Data-Constrained Jute Leaf Disease Classification"
 version: 1.0.0
-date-released: 2026-04-07
+date-released: 2026-10-16
+doi: "10.5281/zenodo.23414231"
 license: "Apache-2.0"
 authors:
   - family-names: "Bunyi"
