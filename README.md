@@ -17,7 +17,7 @@
 
 <!-- Refer to <https://shields.io/badges> for usage -->
 
-![Year, Term, Course](https://img.shields.io/badge/AY2526--T2-CSC713M-blue)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23414231.svg)](https://doi.org/10.5281/zenodo.23414231) ![Year, Term, Course](https://img.shields.io/badge/AY2526--T2-CSC713M-blue)
 ![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white) ![uv](https://img.shields.io/badge/uv-DE5FE9?logo=uv&logoColor=white) ![PyTorch](https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white) ![Lightning](https://img.shields.io/badge/Lightning-792ee5?logo=lightning&logoColor=white) ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikitlearn&logoColor=white) ![Jupyter](https://img.shields.io/badge/Jupyter-f37626?logo=jupyter&logoColor=white) ![Weights & Biases](https://img.shields.io/badge/WandB-FFBE00?logo=weightsandbiases&logoColor=white)
 
 Benchmarking classical machine learning and transfer learning on a merged six-class jute leaf disease dataset. Created for CSC713M (Machine Learning for MSCS); the short paper was submitted to IEEE HNICEM 2026 ([PDF](docs/hnicem2026-paper.pdf), [full paper](https://drive.google.com/file/d/1DbaQ4TWEHChkLTLvpzntbUxhkBkSmQ5o/view?usp=drive_link)).
@@ -218,7 +218,7 @@ with torch.no_grad():
 
 ## 7. Citation
 
-If you find this research or codebase useful in your own work, please consider citing our paper:
+If you find this research or codebase useful in your own work, please consider citing our paper. The code and weights are archived on Zenodo ([10.5281/zenodo.23414231](https://doi.org/10.5281/zenodo.23414231), which always resolves to the latest version):
 
 ```bibtex
 @inproceedings{bunyi2026jute,
