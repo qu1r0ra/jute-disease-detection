@@ -25,6 +25,7 @@ help:
 	@echo "  make train-dl             - Run all baseline DL experiments"
 	@echo "  make train-dl-single      - Run training for one DL model (args: MODEL=resnet_50)"
 	@echo "  make train-dl-check       - Run DL baselines with fast_dev_run"
+	@echo "  make train-dl-check-single - Run one DL model with fast_dev_run (args: MODEL=resnet_50)"
 	@echo "  make train-cv             - Run cross-validation (default 5 folds)"
 	@echo "  make train-dl-512         - Run high-resolution MobileNet experiment"
 	@echo ""
@@ -32,6 +33,7 @@ help:
 	@echo "  make grid-search          - Run Phase 1 grid search (Transfer Learning/Dropout)"
 	@echo "  make grid-search-check    - Run Phase 1 grid search using fast_dev_run"
 	@echo "  make grid-search-finetune - Run Phase 2 fine-tuning search (LR/Weight Decay)"
+	@echo "  make grid-search-finetune-check - Run Phase 2 fine-tuning search using fast_dev_run"
 	@echo ""
 	@echo "-- Quality Control & Testing --"
 	@echo "  make test                 - Run fast tests (skips slow tests)"
@@ -44,7 +46,7 @@ help:
 	@echo "  make sync-nb              - Sync Jupyter Notebooks (.ipynb) with Jupytext (.py)"
 	@echo "  make aggregate-results    - Aggregate metrics (args: EXPS=\"exp1 exp2\")"
 	@echo "  make clean                - Remove temporary files and lightning logs"
-	@echo "  make clean-artifacts      - Remove all checkpoints and logs"
+	@echo "  make clean-artifacts      - Remove checkpoints and features (committed logs are kept)"
 	@echo "  make clean-ml             - Remove ML models and features"
 
 # Setup & Data
@@ -107,7 +109,7 @@ test:
 	$(PYTHON) -m pytest -v -s
 
 test-all:
-	$(PYTHON) -m pytest -v -s -m "" ""
+	$(PYTHON) -m pytest -v -s -m ""
 
 lint:
 	$(PYTHON) -m ruff check .
@@ -132,7 +134,7 @@ clean:
 	rm -rf .coverage htmlcov lightning_logs wandb
 
 clean-artifacts:
-	rm -rf artifacts/ml_models artifacts/checkpoints artifacts/logs artifacts/features
+	rm -rf artifacts/ml_models artifacts/checkpoints artifacts/features
 
 clean-ml:
 	rm -rf artifacts/ml_models artifacts/features

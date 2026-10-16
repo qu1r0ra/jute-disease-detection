@@ -32,10 +32,10 @@ Each subpackage in `src/jute_disease/` (e.g., `models.ml`, `data`, `utils`) uses
 
 ### 2. Command Line Interface (CLI)
 
-The project exposes unified CLI entry points defined in `pyproject.toml`:
+The project exposes its CLI entry points through `scripts/` and the Makefile:
 
 - **`scripts/train_dl.py`**: The main entry point for the Deep learning engine. It leverages the **Lightning CLI** to drive training, testing, and prediction from configuration files.
-- **`make train-ml`**: Centralized Makefile entry point for Classical ML training, executing Python functions housed in `scripts/train_ml.py` and `src/jute_disease/engines/ml/`.
+- **`make train-ml`**: Makefile entry point for classical ML training. It runs `scripts/train_all_ml.py`, which drives the pipeline in `src/jute_disease/engines/ml/`.
 
 ### 3. Deep Learning Service (Lightning + Timm)
 
@@ -72,7 +72,7 @@ Both pipelines are evaluated identically using a combined **Experiment Aggregati
 
 ### 7. Code Quality & Standards
 
-- **Type Safety**: The codebase adheres to strict type checking using modern Python 3.10+ syntax (e.g., `list[str] | None`). **Mypy is scoped to `src/` only**; the `notebooks/` directory is explicitly excluded to facilitate rapid prototyping and exploratory analysis without type-strictness overhead.
+- **Type Safety**: Public functions carry type annotations and use modern Python 3.10+ syntax (e.g., `list[str] | None`). Mypy is not part of the CI or lint pipeline.
 - **Formatting**: Code is formatted and linted using `ruff` to ensure PEP 8 compliance.
 - **CLI Patterns**: Scripts follow the "Raise in Logic, Exit in Main" pattern to allow for programmatic re-use and unit testing of automation functions.
 - **Testing**: A comprehensive test suite (`tests/`) covers unit tests (logic verification) and slower integration tests (end-to-end pipeline).

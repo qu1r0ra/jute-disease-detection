@@ -1,7 +1,9 @@
 [project]
 name = "jute-disease-detection"
-version = "0.1.0"
+version = "1.0.0"
 description = "Deep Learning Exploration for Jute Leaf Disease Detection"
+license = "Apache-2.0"
+authors = [{ name = "Christian Joseph Bunyi" }]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

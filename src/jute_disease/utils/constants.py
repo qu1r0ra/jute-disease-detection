@@ -6,7 +6,6 @@ ROOT_DIR = Path(__file__).resolve(strict=True).parents[3]
 DATA_DIR = ROOT_DIR / "data"
 BY_CLASS_DIR = DATA_DIR / "by_class"
 ML_SPLIT_DIR = DATA_DIR / "ml_split"
-UNLABELED_DIR = DATA_DIR / "unlabeled"
 PLANTDOC_DIR = DATA_DIR / "external" / "plantdoc"
 PLANTVILLAGE_DIR = DATA_DIR / "external" / "plantvillage"
 

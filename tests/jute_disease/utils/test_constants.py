@@ -15,7 +15,6 @@ from jute_disease.utils import (
     ROOT_DIR,
     SEEDS,
     SPLITS,
-    UNLABELED_DIR,
     WANDB_ENTITY,
     WANDB_PROJECT,
 )
@@ -28,7 +27,6 @@ def test_paths_are_path_objects() -> None:
         ML_MODELS_DIR,
         BY_CLASS_DIR,
         ML_SPLIT_DIR,
-        UNLABELED_DIR,
     ]:
         assert isinstance(p, Path), f"{p!r} is not a Path"
 

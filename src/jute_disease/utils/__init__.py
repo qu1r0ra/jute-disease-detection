@@ -15,7 +15,6 @@ from jute_disease.utils.constants import (
     ROOT_DIR,
     SEEDS,
     SPLITS,
-    UNLABELED_DIR,
     WANDB_ENTITY,
     WANDB_PROJECT,
 )
@@ -42,7 +41,6 @@ __all__ = [
     "SEEDS",
     "SPLITS",
     "TRAIN_METRICS",
-    "UNLABELED_DIR",
     "WANDB_ENTITY",
     "WANDB_PROJECT",
     "flatten_log_version",

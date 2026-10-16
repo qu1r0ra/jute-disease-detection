@@ -85,7 +85,7 @@ Ensure you have the following installed on your local machine:
 This project automates data acquisition and experiment tracking via third-party APIs:
 
 1. **Jute dataset:** The unified six-class dataset is distributed as `data.zip` in this [Google Drive folder](https://drive.google.com/drive/folders/1WoQ-Xzy0Prl9lInHW5JpGX4tpE9YDUua?usp=sharing). Unzip it into the project root so that `data/by_class/` exists. See [References](#9-references) for the three source datasets it merges.
-2. **Kaggle API:** Only needed to download the PlantVillage (Hughes & Salathé, 2015) and PlantDoc (Singh et al., 2020) pretraining datasets (`make data`). Ensure you have a `kaggle.json` in `~/.kaggle/`.
+2. **Kaggle API:** Only needed to download the PlantVillage (Hughes & Salathé, 2015; Mohanty et al., 2016) and PlantDoc (Singh et al., 2020) pretraining datasets (`make data`). Ensure you have a `kaggle.json` in `~/.kaggle/`.
 3. **Weights & Biases (WandB):** Used for experiment logs and interactive dashboards. Run `wandb login` before starting deep learning training.
 
 The unified jute dataset merges three public sources. The repository code is Apache-2.0; the data keeps its original terms:

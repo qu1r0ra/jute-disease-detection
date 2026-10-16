@@ -28,7 +28,6 @@ This file documents key technical decisions and findings from the project. It en
 ### 5. Environment and Hooks
 
 - **ggshield Removal**: Removed from the pre-commit pipeline to avoid stashing conflicts during commits. Manual checks are preferred.
-- **Mypy Scoping**: The `notebooks/` directory is excluded from `mypy` checks to allow for exploratory speed.
 - **Cleanup**: Redundant packages have been purged. Development tools are grouped under `dev` dependencies.
 
 ### 6. Repository Polishing
