@@ -166,6 +166,8 @@ To retrain the models from the command line instead of the notebooks:
    make train-dl-512
    ```
 
+On Windows without a C++ compiler, `torch.compile` fails; add `--model.compile_model=false` when calling `scripts/train_dl.py` directly.
+
 Checkpoints are written to `artifacts/checkpoints/` and CSV logs to `artifacts/logs/`. Optionally run `make pretrain` first to fine-tune on PlantVillage before the jute data. Training on a GPU is recommended for the deep learning runs; the classical ML pipeline runs on CPU. `make help` lists every target.
 
 ## 6. Benchmarked Performance
