@@ -20,7 +20,7 @@
 ![Year, Term, Course](https://img.shields.io/badge/AY2526--T2-CSC713M-blue)
 ![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white) ![uv](https://img.shields.io/badge/uv-DE5FE9?logo=uv&logoColor=white) ![PyTorch](https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white) ![Lightning](https://img.shields.io/badge/Lightning-792ee5?logo=lightning&logoColor=white) ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikitlearn&logoColor=white) ![Jupyter](https://img.shields.io/badge/Jupyter-f37626?logo=jupyter&logoColor=white) ![Weights & Biases](https://img.shields.io/badge/WandB-FFBE00?logo=weightsandbiases&logoColor=white)
 
-An exploration of deep learning on merged jute leaf disease datasets. Created for CSC713M (Machine Learning for MSCS).
+Benchmarking classical machine learning and transfer learning on a merged six-class jute leaf disease dataset. Created for CSC713M (Machine Learning for MSCS); the short paper was submitted to IEEE HNICEM 2026 ([PDF](docs/hnicem2026-paper.pdf), [full paper](https://drive.google.com/file/d/1DbaQ4TWEHChkLTLvpzntbUxhkBkSmQ5o/view?usp=drive_link)).
 
 ## Table of Contents <!-- omit from toc -->
 
@@ -31,10 +31,11 @@ An exploration of deep learning on merged jute leaf disease datasets. Created fo
   - [3.2. Data \& Platform Credentials](#32-data--platform-credentials)
   - [3.3. Installation](#33-installation)
 - [4. Reproducing the Results](#4-reproducing-the-results)
-- [5. Benchmarked Performance](#5-benchmarked-performance)
-- [6. Citation](#6-citation)
-- [7. License](#7-license)
-- [8. References](#8-references)
+- [5. Training from Scratch](#5-training-from-scratch)
+- [6. Benchmarked Performance](#6-benchmarked-performance)
+- [7. Citation](#7-citation)
+- [8. License](#8-license)
+- [9. References](#9-references)
 
 ## 1. Introduction
 
@@ -87,9 +88,17 @@ Ensure you have the following installed on your local machine:
 
 This project automates data acquisition and experiment tracking via third-party APIs:
 
-1. **Jute dataset:** The unified six-class dataset is distributed as `data.zip` in this [Google Drive folder](https://drive.google.com/drive/folders/1WoQ-Xzy0Prl9lInHW5JpGX4tpE9YDUua?usp=sharing). Unzip it into the project root so that `data/by_class/` exists. See [References](#8-references) for the three source datasets it merges.
+1. **Jute dataset:** The unified six-class dataset is distributed as `data.zip` in this [Google Drive folder](https://drive.google.com/drive/folders/1WoQ-Xzy0Prl9lInHW5JpGX4tpE9YDUua?usp=sharing). Unzip it into the project root so that `data/by_class/` exists. See [References](#9-references) for the three source datasets it merges.
 2. **Kaggle API:** Only needed to download the PlantVillage and PlantDoc pretraining datasets (`make data`). Ensure you have a `kaggle.json` in `~/.kaggle/`.
 3. **Weights & Biases (WandB):** Used for experiment logs and interactive dashboards. Run `wandb login` before starting deep learning training.
+
+The unified jute dataset merges three public sources. The repository code is Apache-2.0; the data keeps its original terms:
+
+| Source                                                                  | Terms                                      |
+| :---------------------------------------------------------------------- | :----------------------------------------- |
+| Islam & Sheikh, Harvard Dataverse (`doi:10.7910/DVN/FJ1DM1`)            | CC0 1.0                                    |
+| Mridha, Mendeley Data (`z87b9hnkh7`)                                    | CC BY 4.0 (attribute the author)           |
+| Jannat et al., Kaggle (`mdsaimunalam/jute-leaf-disease-detection`)      | No explicit licence stated; cite the paper |
 
 ### 3.3. Installation
 
@@ -128,7 +137,38 @@ Run through the Jupyter notebooks in `notebooks/reproducibility/` in numerical o
 
 Alternatively, `make` drives the same experiments from the command line (see `make help`): `make train-dl`, `make grid-search`, `make grid-search-finetune`, `make train-dl-512`, and `make train-ml`. Experiment logs behind the reported deep learning numbers are committed under `artifacts/logs/`.
 
-## 5. Benchmarked Performance
+## 5. Training from Scratch
+
+To retrain the models from the command line instead of the notebooks:
+
+1. Install dependencies (`uv sync`) and unzip `data.zip` so that `data/by_class/` exists ([3.2](#32-data--platform-credentials)).
+2. Create the stratified 70/15/15 split (seed 42) and download the PlantVillage/PlantDoc pretraining data:
+
+   ```bash
+   make data
+   ```
+
+3. Point experiment tracking at your own W&B account. The configs log to the `grade-descent` entity, so either edit `entity` in the `WandbLogger` block of the files under `configs/`, or run offline with `WANDB_MODE=offline`.
+4. Smoke-test the pipeline, then train:
+
+   ```bash
+   make train-dl-check                 # fast_dev_run over all baselines
+   make train-dl                       # all six deep learning baselines
+   make train-dl-single MODEL=mobilenet_v2
+   make train-ml                       # handcrafted features + classical ML
+   ```
+
+5. Reproduce the MobileNetV2 tuning in the paper (phase 1: transfer-learning/dropout; phase 2: learning rate and weight decay) and the 512 px experiment:
+
+   ```bash
+   make grid-search
+   make grid-search-finetune
+   make train-dl-512
+   ```
+
+Checkpoints are written to `artifacts/checkpoints/` and CSV logs to `artifacts/logs/`. Optionally run `make pretrain` first to fine-tune on PlantVillage before the jute data. Training on a GPU is recommended for the deep learning runs; the classical ML pipeline runs on CPU. `make help` lists every target.
+
+## 6. Benchmarked Performance
 
 Below is a summary of our primary results on the held-out test split (360 images). The [full paper](https://drive.google.com/file/d/1DbaQ4TWEHChkLTLvpzntbUxhkBkSmQ5o/view?usp=drive_link) discusses learning rates, input resolutions, and feature-space analysis in detail.
 
@@ -140,7 +180,7 @@ Below is a summary of our primary results on the held-out test split (360 images
 
 Model selection used validation metrics. Results come from a single stratified 70/15/15 split (seed 42) without near-duplicate removal, so differences of a point or two are within noise.
 
-## 6. Citation
+## 7. Citation
 
 If you find this research or codebase useful in your own work, please consider citing our paper:
 
@@ -155,11 +195,11 @@ If you find this research or codebase useful in your own work, please consider c
 }
 ```
 
-## 7. License
+## 8. License
 
 This project is licensed under the **Apache License 2.0**. See the [LICENSE](LICENSE) file for the full text.
 
-## 8. References
+## 9. References
 
 - Islam, M. M., & Sheikh, M. R. (2026). A comprehensive image dataset of jute diseases. _Data in Brief, 64_, 112334. <https://doi.org/10.1016/j.dib.2025.112334>
 
