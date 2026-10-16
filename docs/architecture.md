@@ -10,8 +10,9 @@ This document describes the architectural design and directory structure of the 
 ├── assets/             # Project visualizations (ML/DL figures)
 ├── configs/            # Lightning CLI configuration files (.yaml)
 ├── data/               # Dataset storage and class definitions
-├── docs/               # Technical documentation and specifications
-│   └── architecture.md # Core technical design and implementation details
+├── docs/               # Technical documentation and paper
+│   ├── architecture.md # Core technical design and implementation details
+│   └── hnicem2026-paper.pdf # Submitted HNICEM 2026 paper
 ├── misc/               # Project context and meta-documentation
 ├── notebooks/          # Notebooks for EDA and reproducibility
 ├── scripts/            # Automation scripts for training and evaluation

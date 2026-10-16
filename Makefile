@@ -1,4 +1,4 @@
-.PHONY: help data setup-data split-data train-ml tune-ml tune-ml-single test-ml train-dl train-dl-single train-dl-check train-dl-check-single train-cv train-dl-512 grid-search grid-search-check grid-search-finetune grid-search-finetune-check pretrain test test-all lint format clean clean-artifacts clean-ml sync-nb aggregate-results full-check
+.PHONY: help data setup-data split-data train-ml test-ml train-dl train-dl-single train-dl-check train-dl-check-single train-cv train-dl-512 grid-search grid-search-check grid-search-finetune grid-search-finetune-check pretrain test test-all lint format clean clean-artifacts clean-ml sync-nb aggregate-results full-check
 
 ifeq (, $(shell which uv))
 	PYTHON = python3
@@ -19,8 +19,6 @@ help:
 	@echo ""
 	@echo "-- Classical ML --"
 	@echo "  make train-ml             - Run all classical ML experiments"
-	@echo "  make tune-ml              - Tune hyperparameters for all ML classifiers"
-	@echo "  make tune-ml-single       - Tune a single ML classifier (args: CLASSIFIER=rf FEATURE=raw)"
 	@echo "  make test-ml              - Evaluate a single ML model (args: CLASSIFIER=rf FEATURE=raw)"
 	@echo ""
 	@echo "-- Deep Learning --"
@@ -68,12 +66,6 @@ pretrain:
 # Classical ML
 train-ml:
 	$(PYTHON) scripts/train_all_ml.py
-
-tune-ml:
-	$(PYTHON) scripts/tune_all_ml.py
-
-tune-ml-single:
-	$(PYTHON) scripts/tune_ml.py --classifier $(CLASSIFIER) --feature_type $(FEATURE)
 
 test-ml:
 	$(PYTHON) scripts/test_ml.py --classifier $(CLASSIFIER) --feature_type $(FEATURE)
