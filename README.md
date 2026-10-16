@@ -182,6 +182,40 @@ Below is a summary of our primary results on the held-out test split (360 images
 
 Model selection used validation metrics. Results come from a single stratified 70/15/15 split (seed 42) without near-duplicate removal, so differences of a point or two are within noise.
 
+### Pretrained Weights
+
+The best MobileNetV2 (learning rate 0.01, weight decay 0.05, frozen backbone, 91.39% test accuracy) is attached to the [v1.0.0 release](https://github.com/qu1r0ra/jute-disease-detection/releases/tag/v1.0.0) as `mobilenet_v2_jute.pt` (SHA-256 `f172c2668378f6a59376928f3d55e1562e289dd954c29b74e5054c978edcad9d`). It is the Weights & Biases `best` checkpoint of run `af60c7b9` as a plain `state_dict`. Class indices follow `data/disease_classes.txt`.
+
+```python
+import torch
+from PIL import Image
+from torchvision import transforms as T
+
+from jute_disease.models.dl.backbone import TimmBackbone
+from jute_disease.models.dl.classifier import Classifier
+
+classes = [c.strip() for c in open("data/disease_classes.txt") if c.strip()]
+model = Classifier(
+    TimmBackbone("mobilenetv2_100.ra_in1k", pretrained=False),
+    num_classes=len(classes),
+    compile_model=False,
+)
+model.load_state_dict(torch.load("mobilenet_v2_jute.pt", weights_only=True))
+model.eval()
+
+preprocess = T.Compose(
+    [
+        T.Resize(256),
+        T.CenterCrop(256),
+        T.ToTensor(),
+        T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]
+)
+image = preprocess(Image.open("leaf.jpg").convert("RGB")).unsqueeze(0)
+with torch.no_grad():
+    print(classes[model(image).argmax(1).item()])
+```
+
 ## 7. Citation
 
 If you find this research or codebase useful in your own work, please consider citing our paper:
