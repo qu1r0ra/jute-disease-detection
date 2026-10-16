@@ -17,7 +17,6 @@ This document describes the architectural design and directory structure of the 
 ├── notebooks/          # Notebooks for EDA and reproducibility
 ├── scripts/            # Automation scripts for training and evaluation
 ├── src/
-│   ├── annotator/      # Legacy image annotation tool (Deprecated)
 │   └── jute_disease/   # Main library package (DL & Classical ML)
 └── tests/              # Unit and integration test suite
 ```

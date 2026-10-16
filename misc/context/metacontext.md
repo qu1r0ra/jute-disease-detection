@@ -29,7 +29,7 @@ This file documents key technical decisions and findings from the project. It en
 
 - **ggshield Removal**: Removed from the pre-commit pipeline to avoid stashing conflicts during commits. Manual checks are preferred.
 - **Mypy Scoping**: The `notebooks/` directory is excluded from `mypy` checks to allow for exploratory speed.
-- **Cleanup**: Redundant packages have been purged. Development tools are grouped under `dev` dependencies. Flask-related dependencies are retained for legacy support of the annotator tool.
+- **Cleanup**: Redundant packages have been purged. Development tools are grouped under `dev` dependencies.
 
 ### 6. Repository Polishing
 
@@ -37,7 +37,6 @@ This file documents key technical decisions and findings from the project. It en
 - **Configuration Centralization**: `src/jute_disease/utils/constants.py` was updated to reflect the new directory structure, replacing `FIGURES_` prefixes with `ML_ASSETS_DIR` and `DL_ASSETS_DIR`.
 - **Golden Fiber Branding**: The `README.md` was overhauled with high-impact visuals and research-backed "Golden Fiber" context for public presentation.
 - **Citation Infrastructure**: Integrated `CITATION.cff` and standard BibTeX in `README.md` for automated repository citation.
-- **Annotator**: The legacy annotator tool in `src/annotator/` is kept for archival purposes and potential future development but is NOT part of the primary training or evaluation pipeline.
 
 ## Implementation Standards
 

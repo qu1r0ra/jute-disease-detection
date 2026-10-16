@@ -64,13 +64,9 @@ A high-level overview of the repository organization:
 ├── notebooks/          # Notebooks for EDA and reproducibility
 ├── scripts/            # Automation scripts for training and evaluation
 ├── src/
-│   ├── annotator/      # Legacy image annotation tool (Deprecated)
 │   └── jute_disease/   # Main library package (DL & Classical ML)
 └── tests/              # Unit and integration test suite
 ```
-
-> [!NOTE]
-> The **Annotator** tool (`src/annotator/`) is a legacy Flask-based component used during the early stages of the project. It is no longer actively developed or incorporated into the main training/evaluation pipeline.
 
 For a detailed look at the internal design, public APIs, and architectural decisions, see [architecture.md](docs/architecture.md).
 
@@ -89,7 +85,7 @@ Ensure you have the following installed on your local machine:
 This project automates data acquisition and experiment tracking via third-party APIs:
 
 1. **Jute dataset:** The unified six-class dataset is distributed as `data.zip` in this [Google Drive folder](https://drive.google.com/drive/folders/1WoQ-Xzy0Prl9lInHW5JpGX4tpE9YDUua?usp=sharing). Unzip it into the project root so that `data/by_class/` exists. See [References](#9-references) for the three source datasets it merges.
-2. **Kaggle API:** Only needed to download the PlantVillage and PlantDoc pretraining datasets (`make data`). Ensure you have a `kaggle.json` in `~/.kaggle/`.
+2. **Kaggle API:** Only needed to download the PlantVillage (Hughes & Salathé, 2015) and PlantDoc (Singh et al., 2020) pretraining datasets (`make data`). Ensure you have a `kaggle.json` in `~/.kaggle/`.
 3. **Weights & Biases (WandB):** Used for experiment logs and interactive dashboards. Run `wandb login` before starting deep learning training.
 
 The unified jute dataset merges three public sources. The repository code is Apache-2.0; the data keeps its original terms:
@@ -184,7 +180,7 @@ Model selection used validation metrics. Results come from a single stratified 7
 
 ### Pretrained Weights
 
-The best MobileNetV2 (learning rate 0.01, weight decay 0.05, frozen backbone, 91.39% test accuracy) is attached to the [v1.0.0 release](https://github.com/qu1r0ra/jute-disease-detection/releases/tag/v1.0.0) as `mobilenet_v2_jute.pt` (SHA-256 `f172c2668378f6a59376928f3d55e1562e289dd954c29b74e5054c978edcad9d`). It is the Weights & Biases `best` checkpoint of run `af60c7b9` as a plain `state_dict`. Class indices follow `data/disease_classes.txt`.
+The best MobileNetV2 (learning rate 0.01, weight decay 0.05, frozen backbone, 91.39% test accuracy) is attached to the [v1.0.0 release](https://github.com/qu1r0ra/jute-disease-detection/releases/tag/v1.0.0) as `mobilenet_v2_jute.pt` (SHA-256 `f172c2668378f6a59376928f3d55e1562e289dd954c29b74e5054c978edcad9d`). It is the Weights & Biases `best` checkpoint of run `af60c7b9` as a plain `state_dict`. Class indices follow `data/disease_classes.txt`. The architecture is MobileNetV2 (Sandler et al., 2018), loaded through the timm library (Wightman, 2019).
 
 ```python
 import torch
@@ -237,6 +233,8 @@ This project is licensed under the **Apache License 2.0**. See the [LICENSE](LIC
 
 ## 9. References
 
+- Hughes, D. P., & Salathé, M. (2015). An open access repository of images on plant health to enable the development of mobile disease diagnostics. _arXiv preprint_. <https://arxiv.org/abs/1511.08060>
+
 - Islam, M. M., & Sheikh, M. R. (2026). A comprehensive image dataset of jute diseases. _Data in Brief, 64_, 112334. <https://doi.org/10.1016/j.dib.2025.112334>
 
 - Jannat, M., Uddin, M. S., Hasan, M. A., Alam, M. S., Paul, A., Chowdhury, M. E. H., & Haider, J. (2025). Real-time jute leaf disease classification using an explainable lightweight CNN via a supervised and semi-supervised self-training approach. _Frontiers in Plant Science, 16_. <https://doi.org/10.3389/fpls.2025.1647177>
@@ -245,4 +243,8 @@ This project is licensed under the **Apache License 2.0**. See the [LICENSE](LIC
 
 - Mohanty, S. P., Hughes, D. P., & Salathé, M. (2016). Using deep learning for image-based plant disease detection. _Frontiers in Plant Science, 7_. <https://doi.org/10.3389/fpls.2016.01419>
 
+- Sandler, M., Howard, A., Zhu, M., Zhmoginov, A., & Chen, L.-C. (2018). MobileNetV2: Inverted residuals and linear bottlenecks. In _Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition_ (pp. 4510–4520). <https://doi.org/10.1109/CVPR.2018.00474>
+
 - Singh, D., Jain, N., Jain, P., Kayal, P., Kumawat, S., & Batra, N. (2020). _PlantDoc: A dataset for visual plant disease detection_. In _Proceedings of the 7th ACM IKDD CoDS and 25th COMAD_ (pp. 249–253). <https://doi.org/10.1145/3371158.3371196>
+
+- Wightman, R. (2019). _PyTorch Image Models_ (timm) [Software]. GitHub. <https://doi.org/10.5281/zenodo.4414861>
