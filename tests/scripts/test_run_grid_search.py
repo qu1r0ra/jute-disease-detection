@@ -15,7 +15,7 @@ from scripts.run_grid_search import run_grid_search  # noqa: E402
 
 @pytest.fixture
 def phase_1_grid(tmp_path: Path) -> Path:
-    config_content = f"""
+    config_content = """
 transfer_learning_levels:
   - name: "level_1_imagenet"
     weights_path: "imagenet"
@@ -122,9 +122,7 @@ def test_run_grid_search_phase2(
     assert any("drop_rate=0.3" in c for c in fit_cmd)
     assert any("pretrained=False" in c for c in fit_cmd)
     ckpt_str = "--model.feature_extractor.init_args.checkpoint_path="
-    expected = (
-        f"{ckpt_str}{CHECKPOINTS_DIR / 'pretrained' / 'mobilenet_v2-plantvillage-plantdoc.ckpt'}"
-    )
+    expected = f"{ckpt_str}{CHECKPOINTS_DIR / 'pretrained' / 'mobilenet_v2-plantvillage-plantdoc.ckpt'}"
     assert any(expected in c for c in fit_cmd)
     assert any("lr=0.005" in c for c in fit_cmd)
     assert any("weight_decay=0.1" in c for c in fit_cmd)

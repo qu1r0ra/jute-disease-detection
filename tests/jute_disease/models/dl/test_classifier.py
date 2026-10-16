@@ -1,9 +1,10 @@
 """Unit tests for the DL Classifier (LightningModule)."""
 
+from unittest.mock import MagicMock
+
 import pytest
 import torch
 import torch.nn as nn
-from unittest.mock import MagicMock
 
 from jute_disease.models.dl import Classifier, TimmBackbone
 from jute_disease.utils.constants import DEFAULT_LR, NUM_CLASSES

@@ -36,6 +36,10 @@ ignore = ["N812", "N803", "N806"]
 fixable = ["ALL"]
 unfixable = []
 
+[lint.per-file-ignores]
+"notebooks/**/*.ipynb" = ["E501", "A004", "T201"]
+"tests/**/*.py" = ["E402", "E501"]
+
 [format]
 quote-style = "double"
 indent-style = "space"

@@ -64,7 +64,13 @@ def test_datamodule_kfold_setup(mock_dataset_root: Path) -> None:
     # K-fold setup now merges 'train' and 'val' subfolders
     # Total samples = 10 (train) + 10 (val) = 20
     # 5 folds -> 16 training, 4 validation
-    dm = DataModule(data_dir=mock_dataset_root, batch_size=2, k_fold=5, fold_index=0, pin_memory=False)
+    dm = DataModule(
+        data_dir=mock_dataset_root,
+        batch_size=2,
+        k_fold=5,
+        fold_index=0,
+        pin_memory=False,
+    )
     dm.setup(stage="fit")
 
     assert dm.jute_train is not None
@@ -76,7 +82,9 @@ def test_datamodule_kfold_setup(mock_dataset_root: Path) -> None:
 
 def test_datamodule_set_fold(mock_dataset_root: Path) -> None:
     """Test that set_fold switches the active subsets and indices."""
-    dm = DataModule(data_dir=mock_dataset_root, k_fold=5, fold_index=0, pin_memory=False)
+    dm = DataModule(
+        data_dir=mock_dataset_root, k_fold=5, fold_index=0, pin_memory=False
+    )
     dm.setup(stage="fit")
 
     assert hasattr(dm.jute_train, "indices")
@@ -95,7 +103,12 @@ def test_datamodule_weighted_sampler(mock_dataset_root: Path) -> None:
         img = Image.fromarray(np.random.randint(0, 256, (32, 32, 3), dtype=np.uint8))
         img.save(mock_dataset_root / "train" / "healthy" / f"extra_{i}.jpg")
 
-    dm = DataModule(data_dir=mock_dataset_root, batch_size=2, use_weighted_sampler=True, pin_memory=False)
+    dm = DataModule(
+        data_dir=mock_dataset_root,
+        batch_size=2,
+        use_weighted_sampler=True,
+        pin_memory=False,
+    )
     dm.setup(stage="fit")
 
     assert dm.sampler is not None
