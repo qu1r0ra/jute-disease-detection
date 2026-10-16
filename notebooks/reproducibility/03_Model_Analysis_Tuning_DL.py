@@ -1,19 +1,4 @@
-# ---
-# jupyter:
-#   jupytext:
-#     formats: ipynb,py:percent
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.19.1
-#   kernelspec:
-#     display_name: .venv
-#     language: python
-#     name: python3
-# ---
-
-# %% [markdown] colab_type="text" id="view-in-github"
+# %% [markdown]
 # <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/main/notebooks/reproducibility/03_Model_Analysis_Tuning_DL.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown]
@@ -150,8 +135,8 @@ from jute_disease.utils.constants import (
     ARTIFACTS_DIR,
     BATCH_SIZE,
     DEFAULT_SEED,
-    DPI,
     DL_ASSETS_DIR,
+    DPI,
     LOGS_DIR,
     ML_SPLIT_DIR,
     NUM_WORKERS,
