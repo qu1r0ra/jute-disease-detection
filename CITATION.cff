@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this repository or its accompanying paper, please cite it as follows."
 type: software
-title: "An Application of Machine Learning and Deep Learning on Small-Scale Jute Leaf Disease Datasets"
+title: "Benchmarking Classical Machine Learning and Transfer Learning for Data-Constrained Jute Leaf Disease Classification"
 version: 1.0.0
 date-released: 2026-04-07
 license: "Apache-2.0"
@@ -23,8 +23,8 @@ keywords:
   - "transfer learning"
 
 preferred-citation:
-  type: report
-  title: "An Application of Machine Learning and Deep Learning on Small-Scale Jute Leaf Disease Datasets"
+  type: conference-paper
+  title: "Benchmarking Classical Machine Learning and Transfer Learning for Data-Constrained Jute Leaf Disease Classification"
   authors:
     - family-names: "Bunyi"
       given-names: "Christian Joseph"
@@ -32,8 +32,5 @@ preferred-citation:
     - family-names: "Umali"
       given-names: "Immanuel"
   year: 2026
-  institution:
-    name: "De La Salle University"
-    city: "Manila"
-    country: "PH"
-  notes: "Technical Report"
+  collection-title: "IEEE HNICEM 2026"
+  notes: "Submitted to IEEE HNICEM 2026"

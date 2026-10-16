@@ -44,7 +44,7 @@ Our experiments compare classical ML models such as **Random Forest** and **Supp
 
 Beyond benchmarking, this project also investigates **fine-tuning on related plant disease datasets, input resolution effects, feature-space analysis with t-SNE/UMAP, error analysis, and Grad-CAM interpretability**. The results suggest that confusion between **Mosaic** and **Cercospora Leaf Spot** remains a key challenge, likely due to visual similarity and dataset limitations, motivating future work in improved preprocessing and multi-label disease recognition.
 
-For a full discussion of our project, please refer to [our paper](docs/paper.pdf).
+Our short paper, **"Benchmarking Classical Machine Learning and Transfer Learning for Data-Constrained Jute Leaf Disease Classification"**, was submitted to IEEE HNICEM 2026 ([PDF](docs/hnicem2026-paper.pdf)). The [full paper with additional visualizations](https://drive.google.com/file/d/1DbaQ4TWEHChkLTLvpzntbUxhkBkSmQ5o/view?usp=drive_link) covers the complete results.
 
 ## 2. Project Structure
 
@@ -56,9 +56,9 @@ A high-level overview of the repository organization:
 ├── assets/             # Project visualizations (ML/DL figures)
 ├── configs/            # Lightning CLI configuration files (.yaml)
 ├── data/               # Dataset storage and class definitions
-├── docs/               # Technical documentation and specifications
+├── docs/               # Technical documentation and paper
 │   ├── architecture.md # Core technical design and implementation details
-│   └── paper.pdf       # Final research paper and results documentation
+│   └── hnicem2026-paper.pdf # Submitted HNICEM 2026 paper
 ├── misc/               # Project context and meta-documentation
 ├── notebooks/          # Notebooks for EDA and reproducibility
 ├── scripts/            # Automation scripts for training and evaluation
@@ -87,8 +87,9 @@ Ensure you have the following installed on your local machine:
 
 This project automates data acquisition and experiment tracking via third-party APIs:
 
-1. **Kaggle API:** Required for dataset acquisition in `01_Exploratory_Data_Analysis.ipynb`. Ensure you have a `kaggle.json` in `~/.kaggle/`.
-2. **Weights & Biases (WandB):** Used for experiment logs and interactive dashboards. Run `wandb login` before starting deep learning training.
+1. **Jute dataset:** The unified six-class dataset is distributed as `data.zip` in this [Google Drive folder](https://drive.google.com/drive/folders/1WoQ-Xzy0Prl9lInHW5JpGX4tpE9YDUua?usp=sharing). Unzip it into the project root so that `data/by_class/` exists. See [References](#8-references) for the three source datasets it merges.
+2. **Kaggle API:** Only needed to download the PlantVillage and PlantDoc pretraining datasets (`make data`). Ensure you have a `kaggle.json` in `~/.kaggle/`.
+3. **Weights & Biases (WandB):** Used for experiment logs and interactive dashboards. Run `wandb login` before starting deep learning training.
 
 ### 3.3. Installation
 
@@ -123,29 +124,33 @@ Run through the Jupyter notebooks in `notebooks/reproducibility/` in numerical o
    Finalizes evaluation on the held-out test set and identifies top failure modes.
 
 > [!NOTE]
-> When running a notebook, select the **`.venv`** in the project root as your Jupyter kernel.
+> The notebooks were run on Google Colab (CPU for classical ML, L4 GPU for deep learning), and the Colab badges at the top of each notebook open them there. To run locally, select the **`.venv`** in the project root as your Jupyter kernel and skip the Drive-mounting cells. Each notebook is paired with a `.py` file through Jupytext (`make sync-nb`).
+
+Alternatively, `make` drives the same experiments from the command line (see `make help`): `make train-dl`, `make grid-search`, `make grid-search-finetune`, `make train-dl-512`, and `make train-ml`. Experiment logs behind the reported deep learning numbers are committed under `artifacts/logs/`.
 
 ## 5. Benchmarked Performance
 
-Below is a summary of our primary results. For a detailed discussion on learning rates, input resolutions, and feature space analysis, refer to the [paper](docs/paper.pdf).
+Below is a summary of our primary results on the held-out test split (360 images). The [full paper](https://drive.google.com/file/d/1DbaQ4TWEHChkLTLvpzntbUxhkBkSmQ5o/view?usp=drive_link) discusses learning rates, input resolutions, and feature-space analysis in detail.
 
-| Model Class       | Architecture / Classifier | Feature Extraction     | Val Acc (%) | Test Acc (%) |
-| :---------------- | :------------------------ | :--------------------- | :---------- | :----------- |
-| **Deep Learning** | MobileNetV2               | Fine-tuned ImageNet    | TBD         | **91.4%**    |
-| **Deep Learning** | EfficientNet-B5           | Fine-tuned ImageNet    | TBD         | TBD          |
-| **Classical ML**  | Random Forest             | HOG + LBP + Color Hist | TBD         | 86.2%        |
+| Model Class       | Architecture / Classifier                  | Features / Training       | Val Acc (%) | Val Macro-F1 (%) | Test Acc (%) |
+| :---------------- | :----------------------------------------- | :------------------------ | :---------- | :--------------- | :----------- |
+| **Deep Learning** | MobileNetV2 (LR = 0.01)                    | Fine-tuned ImageNet       | 88.76       | 89.11            | **91.39**    |
+| **Deep Learning** | EfficientNet-B5 (baseline)                 | Fine-tuned ImageNet       | 90.44       | 90.41            | 88.61        |
+| **Classical ML**  | Random Forest (tuned)                      | HOG + LBP + GLCM + Gabor + HSV | -      | 77.73            | 72.22        |
+
+Model selection used validation metrics. Results come from a single stratified 70/15/15 split (seed 42) without near-duplicate removal, so differences of a point or two are within noise.
 
 ## 6. Citation
 
 If you find this research or codebase useful in your own work, please consider citing our paper:
 
 ```bibtex
-@techreport{bunyi2026jute,
-  title={An Application of Machine Learning and Deep Learning on Small-Scale Jute Leaf Disease Datasets},
+@inproceedings{bunyi2026jute,
+  title={Benchmarking Classical Machine Learning and Transfer Learning for Data-Constrained Jute Leaf Disease Classification},
   author={Bunyi, Christian Joseph and Umali, Immanuel},
+  booktitle={IEEE 2026 International Conference on Humanoid, Nanotechnology, Information Technology, Communication and Control, Environment, and Management (HNICEM)},
   year={2026},
-  institution={De La Salle University},
-  type={Technical Report},
+  note={Submitted},
   url={https://github.com/qu1r0ra/jute-disease-detection}
 }
 ```
