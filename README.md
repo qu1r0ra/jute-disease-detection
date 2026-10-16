@@ -47,6 +47,8 @@ Beyond benchmarking, this project also investigates **fine-tuning on related pla
 
 Our short paper, **"Benchmarking Classical Machine Learning and Transfer Learning for Data-Constrained Jute Leaf Disease Classification"**, was submitted to IEEE HNICEM 2026 ([PDF](docs/hnicem2026-paper.pdf)). The [full paper with additional visualizations](https://drive.google.com/file/d/1DbaQ4TWEHChkLTLvpzntbUxhkBkSmQ5o/view?usp=drive_link) covers the complete results.
 
+Status remains **submitted**, with no acceptance claim. The linked PDF is the repository copy; this review did not compare its bytes with the conference upload or the external full paper. See [artifact and result notes](docs/artifact-status.md) for the traceable experiment configurations and remaining verification limits.
+
 ## 2. Project Structure
 
 A high-level overview of the repository organization:
@@ -98,7 +100,9 @@ The unified jute dataset merges three public sources. The repository code is Apa
 | :---------------------------------------------------------------------- | :----------------------------------------- |
 | Islam & Sheikh, Harvard Dataverse (`doi:10.7910/DVN/FJ1DM1`)            | CC0 1.0                                    |
 | Mridha, Mendeley Data (`z87b9hnkh7`)                                    | CC BY 4.0 (attribute the author)           |
-| Jannat et al., Kaggle (`mdsaimunalam/jute-leaf-disease-detection`)      | Publicly available on Kaggle, no licence stated; used with attribution (Jannat et al., 2025) |
+| Jannat et al., Kaggle (`mdsaimunalam/jute-leaf-disease-detection`)      | No licence recorded in this repository; attributed to Jannat et al. (2025). Redistribution permission remains unresolved. |
+
+These are the repository's recorded source terms, not a new permission audit. Attribution alone does not grant reuse or redistribution rights. Resolve the Kaggle source terms before redistributing the merged archive; the code's Apache-2.0 license does not license third-party images or the externally hosted dataset.
 
 ### 3.3. Installation
 
@@ -180,7 +184,7 @@ Below is a summary of our primary results on the held-out test split (360 images
 | **Deep Learning** | EfficientNet-B5 (baseline)                 | Fine-tuned ImageNet       | 90.44       | 90.41            | 88.61        |
 | **Classical ML**  | Random Forest (tuned)                      | HOG + LBP + GLCM + Gabor + HSV | -      | 77.73            | 72.22        |
 
-Model selection used validation metrics. Results come from a single stratified 70/15/15 split (seed 42) without near-duplicate removal, so differences of a point or two are within noise.
+Model selection used validation metrics. Results come from a single stratified 70/15/15 split (seed 42) without near-duplicate removal. Split sensitivity, near-duplicate leakage, and uncertainty have not been quantified; small score differences do not establish superiority. The [artifact and result notes](docs/artifact-status.md) distinguish baseline, transfer/dropout, and learning-rate experiments.
 
 ### Pretrained Weights
 
