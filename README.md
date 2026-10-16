@@ -98,7 +98,7 @@ The unified jute dataset merges three public sources. The repository code is Apa
 | :---------------------------------------------------------------------- | :----------------------------------------- |
 | Islam & Sheikh, Harvard Dataverse (`doi:10.7910/DVN/FJ1DM1`)            | CC0 1.0                                    |
 | Mridha, Mendeley Data (`z87b9hnkh7`)                                    | CC BY 4.0 (attribute the author)           |
-| Jannat et al., Kaggle (`mdsaimunalam/jute-leaf-disease-detection`)      | No explicit licence stated; cite the paper |
+| Jannat et al., Kaggle (`mdsaimunalam/jute-leaf-disease-detection`)      | Publicly available on Kaggle, no licence stated; used with attribution (Jannat et al., 2025) |
 
 ### 3.3. Installation
 
