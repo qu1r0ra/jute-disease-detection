@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from PIL import Image
 from torch.utils.data import Dataset
@@ -60,7 +61,7 @@ class ManifestDataset(Dataset):
             return cached_path(self.cache_root, entry.image_id)
         return self.image_root / entry.path
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index: int) -> tuple[Any, int]:
         path = self.path_of(index)
         with Image.open(path) as image:
             rgb = image.convert("RGB")

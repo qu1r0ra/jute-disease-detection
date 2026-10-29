@@ -13,7 +13,9 @@ Three steps share one output directory:
 None of them fits a model or reads test pixels for any purpose but fingerprinting.
 """
 
+import hashlib
 import json
+from dataclasses import replace
 from pathlib import Path
 
 from jute_disease.config import (
@@ -34,23 +36,30 @@ from jute_disease.data.curation import load_rules
 from jute_disease.data.identity import load_reviews
 from jute_disease.data.inventory import (
     build_inventory,
+    inventory_digest,
     read_inventory,
     write_inventory,
 )
 from jute_disease.data.manifest import (
     FreezeBlockedError,
+    Manifest,
+    ManifestEntry,
+    build_groups,
     build_manifest,
     load_manifest,
     receipt_for,
+    validate_manifest,
     write_manifest,
 )
 from jute_disease.data.sources import (
     PLANTDOC,
     PLANTVILLAGE,
+    SourceMismatchError,
     SourceSpec,
     check_overlap,
     derive_validation,
     drop_overlap,
+    find_source_root,
     leaf_constraints,
     provenance,
     scan_source,
@@ -158,6 +167,7 @@ def intake_source(
     leaf_map_path: Path | None = None,
     seed: int = DEFAULT_SEED,
     workers: int = 4,
+    package_digest: str | None = None,
 ) -> dict:
     """Record a source package and check it against the frozen target.
 
@@ -172,11 +182,26 @@ def intake_source(
     held_out = {
         e.image_id for name_ in ("val", "test") for e in manifest.partition(name_)
     }
-    target = [
-        r for r in read_inventory(output_dir / INVENTORY_FILE) if r.image_id in held_out
-    ]
+    target_inventory = read_inventory(output_dir / INVENTORY_FILE)
+    if inventory_digest(target_inventory) != dict(manifest.dependencies).get(
+        "inventory"
+    ):
+        raise FreezeBlockedError("Target inventory does not match its manifest")
+    target = [r for r in target_inventory if r.image_id in held_out]
+    if {r.image_id for r in target} != held_out:
+        raise FreezeBlockedError("Target inventory is missing held-out images")
 
     records = scan_source(source_root, spec, workers=workers)
+    digest = inventory_digest(records)
+    if not package_digest or digest != package_digest.lower():
+        raise SourceMismatchError(
+            f"Package inventory digest mismatch: expected {package_digest!r}, "
+            f"observed {digest}"
+        )
+    if package_version is None:
+        raise SourceMismatchError(
+            "An independently recorded package version is required"
+        )
     leaf_map = (
         None
         if leaf_map_path is None
@@ -185,10 +210,93 @@ def intake_source(
     train_records = [r for r in records if r.source_partition == "train"]
     extra = () if leaf_map is None else leaf_constraints(train_records, leaf_map)
     split = derive_validation(records, seed=seed, extra_constraints=extra)
+    # Preserve the publisher's held-out partition; withhold source-training
+    # candidates that could otherwise put the same photo on both sides.
+    official_overlap = check_overlap(
+        list(split.train + split.val), list(split.official_test)
+    )
+    official_bad = official_overlap.source_ids
+    split = replace(
+        split,
+        train=tuple(r for r in split.train if r.image_id not in official_bad),
+        val=tuple(r for r in split.val if r.image_id not in official_bad),
+    )
     overlap = check_overlap(records, target)
     split, removed = drop_overlap(split, overlap)
 
     result = provenance(spec, records, package_version, split, overlap, leaf_map)
     result["removed"] = [r.path for r in removed]
+    result["overlap_matches"] = [vars(match) for match in overlap.matches]
+    result["official_overlap"] = official_overlap.summary()
+    result["official_overlap_matches"] = [vars(m) for m in official_overlap.matches]
+    result["package_inventory_digest"] = digest
+    result["source_url"] = f"https://www.kaggle.com/datasets/{spec.kaggle_id}"
+    result["original_class_map"] = {
+        r.label: r.label for r in sorted(records, key=lambda item: item.label)
+    }
+    retained = (*split.train, *split.val, *split.official_test)
+    ids = {r.image_id for r in retained}
+    constraints = tuple(pair for pair in split.constraints if set(pair) <= ids)
+    # Keep transitive components intact even when an intermediate image is
+    # withheld; otherwise surviving endpoints could be separated in later folds.
+    group_ids = ids | {image_id for pair in split.constraints for image_id in pair}
+    groups = build_groups(sorted(group_ids), split.constraints)
+    entries = tuple(
+        sorted(
+            (
+                ManifestEntry(
+                    r.image_id,
+                    r.path,
+                    r.label,
+                    side,
+                    groups[r.image_id],
+                    spec.name,
+                    r.width,
+                    r.height,
+                )
+                for side, members in (
+                    ("train", split.train),
+                    ("val", split.val),
+                    ("test", split.official_test),
+                )
+                for r in members
+            ),
+            key=lambda entry: entry.image_id,
+        )
+    )
+    expected_labels = {r.label for r in records if r.source_partition == "train"}
+    if {r.label for r in retained} != expected_labels:
+        raise FreezeBlockedError("Source intake lost one or more training classes")
+    provenance_digest = hashlib.sha256(
+        json.dumps(result, sort_keys=True).encode()
+    ).hexdigest()
+    frozen = Manifest(
+        seed=seed,
+        fractions=(("train", 0.85), ("val", 0.15), ("test", 0.0)),
+        entries=entries,
+        excluded=tuple(
+            [{"path": r.path, "reason": "target overlap"} for r in removed]
+            + [
+                {"path": m.source_path, "reason": "official held-out overlap"}
+                for m in official_overlap.matches
+            ]
+        ),
+        merged=(),
+        quarantined=split.quarantined,
+        constraints=constraints,
+        dependencies=tuple(
+            sorted(
+                {
+                    "source_inventory": digest,
+                    "source_provenance": provenance_digest,
+                    "target_manifest": manifest.digest(),
+                }.items()
+            )
+        ),
+    )
+    validate_manifest(frozen, 1)
+    result["manifest_digest"] = frozen.digest()
+    result["source_root"] = str(find_source_root(source_root).resolve())
     _write_json(output_dir / f"source_{spec.name.lower()}.json", result)
+    write_manifest(frozen, output_dir / f"source_{spec.name.lower()}")
     return result

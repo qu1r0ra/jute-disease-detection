@@ -22,7 +22,16 @@ RESOLVABLE_COMMANDS = [
     ["evaluate", "ml", "--classifier", "rf"],
     ["freeze", "target"],
     ["freeze", "cache", "--budget-seconds", "5"],
-    ["freeze", "source", "plantdoc", "some/dir", "--package-version", "7"],
+    [
+        "freeze",
+        "source",
+        "plantdoc",
+        "some/dir",
+        "--package-version",
+        "7",
+        "--package-digest",
+        "0" * 64,
+    ],
 ]
 
 PLANNED_COMMANDS = [

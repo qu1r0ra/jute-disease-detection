@@ -1,4 +1,6 @@
 import argparse
+import hashlib
+import json
 from pathlib import Path
 from shutil import copyfile
 
@@ -7,7 +9,7 @@ from lightning.pytorch import Trainer
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, TQDMProgressBar
 from lightning.pytorch.loggers import WandbLogger
 
-from jute_disease.data import DataModule
+from jute_disease.data import DataModule, file_sha256, load_manifest
 from jute_disease.models.dl import Classifier, TimmBackbone
 from jute_disease.training.logger import get_logger
 from jute_disease.training.seed import seed_everything
@@ -15,8 +17,50 @@ from jute_disease.training.seed import seed_everything
 logger = get_logger(__name__)
 
 
+def source_data_module(
+    manifest_dir: Path | str,
+    image_root: Path | str,
+    target_manifest_dir: Path | str,
+    batch_size: int,
+    seed: int,
+) -> DataModule:
+    """Open only the verified, overlap-controlled source training partitions."""
+    manifest = load_manifest(Path(manifest_dir))
+    target = load_manifest(Path(target_manifest_dir))
+    dependencies = dict(manifest.dependencies)
+    if not dependencies.get("source_inventory") or not dependencies.get(
+        "source_provenance"
+    ):
+        raise ValueError("Source manifest lacks intake provenance")
+    report_path = Path(manifest_dir).with_suffix(".json")
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    if report.pop("manifest_digest", None) != manifest.digest():
+        raise ValueError("Source intake report does not match its manifest")
+    report.pop("source_root", None)
+    report_digest = hashlib.sha256(
+        json.dumps(report, sort_keys=True).encode()
+    ).hexdigest()
+    if report_digest != dependencies["source_provenance"]:
+        raise ValueError("Source intake provenance changed")
+    if dependencies.get("target_manifest") != target.digest():
+        raise ValueError("Source manifest does not match the frozen target")
+    for entry in (*manifest.partition("train"), *manifest.partition("val")):
+        if file_sha256(Path(image_root) / entry.path) != entry.image_id:
+            raise ValueError(f"Source content changed: {entry.path}")
+    dm = DataModule(
+        manifest_dir=manifest_dir,
+        image_root=image_root,
+        batch_size=batch_size,
+        seed=seed,
+    )
+    dm.setup("fit")
+    return dm
+
+
 def train_pretext_task(
-    data_dir: Path | str,
+    manifest_dir: Path | str,
+    image_root: Path | str,
+    target_manifest_dir: Path | str,
     output_path: Path | str,
     pretrained: bool = True,
     base_backbone_weights: dict[str, torch.Tensor] | None = None,
@@ -31,10 +75,9 @@ def train_pretext_task(
     """
     seed_everything(seed)
 
-    # Data
-    logger.info(f"Initializing DataModule for {data_dir}...")
-    dm = DataModule(data_dir=data_dir, val_split=0.2, batch_size=batch_size, seed=seed)
-    dm.setup()
+    dm = source_data_module(
+        manifest_dir, image_root, target_manifest_dir, batch_size, seed
+    )
 
     num_classes = dm.num_classes
     logger.info(f"Found {num_classes} classes.")
@@ -102,7 +145,16 @@ def train_pretext_task(
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--data_dir", type=str, required=True, help="Path to dataset root"
+        "--manifest_dir",
+        type=str,
+        required=True,
+        help="Completed source manifest directory",
+    )
+    parser.add_argument(
+        "--image_root", required=True, help="Original source package root"
+    )
+    parser.add_argument(
+        "--target_manifest_dir", required=True, help="Frozen target manifest directory"
     )
     parser.add_argument(
         "--output_path", type=str, required=True, help="Where to save the final .ckpt"
@@ -152,7 +204,9 @@ def main(argv: list[str] | None = None) -> None:
             logger.warning("No 'feature_extractor' keys found in base checkpoint.")
 
     train_pretext_task(
-        data_dir=args.data_dir,
+        manifest_dir=args.manifest_dir,
+        image_root=args.image_root,
+        target_manifest_dir=args.target_manifest_dir,
         output_path=args.output_path,
         pretrained=True,
         base_backbone_weights=backbone_weights,

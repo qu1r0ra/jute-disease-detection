@@ -134,3 +134,63 @@ def test_source_names_are_pinned_case_insensitively() -> None:
     with pytest.raises(KeyError):
         intake_source("nonexistent", Path("."), Path("."))
     assert PLANTDOC.name.lower() == "plantdoc"
+
+
+def test_source_freeze_excludes_target_overlap_and_pins_content(
+    synthetic: SyntheticPlan,
+    rules_path: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from dataclasses import replace
+    from shutil import copyfile
+
+    from jute_disease.data.freeze import SOURCES
+    from jute_disease.data.inventory import build_inventory, inventory_digest
+    from jute_disease.data.sources import observed_counts
+
+    output = tmp_path / "freeze"
+    _freeze(synthetic, rules_path, output)
+    target = load_manifest(output / TARGET_DIR)
+    package = tmp_path / "package"
+    make_synthetic_data(package / "train", per_class=20, labels=("a", "b"), seed=100)
+    make_synthetic_data(package / "test", per_class=10, labels=("a", "b"), seed=200)
+    for duplicate in (package / "test").rglob("*bytecopy.png"):
+        duplicate.unlink()
+    overlap_path = next((package / "train" / "a").glob("*.png"))
+    copyfile(synthetic.root / target.partition("val")[0].path, overlap_path)
+    records = build_inventory(package, workers=2)
+    spec = replace(PLANTDOC, expected=tuple(sorted(observed_counts(records).items())))
+    monkeypatch.setitem(SOURCES, "fixture", spec)
+    digest = inventory_digest(records)
+    with pytest.raises(SourceMismatchError, match="digest mismatch"):
+        intake_source(
+            "fixture", package, output, package_version=7, package_digest="0" * 64
+        )
+    report = intake_source(
+        "fixture", package, output, package_version=7, package_digest=digest
+    )
+    frozen = load_manifest(output / "source_plantdoc")
+    assert overlap_path.relative_to(package).as_posix() in report["removed"]
+    assert overlap_path.relative_to(package).as_posix() not in {
+        e.path for e in frozen.entries
+    }
+    assert dict(frozen.dependencies)["target_manifest"] == target.digest()
+    assert not {item["image_id"] for item in frozen.quarantined} & {
+        entry.image_id for entry in frozen.entries
+    }
+    from jute_disease.training.engines.dl.pretrain import source_data_module
+
+    dm = source_data_module(
+        output / "source_plantdoc", package, output / TARGET_DIR, 4, 42
+    )
+    observed = {
+        entry.path for ds in (dm.jute_train, dm.jute_val) for entry in ds.entries
+    }
+    assert overlap_path.relative_to(package).as_posix() not in observed
+    kept = frozen.partition("train")[0]
+    (package / kept.path).write_bytes(b"changed")
+    with pytest.raises(ValueError, match="Source content changed"):
+        source_data_module(
+            output / "source_plantdoc", package, output / TARGET_DIR, 4, 42
+        )

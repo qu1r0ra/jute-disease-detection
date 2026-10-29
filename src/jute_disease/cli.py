@@ -22,13 +22,17 @@ from jute_disease.config import (
     SOURCE_INVENTORY_DIR,
 )
 from jute_disease.data import (
+    DEFAULT_BUDGET_SECONDS,
+    DEFAULT_MAX_BYTES,
+    SOURCES,
     DataModule,
     download_plant_doc,
     download_plant_village,
+    freeze_target,
+    intake_source,
     make_synthetic_data,
+    probe_cache,
 )
-from jute_disease.data.cache import DEFAULT_BUDGET_SECONDS, DEFAULT_MAX_BYTES
-from jute_disease.data.freeze import SOURCES, freeze_target, intake_source, probe_cache
 from jute_disease.models.dl.classifier import Classifier
 from jute_disease.models.ml import FEATURE_EXTRACTORS, ML_CLASSIFIERS
 from jute_disease.reporting.tables import aggregate_metrics
@@ -102,6 +106,7 @@ def _freeze_source(args: argparse.Namespace) -> None:
             args.source_root,
             args.output,
             package_version=args.package_version,
+            package_digest=args.package_digest,
             leaf_map_path=args.leaf_map,
             seed=args.seed,
             workers=args.workers,
@@ -340,6 +345,9 @@ def _add_freeze(commands: "argparse._SubParsersAction") -> None:
     source.add_argument("name", choices=sorted(SOURCES))
     source.add_argument("source_root", type=Path)
     source.add_argument("--package-version", type=int, default=None)
+    source.add_argument(
+        "--package-digest", required=True, help="Expected inventory SHA-256"
+    )
     source.add_argument("--leaf-map", type=Path, default=None)
     source.add_argument("--seed", type=int, default=DEFAULT_SEED)
     source.set_defaults(run=_freeze_source)

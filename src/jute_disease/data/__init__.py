@@ -1,4 +1,6 @@
 from jute_disease.data.cache import (
+    DEFAULT_BUDGET_SECONDS,
+    DEFAULT_MAX_BYTES,
     CacheReport,
     build_image_cache,
     cache_root,
@@ -22,9 +24,11 @@ from jute_disease.data.download import (
 from jute_disease.data.fingerprints import (
     PHASH_THRESHOLD,
     ImageFingerprint,
+    file_sha256,
     fingerprint_image,
     phash_distance,
 )
+from jute_disease.data.freeze import SOURCES, freeze_target, intake_source, probe_cache
 from jute_disease.data.identity import (
     IdentityResolution,
     find_candidates,
@@ -70,6 +74,12 @@ from jute_disease.data.transforms import (
 )
 
 __all__ = [
+    "DEFAULT_BUDGET_SECONDS",
+    "DEFAULT_MAX_BYTES",
+    "SOURCES",
+    "freeze_target",
+    "intake_source",
+    "probe_cache",
     "PHASH_THRESHOLD",
     "PLANTDOC",
     "PLANTVILLAGE",
@@ -106,6 +116,7 @@ __all__ = [
     "drop_overlap",
     "find_candidates",
     "fingerprint_image",
+    "file_sha256",
     "inventory_digest",
     "is_cache_complete",
     "load_manifest",

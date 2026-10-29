@@ -180,7 +180,7 @@ To retrain the models from the command line instead of the notebooks:
 
 Deep learning runs can also be driven directly through the Lightning CLI, for example `uv run jute-disease train dl fit --config configs/historical/baselines/mobilenet_v2.yaml`. On Windows without a C++ compiler, `torch.compile` fails; add `--model.compile_model=false` to that command.
 
-Checkpoints are written to `artifacts/checkpoints/` and CSV logs to `artifacts/logs/`. Optionally run `just pretrain` first to fine-tune on PlantVillage before the jute data. Training on a GPU is recommended for the deep learning runs; the classical ML pipeline runs on CPU.
+Checkpoints are written to `artifacts/checkpoints/` and CSV logs to `artifacts/logs/`. Optional source pretraining requires a completed source intake: record the package version and independently established inventory digest with `just freeze-source`, then pass its manifest, the source image root, the frozen target manifest and an output path to `just pretrain`. Intake blocks if class support or the package identity cannot be established. Training on a GPU is recommended for the deep learning runs; the classical ML pipeline runs on CPU.
 
 ## 6. Benchmarked Performance
 

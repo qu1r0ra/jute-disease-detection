@@ -1,4 +1,6 @@
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import torch
@@ -73,12 +75,12 @@ class DataModule(LightningDataModule):
         self._pool_val: Dataset | None = None
         self._pool_targets: np.ndarray | None = None
 
-    def _train_transform(self):
+    def _train_transform(self) -> Callable:
         return create_pipeline(
             self.hparams.image_size, True, True, seed=self.hparams.seed
         )
 
-    def _eval_transform(self):
+    def _eval_transform(self) -> Callable:
         return create_pipeline(
             self.hparams.image_size, False, True, seed=self.hparams.seed
         )
@@ -239,7 +241,7 @@ class _Concat(Dataset):
     def __len__(self) -> int:
         return len(self.parts[0]) + len(self.parts[1])
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index: int) -> Any:
         first = len(self.parts[0])
         if index < first:
             return self.parts[0][index]
