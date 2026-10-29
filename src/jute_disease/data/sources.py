@@ -52,6 +52,7 @@ class SourceSpec:
         """Return a JSON-safe mapping for provenance records."""
         data = asdict(self)
         data["expected"] = {name: asdict(counts) for name, counts in self.expected}
+        data["license_evidence"] = list(self.license_evidence)
         return data
 
 
