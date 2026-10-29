@@ -6,10 +6,7 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchmetrics import Accuracy, F1Score, MetricCollection, Precision, Recall
 
-from jute_disease.utils import (
-    DEFAULT_LR,
-    DEFAULT_WEIGHT_DECAY,
-)
+from jute_disease.config import DEFAULT_LR, DEFAULT_WEIGHT_DECAY
 
 
 class Classifier(LightningModule):

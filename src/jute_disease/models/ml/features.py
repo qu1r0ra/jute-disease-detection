@@ -7,8 +7,8 @@ from skimage.feature import graycomatrix, graycoprops, hog, local_binary_pattern
 from torchvision.datasets import ImageFolder
 from tqdm import tqdm
 
-from jute_disease.utils.constants import IMAGE_SIZE, ML_FEATURES_DIR
-from jute_disease.utils.logger import get_logger
+from jute_disease.config import IMAGE_SIZE, ML_FEATURES_DIR
+from jute_disease.training.logger import get_logger
 
 logger = get_logger(__name__)
 

@@ -2,7 +2,7 @@ import timm
 import torch
 from torch import nn
 
-from jute_disease.utils import get_logger
+from jute_disease.training.logger import get_logger
 
 logger = get_logger(__name__)
 

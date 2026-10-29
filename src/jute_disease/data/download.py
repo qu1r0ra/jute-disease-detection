@@ -4,8 +4,8 @@ from pathlib import Path
 import kagglehub
 from tqdm import tqdm
 
-from jute_disease.utils.constants import DATA_DIR, IMAGE_EXTENSIONS
-from jute_disease.utils.logger import get_logger
+from jute_disease.config import DATA_DIR, IMAGE_EXTENSIONS
+from jute_disease.training.logger import get_logger
 
 logger = get_logger(__name__)
 
