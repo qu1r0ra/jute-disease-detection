@@ -1,0 +1,61 @@
+"""Aggregate CSV metrics from multiple experiments into a summary report."""
+
+from pathlib import Path
+
+import pandas as pd
+
+from jute_disease.config import LOGS_DIR
+from jute_disease.training.logger import get_logger
+
+logger = get_logger(__name__)
+
+
+def aggregate_metrics(exp_names: list[str], output_csv: Path) -> None:
+    """Consolidates metrics from all CSVLogger outputs into a master CSV."""
+    results = []
+
+    for exp in exp_names:
+        log_dir = LOGS_DIR / exp
+        if not log_dir.exists():
+            continue
+
+        # Concatenate fit and test metrics from all versions
+        metrics_files = list(log_dir.glob("*-metrics.csv"))
+        if not metrics_files:
+            continue
+
+        dfs = [pd.read_csv(f) for f in metrics_files]
+        df = pd.concat(dfs, ignore_index=True)
+
+        summary = {"Experiment": exp}
+
+        if "val_loss" in df.columns:
+            val_df = df.dropna(subset=["val_loss"])
+            if not val_df.empty:
+                # Pick best epoch based on validation loss
+                best_row = val_df.loc[val_df["val_loss"].idxmin()].to_dict()
+                for key, val in best_row.items():
+                    if key.startswith(("val_", "train_")) or key in ["epoch", "step"]:
+                        summary[key] = val
+
+        for col in ["train_acc", "train_loss"]:
+            if col in df.columns and (col not in summary or pd.isna(summary[col])):
+                summary[col] = df[col].max() if "acc" in col else df[col].min()
+
+        if "test_loss" in df.columns:
+            test_df = df.dropna(subset=["test_loss"])
+            if not test_df.empty:
+                # Get final metrics from the test run
+                test_metrics = test_df.iloc[-1].to_dict()
+                for key, val in test_metrics.items():
+                    if key.startswith("test_"):
+                        summary[key] = val
+
+        results.append(summary)
+
+    if results:
+        final_df = pd.DataFrame(results)
+        final_df.to_csv(output_csv, index=False)
+        logger.info(f"Summary metrics exported to {output_csv}")
+    else:
+        logger.warning(f"No metrics found to export to {output_csv}")

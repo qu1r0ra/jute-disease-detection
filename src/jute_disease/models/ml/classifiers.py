@@ -11,8 +11,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-from jute_disease.utils.constants import ML_MODELS_DIR
-from jute_disease.utils.logger import get_logger
+from jute_disease.config import ML_MODELS_DIR
+from jute_disease.training.logger import get_logger
 
 logger = get_logger(__name__)
 

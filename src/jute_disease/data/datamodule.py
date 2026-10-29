@@ -13,15 +13,15 @@ from torch.utils.data import (
 )
 from torchvision.datasets import ImageFolder
 
-from jute_disease.data.transforms import create_pipeline
-from jute_disease.data.utils import split_data
-from jute_disease.utils import (
+from jute_disease.config import (
     BATCH_SIZE,
     DEFAULT_SEED,
     IMAGE_SIZE,
     ML_SPLIT_DIR,
     NUM_WORKERS,
 )
+from jute_disease.data.curation import split_data
+from jute_disease.data.transforms import create_pipeline
 
 
 class DataModule(LightningDataModule):
