@@ -14,26 +14,76 @@ def test_root_package_exposes_subpackages() -> None:
 
 def test_data_api() -> None:
     from jute_disease.data import (
+        DECISION_FILE,
+        DEFAULT_BUDGET_SECONDS,
+        DEFAULT_MAX_BYTES,
+        INVENTORY_FILE,
+        PLANTDOC,
+        PLANTVILLAGE,
+        REPORT_FILE,
+        SOURCES,
+        TARGET_DIR,
         DataModule,
         ManifestDataset,
+        SyntheticPlan,
+        build_inventory,
         build_manifest,
         check_overlap,
         classical_pipeline,
         create_pipeline,
         derive_validation,
+        file_sha256,
+        find_candidates,
+        find_source_root,
+        freeze_target,
+        intake_source,
+        inventory_digest,
+        leaf_constraints,
+        leaf_key,
         load_manifest,
+        load_source_manifest,
+        observed_counts,
+        probe_cache,
+        provenance,
+        scan_source,
+        verify_counts,
         write_manifest,
     )
 
     for name in (
+        DEFAULT_BUDGET_SECONDS,
+        DEFAULT_MAX_BYTES,
+        DECISION_FILE,
         DataModule,
+        INVENTORY_FILE,
         ManifestDataset,
+        PLANTDOC,
+        PLANTVILLAGE,
+        REPORT_FILE,
+        SOURCES,
+        SyntheticPlan,
+        TARGET_DIR,
         build_manifest,
+        build_inventory,
         check_overlap,
         classical_pipeline,
         create_pipeline,
         derive_validation,
+        file_sha256,
+        find_candidates,
+        find_source_root,
+        freeze_target,
+        intake_source,
+        inventory_digest,
+        leaf_constraints,
+        leaf_key,
+        load_source_manifest,
         load_manifest,
+        observed_counts,
+        probe_cache,
+        provenance,
+        scan_source,
+        verify_counts,
         write_manifest,
     ):
         assert name is not None
@@ -91,7 +141,13 @@ def test_training_api() -> None:
         ROOT_DIR,
         SPLITS,
     )
-    from jute_disease.training import get_logger, seed_everything, setup_wandb
+    from jute_disease.training import (
+        get_logger,
+        pretrain_main,
+        seed_everything,
+        setup_wandb,
+        source_data_module,
+    )
 
     assert ROOT_DIR is not None
     assert DATA_DIR is not None
@@ -102,5 +158,7 @@ def test_training_api() -> None:
     assert isinstance(DEFAULT_SEED, int)
     assert isinstance(SPLITS, dict)
     assert get_logger is not None
+    assert pretrain_main is not None
     assert seed_everything is not None
     assert setup_wandb is not None
+    assert source_data_module is not None

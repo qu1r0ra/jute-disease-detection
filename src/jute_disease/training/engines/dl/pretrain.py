@@ -1,6 +1,4 @@
 import argparse
-import hashlib
-import json
 from pathlib import Path
 from shutil import copyfile
 
@@ -9,52 +7,16 @@ from lightning.pytorch import Trainer
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, TQDMProgressBar
 from lightning.pytorch.loggers import WandbLogger
 
-from jute_disease.data import DataModule, file_sha256, load_manifest
+from jute_disease.data import (
+    FreezeBlockedError,
+    SourceMismatchError,
+)
 from jute_disease.models.dl import Classifier, TimmBackbone
 from jute_disease.training.logger import get_logger
 from jute_disease.training.seed import seed_everything
+from jute_disease.training.source import source_data_module
 
 logger = get_logger(__name__)
-
-
-def source_data_module(
-    manifest_dir: Path | str,
-    image_root: Path | str,
-    target_manifest_dir: Path | str,
-    batch_size: int,
-    seed: int,
-) -> DataModule:
-    """Open only the verified, overlap-controlled source training partitions."""
-    manifest = load_manifest(Path(manifest_dir))
-    target = load_manifest(Path(target_manifest_dir))
-    dependencies = dict(manifest.dependencies)
-    if not dependencies.get("source_inventory") or not dependencies.get(
-        "source_provenance"
-    ):
-        raise ValueError("Source manifest lacks intake provenance")
-    report_path = Path(manifest_dir).with_suffix(".json")
-    report = json.loads(report_path.read_text(encoding="utf-8"))
-    if report.pop("manifest_digest", None) != manifest.digest():
-        raise ValueError("Source intake report does not match its manifest")
-    report.pop("source_root", None)
-    report_digest = hashlib.sha256(
-        json.dumps(report, sort_keys=True).encode()
-    ).hexdigest()
-    if report_digest != dependencies["source_provenance"]:
-        raise ValueError("Source intake provenance changed")
-    if dependencies.get("target_manifest") != target.digest():
-        raise ValueError("Source manifest does not match the frozen target")
-    for entry in (*manifest.partition("train"), *manifest.partition("val")):
-        if file_sha256(Path(image_root) / entry.path) != entry.image_id:
-            raise ValueError(f"Source content changed: {entry.path}")
-    dm = DataModule(
-        manifest_dir=manifest_dir,
-        image_root=image_root,
-        batch_size=batch_size,
-        seed=seed,
-    )
-    dm.setup("fit")
-    return dm
 
 
 def train_pretext_task(
@@ -203,14 +165,17 @@ def main(argv: list[str] | None = None) -> None:
         else:
             logger.warning("No 'feature_extractor' keys found in base checkpoint.")
 
-    train_pretext_task(
-        manifest_dir=args.manifest_dir,
-        image_root=args.image_root,
-        target_manifest_dir=args.target_manifest_dir,
-        output_path=args.output_path,
-        pretrained=True,
-        base_backbone_weights=backbone_weights,
-        epochs=args.epochs,
-        batch_size=args.batch_size,
-        model_name=args.model_name,
-    )
+    try:
+        train_pretext_task(
+            manifest_dir=args.manifest_dir,
+            image_root=args.image_root,
+            target_manifest_dir=args.target_manifest_dir,
+            output_path=args.output_path,
+            pretrained=True,
+            base_backbone_weights=backbone_weights,
+            epochs=args.epochs,
+            batch_size=args.batch_size,
+            model_name=args.model_name,
+        )
+    except (FreezeBlockedError, SourceMismatchError, FileNotFoundError) as error:
+        parser.error(f"Source pretraining blocked: {error}")

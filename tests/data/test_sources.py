@@ -5,24 +5,25 @@ from pathlib import Path
 
 import pytest
 
-from jute_disease.data.inventory import InventoryRecord, build_inventory
-from jute_disease.data.sources import (
+from jute_disease.data import (
     PLANTDOC,
     PLANTVILLAGE,
+    InventoryRecord,
     SourceMismatchError,
     SourceSpec,
+    build_inventory,
     check_overlap,
     derive_validation,
     drop_overlap,
     find_source_root,
     leaf_constraints,
     leaf_key,
+    make_synthetic_data,
     observed_counts,
     provenance,
     scan_source,
     verify_counts,
 )
-from jute_disease.data.synthetic import make_synthetic_data
 
 LABELS = ("Apple scab", "Healthy")
 
@@ -62,7 +63,7 @@ def test_the_pinned_plantdoc_counts_are_those_of_the_ticket() -> None:
     assert PLANTDOC.version == 7
     assert len(PLANTDOC.license_evidence) == 3
     assert dict(PLANTVILLAGE.expected)["train"].images == 43444
-    assert PLANTVILLAGE.version is None
+    assert PLANTVILLAGE.version == 1
 
 
 def test_find_source_root_descends_wrappers_and_rejects_other_trees(
@@ -195,8 +196,6 @@ def test_provenance_records_identity_counts_and_version_rules(
     assert result["source"]["license_evidence"] == ["fixture"]
     with pytest.raises(SourceMismatchError, match="version"):
         provenance(spec, records, 4, split, None)
-    unpinned = replace(spec, version=None)
-    assert provenance(unpinned, records, 9, split, None)["version_recorded"] == 9
 
 
 def _near_copy(record: InventoryRecord, tmp_path: Path) -> InventoryRecord:

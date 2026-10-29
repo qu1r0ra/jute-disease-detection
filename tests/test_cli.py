@@ -92,6 +92,18 @@ def test_missing_command_is_a_usage_error() -> None:
     assert excinfo.value.code == 2
 
 
+@pytest.mark.parametrize("missing", ["--package-version", "--package-digest"])
+def test_source_intake_requires_both_package_identity_inputs(missing: str) -> None:
+    argv = ["freeze", "source", "plantdoc", "source-root"]
+    if missing != "--package-version":
+        argv.extend(["--package-version", "7"])
+    if missing != "--package-digest":
+        argv.extend(["--package-digest", "0" * 64])
+    with pytest.raises(SystemExit) as excinfo:
+        build_parser().parse_args(argv)
+    assert excinfo.value.code == 2
+
+
 def test_module_entry_point_prints_help() -> None:
     result = subprocess.run(
         [sys.executable, "-m", "jute_disease.cli", "--help"],

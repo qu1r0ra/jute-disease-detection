@@ -12,12 +12,6 @@ from jute_disease.data.synthetic import SyntheticPlan, make_synthetic_data
 
 
 @pytest.fixture(scope="session")
-def synthetic(tmp_path_factory: pytest.TempPathFactory) -> SyntheticPlan:
-    root = tmp_path_factory.mktemp("synthetic") / "tree"
-    return make_synthetic_data(root, per_class=20, size=64, quarantine_count=4)
-
-
-@pytest.fixture(scope="session")
 def inventory(synthetic: SyntheticPlan) -> list[InventoryRecord]:
     return build_inventory(synthetic.root, workers=2)
 

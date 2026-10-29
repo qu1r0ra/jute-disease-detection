@@ -33,6 +33,7 @@ from jute_disease.data.cache import (
     write_decision,
 )
 from jute_disease.data.curation import load_rules
+from jute_disease.data.fingerprints import file_sha256
 from jute_disease.data.identity import load_reviews
 from jute_disease.data.inventory import (
     build_inventory,
@@ -159,24 +160,106 @@ def probe_cache(
     return decision
 
 
+def _source_report_path(manifest_dir: Path) -> Path:
+    """Return the provenance sidecar path paired with a source manifest."""
+    return manifest_dir.with_name(f"{manifest_dir.name}.json")
+
+
+def load_source_manifest(
+    manifest_dir: Path | str,
+    image_root: Path | str,
+    target_manifest_dir: Path | str,
+) -> Manifest:
+    """Load a source manifest after checking identity, lineage and retained bytes.
+
+    Only the source training and validation files are read or hashed here.
+
+    Raises:
+        FileNotFoundError: either manifest is missing.
+        FreezeBlockedError: the intake receipt or dependency lineage is invalid.
+        SourceMismatchError: a retained source image no longer matches its hash.
+    """
+    manifest_dir = Path(manifest_dir)
+    manifest = load_manifest(manifest_dir)
+    target = load_manifest(Path(target_manifest_dir))
+    dependencies = dict(manifest.dependencies)
+    if not dependencies.get("source_inventory") or not dependencies.get(
+        "source_provenance"
+    ):
+        raise FreezeBlockedError("Source manifest lacks intake provenance")
+    if dependencies.get("target_manifest") != target.digest():
+        raise FreezeBlockedError("Source manifest does not match the frozen target")
+
+    report_path = _source_report_path(manifest_dir)
+    try:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise FreezeBlockedError(
+            f"Source intake report is unavailable: {report_path}"
+        ) from error
+    if not isinstance(report, dict):
+        raise FreezeBlockedError("Source intake report is not a JSON object")
+    report_for_digest = dict(report)
+    if report_for_digest.pop("manifest_digest", None) != manifest.digest():
+        raise FreezeBlockedError("Source intake report does not match its manifest")
+    report_for_digest.pop("source_root", None)
+    report_digest = hashlib.sha256(
+        json.dumps(report_for_digest, sort_keys=True).encode()
+    ).hexdigest()
+    if report_digest != dependencies["source_provenance"]:
+        raise FreezeBlockedError("Source intake provenance changed")
+
+    source = report.get("source")
+    if not isinstance(source, dict) or not isinstance(source.get("name"), str):
+        raise FreezeBlockedError("Source intake report lacks a pinned source")
+    spec = SOURCES.get(source["name"].lower())
+    if spec is None or source != spec.to_json():
+        raise FreezeBlockedError("Source intake does not match the pinned source")
+    if report.get("version_recorded") != spec.version:
+        raise FreezeBlockedError("Source intake version differs from the pinned source")
+    if report.get("source_url") != f"https://www.kaggle.com/datasets/{spec.kaggle_id}":
+        raise FreezeBlockedError("Source intake URL differs from the pinned source")
+    if report.get("package_inventory_digest") != dependencies["source_inventory"]:
+        raise FreezeBlockedError("Source intake inventory differs from its manifest")
+    if not spec.publisher_identity_verified or not spec.publisher_identity_evidence:
+        raise FreezeBlockedError(
+            "Publisher identity has not been independently verified"
+        )
+    if not spec.terms_verified:
+        raise FreezeBlockedError("Source terms have not been verified")
+
+    image_root = Path(image_root)
+    for entry in (*manifest.partition("train"), *manifest.partition("val")):
+        if file_sha256(image_root / entry.path) != entry.image_id:
+            raise SourceMismatchError(f"Source content changed: {entry.path}")
+    return manifest
+
+
 def intake_source(
     name: str,
     source_root: Path,
     output_dir: Path,
-    package_version: int | None = None,
+    *,
+    package_version: int,
+    package_digest: str,
     leaf_map_path: Path | None = None,
     seed: int = DEFAULT_SEED,
     workers: int = 4,
-    package_digest: str | None = None,
 ) -> dict:
     """Record a source package and check it against the frozen target.
 
     Raises:
         KeyError: ``name`` is not a known source.
+        FreezeBlockedError: the target or source intake prerequisites are invalid.
         SourceMismatchError: the package does not match its pinned identity.
         FileNotFoundError: the target has not been frozen yet.
     """
     spec: SourceSpec = SOURCES[name.lower()]
+    if package_version != spec.version:
+        raise SourceMismatchError(
+            f"{spec.name} package version {package_version} differs from "
+            f"the pinned version {spec.version}"
+        )
     output_dir = Path(output_dir)
     manifest = load_manifest(output_dir / TARGET_DIR)
     held_out = {
@@ -193,14 +276,10 @@ def intake_source(
 
     records = scan_source(source_root, spec, workers=workers)
     digest = inventory_digest(records)
-    if not package_digest or digest != package_digest.lower():
+    if digest != package_digest.lower():
         raise SourceMismatchError(
             f"Package inventory digest mismatch: expected {package_digest!r}, "
             f"observed {digest}"
-        )
-    if package_version is None:
-        raise SourceMismatchError(
-            "An independently recorded package version is required"
         )
     leaf_map = (
         None
@@ -297,6 +376,7 @@ def intake_source(
     validate_manifest(frozen, 1)
     result["manifest_digest"] = frozen.digest()
     result["source_root"] = str(find_source_root(source_root).resolve())
-    _write_json(output_dir / f"source_{spec.name.lower()}.json", result)
-    write_manifest(frozen, output_dir / f"source_{spec.name.lower()}")
+    manifest_dir = output_dir / f"source_{spec.name.lower()}"
+    _write_json(_source_report_path(manifest_dir), result)
+    write_manifest(frozen, manifest_dir)
     return result

@@ -40,19 +40,24 @@ class PartitionCounts:
 
 @dataclass(frozen=True)
 class SourceSpec:
-    """Pinned identity of one source package and what was observed about it."""
+    """Pinned source metadata and its readiness evidence for pretraining."""
 
     name: str
     kaggle_id: str
-    version: int | None
+    version: int
     expected: tuple[tuple[str, PartitionCounts], ...]
     license_evidence: tuple[str, ...]
+    # References that establish the Kaggle package identity independently.
+    publisher_identity_evidence: tuple[str, ...] = ()
+    publisher_identity_verified: bool = False
+    terms_verified: bool = False
 
     def to_json(self) -> dict:
         """Return a JSON-safe mapping for provenance records."""
         data = asdict(self)
         data["expected"] = {name: asdict(counts) for name, counts in self.expected}
         data["license_evidence"] = list(self.license_evidence)
+        data["publisher_identity_evidence"] = list(self.publisher_identity_evidence)
         return data
 
 
@@ -70,12 +75,15 @@ PLANTDOC = SourceSpec(
         "The two statements conflict; use is authorised by the project owner and "
         "the conflict is recorded rather than resolved.",
     ),
+    publisher_identity_evidence=(),
+    publisher_identity_verified=False,
+    terms_verified=False,
 )
 
 PLANTVILLAGE = SourceSpec(
     name="PlantVillage",
     kaggle_id="mohitsingh1804/plantvillage",
-    version=None,
+    version=1,
     expected=(
         ("train", PartitionCounts(classes=38, images=43444)),
         ("val", PartitionCounts(classes=38, images=10861)),
@@ -83,9 +91,12 @@ PLANTVILLAGE = SourceSpec(
     license_evidence=(
         "Upstream dataset card declares cc-by-sa-3.0; the upstream repository has "
         "no LICENSE file and its README states no license.",
-        "The Kaggle re-package's own terms were not independently verified; the "
-        "package version is recorded from the download path at intake.",
+        "The local Kagglehub download marker identifies package version 1; the "
+        "Kaggle re-package's own terms were not independently verified.",
     ),
+    publisher_identity_evidence=(),
+    publisher_identity_verified=False,
+    terms_verified=False,
 )
 
 
@@ -403,14 +414,14 @@ def drop_overlap(
 def provenance(
     spec: SourceSpec,
     records: list[InventoryRecord],
-    observed_version: int | None,
+    observed_version: int,
     split: SourceSplit,
     overlap: OverlapReport | None,
     leaf_map: Mapping[str, str] | None = None,
 ) -> dict:
     """Return a JSON-safe intake record: identity, caveats, counts and checks."""
-    version = observed_version if spec.version is None else spec.version
-    if spec.version is not None and observed_version not in (None, spec.version):
+    version = observed_version
+    if observed_version != spec.version:
         raise SourceMismatchError(
             f"{spec.name} version {observed_version} differs from pinned {spec.version}"
         )

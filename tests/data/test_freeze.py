@@ -1,24 +1,35 @@
 """Freeze workflow: target freeze, replacement guard, cache probe and source intake."""
 
 import json
+from dataclasses import replace
 from pathlib import Path
+from shutil import copyfile
 
 import pytest
 
 from jute_disease.config import CURATION_RULES_PATH
-from jute_disease.data.cache import DECISION_FILE, cache_root
-from jute_disease.data.freeze import (
+from jute_disease.data import (
+    DECISION_FILE,
     INVENTORY_FILE,
+    PLANTDOC,
     REPORT_FILE,
+    SOURCES,
     TARGET_DIR,
+    FreezeBlockedError,
+    PreprocessingSpec,
+    SourceMismatchError,
+    SyntheticPlan,
+    build_inventory,
+    cache_root,
     freeze_target,
     intake_source,
+    inventory_digest,
+    load_manifest,
+    load_source_manifest,
+    make_synthetic_data,
+    observed_counts,
     probe_cache,
 )
-from jute_disease.data.manifest import FreezeBlockedError, load_manifest
-from jute_disease.data.sources import PLANTDOC, SourceMismatchError
-from jute_disease.data.synthetic import SyntheticPlan, make_synthetic_data
-from jute_disease.data.transforms import PreprocessingSpec
 
 
 @pytest.fixture(scope="module")
@@ -115,7 +126,24 @@ def test_cache_probe_requires_a_completed_freeze(tmp_path: Path) -> None:
 
 def test_source_intake_requires_a_completed_freeze(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
-        intake_source("plantdoc", tmp_path, tmp_path)
+        intake_source(
+            "plantdoc",
+            tmp_path,
+            tmp_path,
+            package_version=7,
+            package_digest="0" * 64,
+        )
+
+
+def test_source_intake_rejects_a_version_outside_the_source_pin(tmp_path: Path) -> None:
+    with pytest.raises(SourceMismatchError, match="pinned version 7"):
+        intake_source(
+            "plantdoc",
+            tmp_path,
+            tmp_path,
+            package_version=6,
+            package_digest="0" * 64,
+        )
 
 
 def test_source_intake_rejects_a_package_with_other_counts(
@@ -126,13 +154,25 @@ def test_source_intake_rejects_a_package_with_other_counts(
     make_synthetic_data(package / "train", per_class=6, labels=("a", "b"))
     make_synthetic_data(package / "test", per_class=4, labels=("a", "b"), seed=3)
     with pytest.raises(SourceMismatchError, match="pinned identity"):
-        intake_source("plantdoc", package, tmp_path / "freeze", package_version=7)
+        intake_source(
+            "plantdoc",
+            package,
+            tmp_path / "freeze",
+            package_version=7,
+            package_digest="0" * 64,
+        )
     assert not (tmp_path / "freeze" / "source_plantdoc.json").exists()
 
 
 def test_source_names_are_pinned_case_insensitively() -> None:
     with pytest.raises(KeyError):
-        intake_source("nonexistent", Path("."), Path("."))
+        intake_source(
+            "nonexistent",
+            Path("."),
+            Path("."),
+            package_version=1,
+            package_digest="0" * 64,
+        )
     assert PLANTDOC.name.lower() == "plantdoc"
 
 
@@ -142,13 +182,6 @@ def test_source_freeze_excludes_target_overlap_and_pins_content(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from dataclasses import replace
-    from shutil import copyfile
-
-    from jute_disease.data.freeze import SOURCES
-    from jute_disease.data.inventory import build_inventory, inventory_digest
-    from jute_disease.data.sources import observed_counts
-
     output = tmp_path / "freeze"
     _freeze(synthetic, rules_path, output)
     target = load_manifest(output / TARGET_DIR)
@@ -160,17 +193,27 @@ def test_source_freeze_excludes_target_overlap_and_pins_content(
     overlap_path = next((package / "train" / "a").glob("*.png"))
     copyfile(synthetic.root / target.partition("val")[0].path, overlap_path)
     records = build_inventory(package, workers=2)
-    spec = replace(PLANTDOC, expected=tuple(sorted(observed_counts(records).items())))
-    monkeypatch.setitem(SOURCES, "fixture", spec)
+    spec = replace(
+        PLANTDOC,
+        expected=tuple(sorted(observed_counts(records).items())),
+        publisher_identity_evidence=("synthetic fixture",),
+        publisher_identity_verified=True,
+        terms_verified=True,
+    )
+    monkeypatch.setitem(SOURCES, "plantdoc", spec)
     digest = inventory_digest(records)
     with pytest.raises(SourceMismatchError, match="digest mismatch"):
         intake_source(
-            "fixture", package, output, package_version=7, package_digest="0" * 64
+            "plantdoc", package, output, package_version=7, package_digest="0" * 64
         )
     report = intake_source(
-        "fixture", package, output, package_version=7, package_digest=digest
+        "plantdoc", package, output, package_version=7, package_digest=digest
     )
     frozen = load_manifest(output / "source_plantdoc")
+    verified = load_source_manifest(
+        output / "source_plantdoc", package, output / TARGET_DIR
+    )
+    assert verified.digest() == frozen.digest()
     assert overlap_path.relative_to(package).as_posix() in report["removed"]
     assert overlap_path.relative_to(package).as_posix() not in {
         e.path for e in frozen.entries
@@ -179,18 +222,9 @@ def test_source_freeze_excludes_target_overlap_and_pins_content(
     assert not {item["image_id"] for item in frozen.quarantined} & {
         entry.image_id for entry in frozen.entries
     }
-    from jute_disease.training.engines.dl.pretrain import source_data_module
-
-    dm = source_data_module(
-        output / "source_plantdoc", package, output / TARGET_DIR, 4, 42
-    )
-    observed = {
-        entry.path for ds in (dm.jute_train, dm.jute_val) for entry in ds.entries
-    }
-    assert overlap_path.relative_to(package).as_posix() not in observed
-    kept = frozen.partition("train")[0]
-    (package / kept.path).write_bytes(b"changed")
-    with pytest.raises(ValueError, match="Source content changed"):
-        source_data_module(
-            output / "source_plantdoc", package, output / TARGET_DIR, 4, 42
-        )
+    report_path = output / "source_plantdoc.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report["version_recorded"] = 8
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    with pytest.raises(FreezeBlockedError, match="provenance"):
+        load_source_manifest(output / "source_plantdoc", package, output / TARGET_DIR)

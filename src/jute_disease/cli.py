@@ -36,9 +36,9 @@ from jute_disease.data import (
 from jute_disease.models.dl.classifier import Classifier
 from jute_disease.models.ml import FEATURE_EXTRACTORS, ML_CLASSIFIERS
 from jute_disease.reporting.tables import aggregate_metrics
+from jute_disease.training import pretrain_main
 from jute_disease.training.baselines import CONFIGS_DIR, run_all_dl
 from jute_disease.training.cross_validation import run_cross_validation
-from jute_disease.training.engines.dl.pretrain import main as pretrain_main
 from jute_disease.training.engines.ml.predict import predict_ml
 from jute_disease.training.engines.ml.sweep import run_all_ml
 from jute_disease.training.engines.ml.test import test_ml
@@ -344,9 +344,11 @@ def _add_freeze(commands: "argparse._SubParsersAction") -> None:
     common(source)
     source.add_argument("name", choices=sorted(SOURCES))
     source.add_argument("source_root", type=Path)
-    source.add_argument("--package-version", type=int, default=None)
+    source.add_argument("--package-version", type=int, required=True)
     source.add_argument(
-        "--package-digest", required=True, help="Expected inventory SHA-256"
+        "--package-digest",
+        required=True,
+        help="Expected inventory SHA-256 for the pinned source version",
     )
     source.add_argument("--leaf-map", type=Path, default=None)
     source.add_argument("--seed", type=int, default=DEFAULT_SEED)
