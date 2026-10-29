@@ -1,17 +1,17 @@
 # jute-disease-detection <!-- omit from toc -->
 
 <div align="center">
-  <img src="./assets/dl/grad_cam.png" width="800px" alt="Grad-CAM Interpretability">
+  <img src="./results/submitted/figures/dl/grad_cam.png" width="800px" alt="Grad-CAM Interpretability">
   <p><i>Grad-CAM: Visualizing model focus on disease symptoms.</i></p>
 
   <br>
 
-  <img src="./assets/dl/finetuned_training_history.png" width="800px" alt="Training History">
+  <img src="./results/submitted/figures/dl/finetuned_training_history.png" width="800px" alt="Training History">
   <p><i>Model Convergence: Training and Validation metrics.</i></p>
 
   <br>
 
-  <img src="./assets/dl/part2_confusion_matrix_comparison.png" width="800px" alt="Confusion Matrix">
+  <img src="./results/submitted/figures/dl/part2_confusion_matrix_comparison.png" width="800px" alt="Confusion Matrix">
   <p><i>Performance Benchmark: Multi-class Confusion Matrix evaluation.</i></p>
 </div>
 
@@ -53,19 +53,22 @@ A high-level overview of the repository organization:
 
 ```text
 .
-├── artifacts/          # Models, checkpoints, and experiment logs
-├── assets/             # Project visualizations (ML/DL figures)
-├── configs/            # Lightning CLI configuration files (.yaml)
-├── data/               # Dataset storage and class definitions
-├── docs/               # Technical documentation and paper
-│   ├── architecture.md # Core technical design and implementation details
-│   └── hnicem2026-paper.pdf # Submitted HNICEM 2026 paper
-├── misc/               # Project context and meta-documentation
-├── notebooks/          # Notebooks for EDA and reproducibility
-├── scripts/            # Automation scripts for training and evaluation
+├── configs/
+│   └── historical/     # Lightning CLI and grid search configs for the reported runs
+├── data/               # Dataset storage (git-ignored) and the tracked class list
+├── docs/               # Architecture notes and the submitted paper
+├── notebooks/
+│   └── historical/     # Notebooks and Jupytext pairs as run for the paper
+├── results/
+│   └── submitted/      # Committed logs and figures behind the reported numbers
+│       ├── figures/    # dl/ and ml/ figures
+│       └── logs/       # CSV logs for baselines, grid searches and resolution runs
 ├── src/
-│   └── jute_disease/   # Main library package (DL & Classical ML)
-└── tests/              # Unit and integration test suite
+│   └── jute_disease/   # Library package and the jute-disease console entry point
+├── tests/              # Unit and API tests
+├── .env.example        # Environment variables template
+├── justfile            # Task runner: one recipe per study command
+└── artifacts/          # Runtime output (git-ignored): checkpoints, features, logs
 ```
 
 For a detailed look at the internal design, public APIs, and architectural decisions, see [architecture.md](docs/architecture.md).
@@ -85,7 +88,7 @@ Ensure you have the following installed on your local machine:
 This project automates data acquisition and experiment tracking via third-party APIs:
 
 1. **Jute dataset:** The unified six-class dataset is distributed as `data.zip` in this [Google Drive folder](https://drive.google.com/drive/folders/1WoQ-Xzy0Prl9lInHW5JpGX4tpE9YDUua?usp=sharing). Unzip it into the project root so that `data/by_class/` exists. See [References](#9-references) for the three source datasets it merges.
-2. **Kaggle API:** Only needed to download the PlantVillage (Hughes & Salathé, 2015; Mohanty et al., 2016) and PlantDoc (Singh et al., 2020) pretraining datasets (`make data`). Ensure you have a `kaggle.json` in `~/.kaggle/`.
+2. **Kaggle API:** Only needed to download the PlantVillage (Hughes & Salathé, 2015; Mohanty et al., 2016) and PlantDoc (Singh et al., 2020) pretraining datasets (`just data`). Ensure you have a `kaggle.json` in `~/.kaggle/`.
 3. **Weights & Biases (WandB):** Used for experiment logs and interactive dashboards. Run `wandb login` before starting deep learning training.
 
 The unified jute dataset merges three public sources. The repository code is Apache-2.0; the data keeps its original terms:
@@ -111,9 +114,17 @@ The unified jute dataset merges three public sources. The repository code is Apa
    uv sync
    ```
 
+3. Copy the environment template and set your W&B key:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Optional: install [`just`](https://just.systems) to run the recipes shown below. `just --list` shows every recipe, and each one wraps a single `uv run jute-disease` command. `uv run jute-disease --help` lists the commands themselves.
+
 ## 4. Reproducing the Results
 
-Run through the Jupyter notebooks in `notebooks/reproducibility/` in numerical order:
+Run through the Jupyter notebooks in `notebooks/historical/` in numerical order. These are the notebooks as run for the paper; they predate the current module layout and still import the old paths, so the `jute-disease` commands in the next section are the maintained route to the same experiments:
 
 1. **`01_Exploratory_Data_Analysis.ipynb`**
    Consolidates the unified jute dataset and visualizes initial class distributions.
@@ -129,9 +140,9 @@ Run through the Jupyter notebooks in `notebooks/reproducibility/` in numerical o
    Finalizes evaluation on the held-out test set and identifies top failure modes.
 
 > [!NOTE]
-> The notebooks were run on Google Colab (CPU for classical ML, L4 GPU for deep learning), and the Colab badges at the top of each notebook open them there. To run locally, select the **`.venv`** in the project root as your Jupyter kernel and skip the Drive-mounting cells. Each notebook is paired with a `.py` file through Jupytext (`make sync-nb`).
+> The notebooks were run on Google Colab (CPU for classical ML, L4 GPU for deep learning), and the Colab badges at the top of each notebook open them there. To run locally, select the **`.venv`** in the project root as your Jupyter kernel and skip the Drive-mounting cells. Each notebook is paired with a `.py` file through Jupytext (`just sync-nb`).
 
-Alternatively, `make` drives the same experiments from the command line (see `make help`): `make train-dl`, `make grid-search`, `make grid-search-finetune`, `make train-dl-512`, and `make train-ml`. Experiment logs behind the reported deep learning numbers are committed under `artifacts/logs/`.
+Alternatively, `just` drives the same experiments from the command line (see `just --list`): `just train-dl`, `just grid-search`, `just grid-search-finetune`, `just train-dl-512`, and `just train-ml`. Experiment logs behind the reported deep learning numbers are committed under `results/submitted/logs/`.
 
 ## 5. Training from Scratch
 
@@ -141,30 +152,30 @@ To retrain the models from the command line instead of the notebooks:
 2. Create the stratified 70/15/15 split (seed 42) and download the PlantVillage/PlantDoc pretraining data:
 
    ```bash
-   make data
+   just data
    ```
 
-3. Point experiment tracking at your own W&B account. The configs log to the `grade-descent` entity, so either edit `entity` in the `WandbLogger` block of the files under `configs/`, or run offline with `WANDB_MODE=offline`.
+3. Point experiment tracking at your own W&B account. The configs log to the `grade-descent` entity, so either edit `entity` in the `WandbLogger` block of the files under `configs/historical/`, or run offline with `WANDB_MODE=offline`.
 4. Smoke-test the pipeline, then train:
 
    ```bash
-   make train-dl-check                 # fast_dev_run over all baselines
-   make train-dl                       # all six deep learning baselines
-   make train-dl-single MODEL=mobilenet_v2
-   make train-ml                       # handcrafted features + classical ML
+   just train-dl-check                 # one-batch fast_dev_run (MobileNetV2)
+   just train-dl                       # all six deep learning baselines
+   just train-dl-single mobilenet_v2   # one baseline by config name
+   just train-ml                       # handcrafted features + classical ML
    ```
 
 5. Reproduce the MobileNetV2 tuning in the paper (phase 1: transfer-learning/dropout; phase 2: learning rate and weight decay) and the 512 px experiment:
 
    ```bash
-   make grid-search
-   make grid-search-finetune
-   make train-dl-512
+   just grid-search
+   just grid-search-finetune
+   just train-dl-512
    ```
 
-On Windows without a C++ compiler, `torch.compile` fails; add `--model.compile_model=false` when calling `scripts/train_dl.py` directly.
+Deep learning runs can also be driven directly through the Lightning CLI, for example `uv run jute-disease train dl fit --config configs/historical/baselines/mobilenet_v2.yaml`. On Windows without a C++ compiler, `torch.compile` fails; add `--model.compile_model=false` to that command.
 
-Checkpoints are written to `artifacts/checkpoints/` and CSV logs to `artifacts/logs/`. Optionally run `make pretrain` first to fine-tune on PlantVillage before the jute data. Training on a GPU is recommended for the deep learning runs; the classical ML pipeline runs on CPU. `make help` lists every target.
+Checkpoints are written to `artifacts/checkpoints/` and CSV logs to `artifacts/logs/`. Optionally run `just pretrain` first to fine-tune on PlantVillage before the jute data. Training on a GPU is recommended for the deep learning runs; the classical ML pipeline runs on CPU.
 
 ## 6. Benchmarked Performance
 

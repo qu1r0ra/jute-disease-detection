@@ -6,36 +6,38 @@ This document describes the architectural design and directory structure of the 
 
 ```text
 .
-├── artifacts/          # Models, checkpoints, and experiment logs
-├── assets/             # Project visualizations (ML/DL figures)
-├── configs/            # Lightning CLI configuration files (.yaml)
-├── data/               # Dataset storage and class definitions
-├── docs/               # Technical documentation and paper
-│   ├── architecture.md # Core technical design and implementation details
-│   └── hnicem2026-paper.pdf # Submitted HNICEM 2026 paper
-├── misc/               # Project context and meta-documentation
-├── notebooks/          # Notebooks for EDA and reproducibility
-├── scripts/            # Automation scripts for training and evaluation
+├── configs/
+│   └── historical/     # Lightning CLI and grid search configs for the reported runs
+├── data/               # Dataset storage (git-ignored) and the tracked class list
+├── docs/               # Architecture notes and the submitted paper
+├── notebooks/
+│   └── historical/     # Notebooks and Jupytext pairs as run for the paper
+├── results/
+│   └── submitted/      # Committed logs and figures behind the reported numbers
 ├── src/
-│   └── jute_disease/   # Main library package (DL & Classical ML)
-└── tests/              # Unit and integration test suite
+│   └── jute_disease/   # Library package and the jute-disease console entry point
+├── tests/              # Unit and API tests
+├── justfile            # Task runner: one recipe per study command
+└── artifacts/          # Runtime output (git-ignored): checkpoints, features, logs
 ```
 
 ## Core Design Principles
 
 ### 1. Unified Public API
 
-Each subpackage in `src/jute_disease/` (e.g., `models.ml`, `data`, `utils`) uses `__init__.py` to expose a clean, flattened public API.
+Each subpackage in `src/jute_disease/` (e.g., `models.ml`, `data`, `training`, `reporting`) uses `__init__.py` to expose a clean, flattened public API.
 
 - **Internal developers** use relative imports where appropriate or `from jute_disease.x import y` to avoid circular dependencies.
 - **External consumers** (scripts, tests, notebooks) use the clean package-level imports (e.g., `from jute_disease.models.ml import RandomForest`).
 
 ### 2. Command Line Interface (CLI)
 
-The project exposes its CLI entry points through `scripts/` and the Makefile:
+The project exposes a single console entry point, `jute-disease` (`jute_disease.cli:main`), and a `justfile` whose recipes each wrap one of its commands:
 
-- **`scripts/train_dl.py`**: The main entry point for the Deep learning engine. It leverages the **Lightning CLI** to drive training, testing, and prediction from configuration files.
-- **`make train-ml`**: Makefile entry point for classical ML training. It runs `scripts/train_all_ml.py`, which drives the pipeline in `src/jute_disease/engines/ml/`.
+- **`jute-disease train dl fit|test`**: The deep learning engine. Arguments are forwarded to the **Lightning CLI**, which drives training and testing from configuration files.
+- **`jute-disease train ml --all`**: Classical ML training over every classifier and feature combination. It drives the pipeline in `src/jute_disease/training/engines/ml/`.
+- **Other commands**: `data` (setup, split, download, synthetic), `train` (baselines, cv, grid, pretrain), and `evaluate` (aggregate, ml, predict). `jute-disease --help` lists them all.
+- Commands planned in open issues (`freeze`, `queue`, `profile`, and `evaluate` on its own) exit non-zero and name the issue that owns them.
 
 ### 3. Deep Learning Service (Lightning + Timm)
 
@@ -65,7 +67,7 @@ Classical ML models are integrated using a custom adapter pattern to unify them 
 
 ### 6. Unified Diagnostics & Metrics
 
-Both pipelines are evaluated identically using a combined **Experiment Aggregation Utility** (`scripts/aggregate_results.py`). We completely deprecated `scikit-learn` metrics in favor of native PyTorch `torchmetrics.MetricCollection`.
+Both pipelines are evaluated identically using a combined **Experiment Aggregation Utility** (`jute-disease evaluate aggregate`, backed by `jute_disease.reporting.tables`). We completely deprecated `scikit-learn` metrics in favor of native PyTorch `torchmetrics.MetricCollection`.
 
 - **EVAL_METRICS**: Computes Accuracy, Macro-F1, Precision, and Recall uniformly for both classical and neural models.
 - **Aggregation**: Metrics from `WandbLogger` (cloud) and `CSVLogger` (local) are automatically synthesized into tabular CSV files for all Grid Searches and manual experiment targets.
@@ -74,7 +76,7 @@ Both pipelines are evaluated identically using a combined **Experiment Aggregati
 
 - **Type Safety**: Public functions carry type annotations and use modern Python 3.10+ syntax (e.g., `list[str] | None`). Mypy is not part of the CI or lint pipeline.
 - **Formatting**: Code is formatted and linted using `ruff` to ensure PEP 8 compliance.
-- **CLI Patterns**: Scripts follow the "Raise in Logic, Exit in Main" pattern to allow for programmatic re-use and unit testing of automation functions.
+- **CLI Patterns**: Automation functions raise on failure and are called from `jute_disease.cli`, which owns argument parsing and exit codes. The functions stay usable from Python and remain unit-testable.
 - **Testing**: A comprehensive test suite (`tests/`) covers unit tests (logic verification) and slower integration tests (end-to-end pipeline).
 
 ### 8. Artifact Management
