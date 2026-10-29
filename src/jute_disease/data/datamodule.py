@@ -3,35 +3,38 @@ from pathlib import Path
 import numpy as np
 import torch
 from lightning import LightningDataModule
-from sklearn.model_selection import StratifiedKFold
-from torch.utils.data import (
-    ConcatDataset,
-    DataLoader,
-    Subset,
-    WeightedRandomSampler,
-    random_split,
-)
+from sklearn.model_selection import StratifiedGroupKFold
+from torch.utils.data import DataLoader, Dataset, Subset, random_split
 from torchvision.datasets import ImageFolder
 
-from jute_disease.config import (
-    BATCH_SIZE,
-    DEFAULT_SEED,
-    IMAGE_SIZE,
-    ML_SPLIT_DIR,
-    NUM_WORKERS,
-)
-from jute_disease.data.curation import split_data
-from jute_disease.data.transforms import create_pipeline
+from jute_disease.config import BATCH_SIZE, DEFAULT_SEED, IMAGE_SIZE, NUM_WORKERS
+from jute_disease.data.manifest import Manifest, load_manifest
+from jute_disease.data.readers import ManifestDataset
+from jute_disease.data.sampling import balanced_sampler, loader_generator, seed_worker
+from jute_disease.data.transforms import PreprocessingSpec, create_pipeline
 
 
 class DataModule(LightningDataModule):
-    """
-    A unified DataModule for Jute disease detection and external pre-training datasets.
+    """DataModule for the frozen jute manifest and for plain image folders.
+
+    Two sources, chosen by the arguments:
+
+    * ``manifest_dir`` (+ ``image_root``): the frozen manifest. Partitions come
+      from the manifest only and cross-validation folds respect its groups.
+    * ``data_dir``: an ``ImageFolder`` tree, either with ``train/``/``val/``
+      (and optional ``test/``) folders, or flat with ``val_split`` for a seeded
+      split. Used for external pretraining data and historical configs.
+
+    Every pipeline, sampler and loader is built from ``seed``; nothing random is
+    shared between instances.
     """
 
     def __init__(
         self,
-        data_dir: Path | str = ML_SPLIT_DIR,
+        data_dir: Path | str | None = None,
+        manifest_dir: Path | str | None = None,
+        image_root: Path | str | None = None,
+        cache_root: Path | str | None = None,
         val_split: float | None = None,
         batch_size: int = BATCH_SIZE,
         use_weighted_sampler: bool = False,
@@ -43,36 +46,42 @@ class DataModule(LightningDataModule):
         image_size: int = IMAGE_SIZE,
     ) -> None:
         super().__init__()
+        if (data_dir is None) == (manifest_dir is None):
+            raise ValueError("Provide exactly one of data_dir or manifest_dir")
+        if manifest_dir is not None and image_root is None:
+            raise ValueError("manifest_dir requires image_root")
+        if data_dir is not None and k_fold > 1:
+            raise ValueError(
+                "k_fold needs group-aware folds; use manifest_dir, not data_dir"
+            )
         self.save_hyperparameters()
-        self.data_dir = Path(data_dir).resolve()
+        self.data_dir = None if data_dir is None else Path(data_dir).resolve()
+        self.manifest_dir = None if manifest_dir is None else Path(manifest_dir)
+        self.image_root = None if image_root is None else Path(image_root)
+        self.cache_root = None if cache_root is None else Path(cache_root)
 
-        self.train_transform = create_pipeline(image_size, is_train=True, is_dl=True)
-        self.val_transform = create_pipeline(image_size, is_train=False, is_dl=True)
-
-        self.jute_train: ImageFolder | Subset | None = None
-        self.jute_val: ImageFolder | Subset | None = None
-        self.jute_test: ImageFolder | None = None
-        self.jute_predict: ImageFolder | None = None
-        self.sampler: WeightedRandomSampler | None = None
+        self.jute_train: Dataset | None = None
+        self.jute_val: Dataset | None = None
+        self.jute_test: Dataset | None = None
+        self.jute_predict: Dataset | None = None
+        self.sampler = None
         self._classes: list[str] | None = None
+        self.manifest: Manifest | None = None
 
-        # K-fold cross validation
-        self._splits: list[tuple[np.ndarray, np.ndarray]] | None = None
-        self._pool_labels: list[int] | None = None
-        self._train_pool: ConcatDataset | None = None
-        self._val_pool: ConcatDataset | None = None
+        self._folds: list[tuple[np.ndarray, np.ndarray]] | None = None
+        self._pool_train: Dataset | None = None
+        self._pool_val: Dataset | None = None
+        self._pool_targets: np.ndarray | None = None
 
-    @property
-    def train_dir(self) -> Path:
-        return self.data_dir / "train"
+    def _train_transform(self):
+        return create_pipeline(
+            self.hparams.image_size, True, True, seed=self.hparams.seed
+        )
 
-    @property
-    def val_dir(self) -> Path:
-        return self.data_dir / "val"
-
-    @property
-    def test_dir(self) -> Path:
-        return self.data_dir / "test"
+    def _eval_transform(self):
+        return create_pipeline(
+            self.hparams.image_size, False, True, seed=self.hparams.seed
+        )
 
     @property
     def classes(self) -> list[str] | None:
@@ -82,179 +91,156 @@ class DataModule(LightningDataModule):
     def num_classes(self) -> int:
         return len(self._classes) if self._classes else 0
 
-    def prepare_data(self) -> None:
-        if self.data_dir == ML_SPLIT_DIR.resolve():
-            split_data()
+    @property
+    def preprocessing(self) -> PreprocessingSpec:
+        return PreprocessingSpec(size=self.hparams.image_size)
+
+    def _manifest_dataset(self, partition: str, train: bool) -> ManifestDataset:
+        assert self.manifest is not None and self.image_root is not None
+        return ManifestDataset(
+            self.manifest,
+            partition,
+            self.image_root,
+            transform=self._train_transform() if train else self._eval_transform(),
+            cache_root=self.cache_root,
+            spec=self.preprocessing,
+        )
 
     def setup(self, stage: str | None = None) -> None:
-        if stage == "fit" or stage is None:
-            if self.train_dir.exists() and self.val_dir.exists():
-                if self.hparams.k_fold > 1:
-                    train_ds = ImageFolder(root=self.train_dir)
-                    val_ds = ImageFolder(root=self.val_dir)
+        if self.manifest_dir is not None:
+            self._setup_manifest(stage)
+        else:
+            self._setup_folders(stage)
 
-                    self._classes = train_ds.classes
-                    self._pool_labels = train_ds.targets + val_ds.targets
+    def _setup_manifest(self, stage: str | None) -> None:
+        self.manifest = load_manifest(self.manifest_dir)  # type: ignore[arg-type]
+        self._classes = list(self.manifest.labels)
+        if stage in ("fit", None):
+            if self.hparams.k_fold > 1:
+                self._setup_folds()
+            else:
+                self.jute_train = self._manifest_dataset("train", True)
+                self.jute_val = self._manifest_dataset("val", False)
+                self._make_sampler(self.jute_train.targets)
+        if stage in ("test", None):
+            self.jute_test = self._manifest_dataset("test", False)
+        if stage == "predict":
+            self.jute_predict = self._manifest_dataset("test", False)
 
-                    skf = StratifiedKFold(
-                        n_splits=self.hparams.k_fold,
-                        shuffle=True,
-                        random_state=self.hparams.seed,
-                    )
-                    self._splits = list(
-                        skf.split(np.zeros(len(self._pool_labels)), self._pool_labels)
-                    )
+    def _setup_folds(self) -> None:
+        augmented = [self._manifest_dataset(name, True) for name in ("train", "val")]
+        plain = [self._manifest_dataset(name, False) for name in ("train", "val")]
+        self._pool_targets = np.array(augmented[0].targets + augmented[1].targets)
+        groups = np.array(augmented[0].groups + augmented[1].groups)
+        self._pool_train = _Concat(*augmented)
+        self._pool_val = _Concat(*plain)
+        splitter = StratifiedGroupKFold(
+            n_splits=self.hparams.k_fold, shuffle=True, random_state=self.hparams.seed
+        )
+        self._folds = list(
+            splitter.split(
+                np.zeros(len(self._pool_targets)), self._pool_targets, groups
+            )
+        )
+        self.set_fold(self.hparams.fold_index)
 
-                    self._train_pool = ConcatDataset(
-                        [
-                            ImageFolder(
-                                root=self.train_dir, transform=self.train_transform
-                            ),
-                            ImageFolder(
-                                root=self.val_dir, transform=self.train_transform
-                            ),
-                        ]
-                    )
-                    self._val_pool = ConcatDataset(
-                        [
-                            ImageFolder(
-                                root=self.train_dir, transform=self.val_transform
-                            ),
-                            ImageFolder(
-                                root=self.val_dir, transform=self.val_transform
-                            ),
-                        ]
-                    )
-
-                    self.set_fold(self.hparams.fold_index)
-                else:
-                    self.jute_train = ImageFolder(
-                        root=self.train_dir, transform=self.train_transform
-                    )
-                    self.jute_val = ImageFolder(
-                        root=self.val_dir, transform=self.val_transform
-                    )
-                    self._classes = self.jute_train.classes
-                    if self.hparams.use_weighted_sampler:
-                        self.sampler = self._create_weighted_sampler(
-                            self.jute_train.targets
-                        )
-
+    def _setup_folders(self, stage: str | None) -> None:
+        assert self.data_dir is not None
+        train_dir, val_dir, test_dir = (
+            self.data_dir / name for name in ("train", "val", "test")
+        )
+        if stage in ("fit", None):
+            if train_dir.exists() and val_dir.exists():
+                self.jute_train = ImageFolder(train_dir, self._train_transform())
+                self.jute_val = ImageFolder(val_dir, self._eval_transform())
+                self._classes = self.jute_train.classes
+                self._make_sampler(self.jute_train.targets)
             elif self.hparams.val_split is not None:
-                full_ds = ImageFolder(root=self.data_dir)
-                self._classes = full_ds.classes
-
-                total_size = len(full_ds)
-                val_size = int(total_size * self.hparams.val_split)
-                train_size = total_size - val_size
-
-                train_subset, val_subset = random_split(
-                    full_ds,
-                    [train_size, val_size],
+                full = ImageFolder(self.data_dir)
+                self._classes = full.classes
+                val_size = int(len(full) * self.hparams.val_split)
+                train_part, val_part = random_split(
+                    full,
+                    [len(full) - val_size, val_size],
                     generator=torch.Generator().manual_seed(self.hparams.seed),
                 )
-
                 self.jute_train = Subset(
-                    ImageFolder(root=self.data_dir, transform=self.train_transform),
-                    train_subset.indices,
+                    ImageFolder(self.data_dir, self._train_transform()),
+                    train_part.indices,
                 )
                 self.jute_val = Subset(
-                    ImageFolder(root=self.data_dir, transform=self.val_transform),
-                    val_subset.indices,
+                    ImageFolder(self.data_dir, self._eval_transform()),
+                    val_part.indices,
                 )
-
-        if stage == "test" or stage is None:
-            if self.test_dir.exists():
-                self.jute_test = ImageFolder(
-                    root=self.test_dir, transform=self.val_transform
-                )
-                self._classes = self.jute_test.classes
-
+                self._make_sampler([full.targets[i] for i in train_part.indices])
+        if stage in ("test", None) and test_dir.exists():
+            self.jute_test = ImageFolder(test_dir, self._eval_transform())
+            self._classes = self.jute_test.classes
         if stage == "predict":
-            predict_root = self.test_dir if self.test_dir.exists() else self.data_dir
-            self.jute_predict = ImageFolder(
-                root=predict_root, transform=self.val_transform
-            )
+            root = test_dir if test_dir.exists() else self.data_dir
+            self.jute_predict = ImageFolder(root, self._eval_transform())
+
+    def _make_sampler(self, targets: list[int]) -> None:
+        self.sampler = (
+            balanced_sampler(targets, self.hparams.seed)
+            if self.hparams.use_weighted_sampler
+            else None
+        )
 
     def set_fold(self, fold_index: int) -> None:
-        """Swaps active subsets and updates sampler."""
-        if self._splits is None:
-            raise RuntimeError("Base splits not initialized. Call setup() first.")
-
+        """Switch the active cross-validation fold (manifest mode only)."""
+        if self._folds is None or self._pool_train is None or self._pool_val is None:
+            raise RuntimeError("Folds not initialized. Call setup() first.")
         if not (0 <= fold_index < self.hparams.k_fold):
             raise ValueError(
                 f"Fold index {fold_index} out of range (0-{self.hparams.k_fold - 1})"
             )
-
         self.hparams.fold_index = fold_index
-        train_idx, val_idx = self._splits[fold_index]
+        train_idx, val_idx = self._folds[fold_index]
+        self.jute_train = Subset(self._pool_train, train_idx)
+        self.jute_val = Subset(self._pool_val, val_idx)
+        assert self._pool_targets is not None
+        self._make_sampler(self._pool_targets[train_idx].tolist())
 
-        if (
-            self._train_pool is None
-            or self._val_pool is None
-            or self._pool_labels is None
-        ):
-            raise RuntimeError("Data pool not initialized. Call setup() first.")
-
-        self.jute_train = Subset(self._train_pool, train_idx)
-        self.jute_val = Subset(self._val_pool, val_idx)
-
-        if self.hparams.use_weighted_sampler:
-            train_labels = [self._pool_labels[i] for i in train_idx]
-            self.sampler = self._create_weighted_sampler(train_labels)
-
-    def _create_weighted_sampler(
-        self, labels: list[int] | np.ndarray
-    ) -> WeightedRandomSampler:
-        """Helper to create a WeightedRandomSampler to address class imbalance."""
-        targets = np.array(labels)
-        unique_targets, counts = np.unique(targets, return_counts=True)
-        weight = 1.0 / counts
-        weight_map = {t: weight[i] for i, t in enumerate(unique_targets)}
-        samples_weight = np.array([weight_map[t] for t in targets])
-        return WeightedRandomSampler(samples_weight, len(samples_weight))
+    def _loader(self, dataset: Dataset | None, name: str, train: bool) -> DataLoader:
+        if dataset is None:
+            raise RuntimeError(f"{name}_dataloader called before setup()")
+        workers = self.hparams.num_workers
+        return DataLoader(
+            dataset,
+            batch_size=self.hparams.batch_size * (1 if train else 2),
+            shuffle=train and self.sampler is None,
+            sampler=self.sampler if train else None,
+            num_workers=workers,
+            pin_memory=self.hparams.pin_memory,
+            worker_init_fn=seed_worker if workers else None,
+            generator=loader_generator(self.hparams.seed) if train else None,
+        )
 
     def train_dataloader(self) -> DataLoader:
-        if self.jute_train is None:
-            raise RuntimeError("train_dataloader called before setup()")
-        return DataLoader(
-            self.jute_train,
-            batch_size=self.hparams.batch_size,
-            shuffle=True if self.sampler is None else False,
-            sampler=self.sampler,
-            num_workers=self.hparams.num_workers,
-            pin_memory=self.hparams.pin_memory,
-        )
+        return self._loader(self.jute_train, "train", True)
 
     def val_dataloader(self) -> DataLoader:
-        if self.jute_val is None:
-            raise RuntimeError("val_dataloader called before setup()")
-        return DataLoader(
-            self.jute_val,
-            batch_size=self.hparams.batch_size * 2,
-            shuffle=False,
-            num_workers=self.hparams.num_workers,
-            pin_memory=self.hparams.pin_memory,
-        )
+        return self._loader(self.jute_val, "val", False)
 
     def test_dataloader(self) -> DataLoader:
-        if self.jute_test is None:
-            raise RuntimeError("test_dataloader called before setup()")
-        return DataLoader(
-            self.jute_test,
-            batch_size=self.hparams.batch_size * 2,
-            shuffle=False,
-            num_workers=self.hparams.num_workers,
-            pin_memory=self.hparams.pin_memory,
-        )
+        return self._loader(self.jute_test, "test", False)
 
     def predict_dataloader(self) -> DataLoader:
-        if self.jute_predict is None:
-            raise RuntimeError("predict_dataloader called before setup()")
-        return DataLoader(
-            self.jute_predict,
-            batch_size=self.hparams.batch_size * 2,
-            shuffle=False,
-            num_workers=self.hparams.num_workers,
-            pin_memory=self.hparams.pin_memory,
-        )
+        return self._loader(self.jute_predict, "predict", False)
+
+
+class _Concat(Dataset):
+    """Two manifest datasets addressed by one index."""
+
+    def __init__(self, first: ManifestDataset, second: ManifestDataset) -> None:
+        self.parts = (first, second)
+
+    def __len__(self) -> int:
+        return len(self.parts[0]) + len(self.parts[1])
+
+    def __getitem__(self, index: int):
+        first = len(self.parts[0])
+        if index < first:
+            return self.parts[0][index]
+        return self.parts[1][index - first]

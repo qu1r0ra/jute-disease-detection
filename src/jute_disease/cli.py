@@ -5,6 +5,7 @@ Commands marked as planned exit non-zero and name the issue that owns them.
 """
 
 import argparse
+import json
 import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -12,15 +13,22 @@ from pathlib import Path
 from dotenv import load_dotenv
 from lightning.pytorch.cli import LightningCLI
 
-from jute_disease.config import ARTIFACTS_DIR, DEFAULT_SEED
-from jute_disease.data.curation import (
-    initialize_data,
-    setup_data_directory,
-    split_data,
+from jute_disease.config import (
+    ARTIFACTS_DIR,
+    CURATION_RULES_PATH,
+    DEFAULT_SEED,
+    FREEZE_DIR,
+    IDENTITY_REVIEWS_PATH,
+    SOURCE_INVENTORY_DIR,
 )
-from jute_disease.data.datamodule import DataModule
-from jute_disease.data.download import download_plant_doc, download_plant_village
-from jute_disease.data.synthetic import make_synthetic_data
+from jute_disease.data import (
+    DataModule,
+    download_plant_doc,
+    download_plant_village,
+    make_synthetic_data,
+)
+from jute_disease.data.cache import DEFAULT_BUDGET_SECONDS, DEFAULT_MAX_BYTES
+from jute_disease.data.freeze import SOURCES, freeze_target, intake_source, probe_cache
 from jute_disease.models.dl.classifier import Classifier
 from jute_disease.models.ml import FEATURE_EXTRACTORS, ML_CLASSIFIERS
 from jute_disease.reporting.tables import aggregate_metrics
@@ -32,7 +40,6 @@ from jute_disease.training.engines.ml.sweep import run_all_ml
 from jute_disease.training.engines.ml.test import test_ml
 from jute_disease.training.engines.ml.train import train_ml
 from jute_disease.training.grid_search import run_grid_search
-from jute_disease.training.seed import seed_everything
 
 Handler = Callable[[argparse.Namespace], None]
 
@@ -46,26 +53,62 @@ def _planned(command: str, owner: str) -> Handler:
     return run
 
 
-def _data_setup(_: argparse.Namespace) -> None:
-    setup_data_directory()
-
-
-def _data_split(args: argparse.Namespace) -> None:
-    seed_everything(DEFAULT_SEED)
-    split_data(force=args.force)
-
-
 def _data_download(_: argparse.Namespace) -> None:
     download_plant_village()
     download_plant_doc()
 
 
-def _data_init(_: argparse.Namespace) -> None:
-    initialize_data()
-
-
 def _data_synthetic(args: argparse.Namespace) -> None:
-    make_synthetic_data(args.per_class, args.size)
+    plan = make_synthetic_data(args.root, args.per_class, args.size)
+    sys.stdout.write(f"Wrote {len(plan.files)} synthetic images under {plan.root}\n")
+
+
+def _print_json(payload: object) -> None:
+    sys.stdout.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+
+def _freeze_target(args: argparse.Namespace) -> None:
+    try:
+        report = freeze_target(
+            args.output,
+            image_root=args.image_root,
+            rules_path=args.rules,
+            reviews_path=args.reviews,
+            seed=args.seed,
+            workers=args.workers,
+            force=args.force,
+        )
+    except ValueError as error:
+        raise SystemExit(f"freeze blocked: {error}") from error
+    _print_json(report)
+
+
+def _freeze_cache(args: argparse.Namespace) -> None:
+    _print_json(
+        probe_cache(
+            args.output,
+            image_root=args.image_root,
+            budget_seconds=args.budget_seconds,
+            max_bytes=args.max_bytes,
+            workers=args.workers,
+        )
+    )
+
+
+def _freeze_source(args: argparse.Namespace) -> None:
+    try:
+        result = intake_source(
+            args.name,
+            args.source_root,
+            args.output,
+            package_version=args.package_version,
+            leaf_map_path=args.leaf_map,
+            seed=args.seed,
+            workers=args.workers,
+        )
+    except (ValueError, FileNotFoundError) as error:
+        raise SystemExit(f"source intake blocked: {error}") from error
+    _print_json(result)
 
 
 def _train_dl(lightning_args: list[str]) -> None:
@@ -127,22 +170,12 @@ def build_parser() -> argparse.ArgumentParser:
         dest="data_action", metavar="ACTION", required=True
     )
     data_actions.add_parser(
-        "setup", help="Create the dataset directory layout."
-    ).set_defaults(run=_data_setup)
-    split = data_actions.add_parser("split", help="Create train/val/test splits.")
-    split.add_argument(
-        "--force", action="store_true", help="Rebuild the split if it exists."
-    )
-    split.set_defaults(run=_data_split)
-    data_actions.add_parser(
-        "download", help="Download PlantVillage and PlantDoc."
+        "download", help="Download pinned PlantVillage and PlantDoc packages."
     ).set_defaults(run=_data_download)
-    data_actions.add_parser(
-        "init", help="Run setup, split and download in order."
-    ).set_defaults(run=_data_init)
     synthetic = data_actions.add_parser(
         "synthetic", help="Write a tiny synthetic dataset for smoke tests."
     )
+    synthetic.add_argument("--root", type=Path, default=ARTIFACTS_DIR / "synthetic")
     synthetic.add_argument("--per-class", type=int, default=20)
     synthetic.add_argument("--size", type=int, default=64)
     synthetic.set_defaults(run=_data_synthetic)
@@ -255,9 +288,7 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate_actions.add_parser("predict", help="Classify one image (forwarded).")
 
     # planned commands owned by open tickets
-    commands.add_parser(
-        "freeze", help="Freeze curated datasets and manifests (planned)."
-    ).set_defaults(run=_planned("freeze", "#718"))
+    _add_freeze(commands)
     commands.add_parser(
         "queue", help="Run the resumable training queue (planned)."
     ).set_defaults(run=_planned("queue", "#720"))
@@ -266,6 +297,52 @@ def build_parser() -> argparse.ArgumentParser:
     ).set_defaults(run=_planned("profile", "#721"))
 
     return parser
+
+
+def _add_freeze(commands: "argparse._SubParsersAction") -> None:
+    freeze = commands.add_parser(
+        "freeze", help="Freeze the target dataset, its cache decision and sources."
+    )
+    actions = freeze.add_subparsers(
+        dest="freeze_action", metavar="ACTION", required=True
+    )
+
+    def common(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--output", type=Path, default=FREEZE_DIR)
+        parser.add_argument("--workers", type=int, default=4)
+
+    target = actions.add_parser(
+        "target", help="Fingerprint, curate, resolve identity and write the manifest."
+    )
+    common(target)
+    target.add_argument("--image-root", type=Path, default=SOURCE_INVENTORY_DIR)
+    target.add_argument("--rules", type=Path, default=CURATION_RULES_PATH)
+    target.add_argument("--reviews", type=Path, default=IDENTITY_REVIEWS_PATH)
+    target.add_argument("--seed", type=int, default=DEFAULT_SEED)
+    target.add_argument(
+        "--force", action="store_true", help="Replace a different completed freeze."
+    )
+    target.set_defaults(run=_freeze_target)
+
+    cache = actions.add_parser(
+        "cache", help="Bounded train/val cache probe and its cache decision."
+    )
+    common(cache)
+    cache.add_argument("--image-root", type=Path, default=SOURCE_INVENTORY_DIR)
+    cache.add_argument("--budget-seconds", type=float, default=DEFAULT_BUDGET_SECONDS)
+    cache.add_argument("--max-bytes", type=int, default=DEFAULT_MAX_BYTES)
+    cache.set_defaults(run=_freeze_cache)
+
+    source = actions.add_parser(
+        "source", help="Record a pinned source package and check it against the target."
+    )
+    common(source)
+    source.add_argument("name", choices=sorted(SOURCES))
+    source.add_argument("source_root", type=Path)
+    source.add_argument("--package-version", type=int, default=None)
+    source.add_argument("--leaf-map", type=Path, default=None)
+    source.add_argument("--seed", type=int, default=DEFAULT_SEED)
+    source.set_defaults(run=_freeze_source)
 
 
 def main(argv: Sequence[str] | None = None) -> None:

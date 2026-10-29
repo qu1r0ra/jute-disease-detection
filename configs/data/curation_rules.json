@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "supported_labels": [
+    "Cercospora Leaf Spot",
+    "Dieback",
+    "General Damage",
+    "Healthy",
+    "Mosaic",
+    "Stem Rot"
+  ],
+  "excluded_labels": {},
+  "quarantine": [
+    {
+      "label": "Healthy",
+      "filename_regex": "^IMG_20240502",
+      "source": "Mridha (provisional)",
+      "reason": "Mridha contribution: Healthy labels are not substantiated; withheld from supervised results (owner decision 2026-10-30). Files are preserved."
+    }
+  ],
+  "sources": [
+    {"source": "Mridha (provisional)", "label": "Healthy", "filename_regex": "^IMG_20240502"},
+    {"source": "Jannat (provisional)", "label": "Healthy", "filename_regex": "^Healthy"},
+    {"source": "Jannat (provisional)", "label": "Mosaic", "filename_regex": "^Golden_Mosaic"},
+    {"source": "Jannat (provisional)", "label": "Cercospora Leaf Spot", "filename_regex": "^Cescospora_leaf_spot"},
+    {"source": "Islam-Sheikh (provisional)", "label": "Healthy", "filename_regex": "^Fresh"},
+    {"source": "Islam-Sheikh (provisional)", "label": "Mosaic", "filename_regex": "^Mosaic"},
+    {"source": "Islam-Sheikh (provisional)", "label": "Dieback", "filename_regex": "^Dieback"},
+    {"source": "Islam-Sheikh (provisional)", "label": "General Damage", "filename_regex": "^Holed"},
+    {"source": "Islam-Sheikh (provisional)", "label": "Stem Rot", "filename_regex": "^Stem_Soft_Rot"}
+  ],
+  "min_support": 10
+}

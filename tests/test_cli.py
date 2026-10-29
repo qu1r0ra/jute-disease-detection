@@ -11,11 +11,7 @@ from jute_disease.cli import build_parser, main
 
 # Forwarded commands (train dl, train pretrain, evaluate predict) are routed by main().
 RESOLVABLE_COMMANDS = [
-    ["data", "setup"],
-    ["data", "split"],
-    ["data", "split", "--force"],
     ["data", "download"],
-    ["data", "init"],
     ["data", "synthetic", "--per-class", "2", "--size", "8"],
     ["train", "ml"],
     ["train", "ml", "--all", "--classifiers", "rf", "--feature-types", "crafted"],
@@ -24,10 +20,12 @@ RESOLVABLE_COMMANDS = [
     ["train", "grid", "configs/historical/grid/mobilenet_v2_grid.yaml"],
     ["evaluate", "aggregate", "--exp-names", "a"],
     ["evaluate", "ml", "--classifier", "rf"],
+    ["freeze", "target"],
+    ["freeze", "cache", "--budget-seconds", "5"],
+    ["freeze", "source", "plantdoc", "some/dir", "--package-version", "7"],
 ]
 
 PLANNED_COMMANDS = [
-    (["freeze"], "#718"),
     (["queue"], "#720"),
     (["profile"], "#721"),
     (["evaluate"], "#721"),

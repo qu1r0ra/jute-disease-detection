@@ -11,17 +11,20 @@ setup:
 
 # Data
 
-data:
-    uv run jute-disease data init
-
-data-setup:
-    uv run jute-disease data setup
-
-data-split:
-    uv run jute-disease data split
-
 data-download:
     uv run jute-disease data download
+
+# Freeze the target dataset: curation, identity, grouped 70/15/15 manifest and receipt
+freeze *args:
+    uv run jute-disease freeze target {{args}}
+
+# Bounded train/val image-cache probe and decision (reads the frozen manifest)
+freeze-cache *args:
+    uv run jute-disease freeze cache {{args}}
+
+# Record a pinned source package and check it against the frozen target
+freeze-source name root *args:
+    uv run jute-disease freeze source {{name}} {{root}} {{args}}
 
 synthetic:
     uv run jute-disease data synthetic

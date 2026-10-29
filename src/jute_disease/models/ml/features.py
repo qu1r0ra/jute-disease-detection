@@ -1,10 +1,12 @@
+import hashlib
+import json
 from abc import ABC, abstractmethod
 
 import cv2
 import numpy as np
 from PIL import Image
 from skimage.feature import graycomatrix, graycoprops, hog, local_binary_pattern
-from torchvision.datasets import ImageFolder
+from torch.utils.data import Dataset
 from tqdm import tqdm
 
 from jute_disease.config import IMAGE_SIZE, ML_FEATURES_DIR
@@ -129,22 +131,50 @@ class RawPixelFeatureExtractor(BaseFeatureExtractor):
         return img_array.flatten().astype(np.float32)
 
 
-def extract_features(
-    dataset: ImageFolder,
-    extractor: BaseFeatureExtractor,
-    cache_name: str | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
-    """Extract features using the provided extractor, with optional caching."""
-    if cache_name is not None:
-        ML_FEATURES_DIR.mkdir(parents=True, exist_ok=True)
-        extractor_name = type(extractor).__name__.lower()
-        full_cache_name = f"{extractor_name}_{cache_name}"
-        x_path = ML_FEATURES_DIR / f"{full_cache_name}_X.npy"
-        y_path = ML_FEATURES_DIR / f"{full_cache_name}_y.npy"
+def feature_cache_key(
+    dataset_identity: dict[str, str], extractor: BaseFeatureExtractor, length: int
+) -> str:
+    """Return the SHA-256 identifying one feature matrix.
 
-        if x_path.exists() and y_path.exists():
-            logger.info(f"Loading cached features: {full_cache_name}")
-            return np.load(x_path), np.load(y_path)
+    The key covers the dataset (manifest, partition, pixel source and its
+    preprocessing), the extractor's class and settings, and the sample count, so
+    a cached matrix can never be reused for different inputs.
+    """
+    payload = {
+        "dataset": dataset_identity,
+        "extractor": {"class": type(extractor).__name__, "config": vars(extractor)},
+        "length": length,
+    }
+    text = json.dumps(payload, sort_keys=True, default=str)
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+def extract_features(
+    dataset: Dataset,
+    extractor: BaseFeatureExtractor,
+    cache: bool = True,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Extract features with the provided extractor.
+
+    Features are cached only for datasets that expose an ``identity`` mapping
+    (such as ``ManifestDataset``). The cache file is named by its identity key
+    and carries a sidecar; a missing sidecar, a different key or a different
+    sample count means recomputation, never reuse.
+    """
+    identity = getattr(dataset, "identity", None) if cache else None
+    if identity is not None and identity.get("deterministic") != "true":
+        identity = None
+    if identity is not None:
+        key = feature_cache_key(identity, extractor, len(dataset))
+        ML_FEATURES_DIR.mkdir(parents=True, exist_ok=True)
+        x_path = ML_FEATURES_DIR / f"{key}_X.npy"
+        y_path = ML_FEATURES_DIR / f"{key}_y.npy"
+        meta_path = ML_FEATURES_DIR / f"{key}.json"
+        if x_path.exists() and y_path.exists() and meta_path.exists():
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            if meta.get("key") == key and meta.get("length") == len(dataset):
+                logger.info(f"Loading cached features: {key[:12]}")
+                return np.load(x_path), np.load(y_path)
 
     features_list = []
     labels_list = []
@@ -159,10 +189,17 @@ def extract_features(
     X = np.array(features_list)
     y = np.array(labels_list)
 
-    if cache_name is not None:
+    if identity is not None:
         np.save(x_path, X)
         np.save(y_path, y)
-        logger.info(f"Saved cached features: {full_cache_name}")
+        meta_path.write_text(
+            json.dumps(
+                {"key": key, "length": len(dataset), "identity": identity},
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+        logger.info(f"Saved cached features: {key[:12]}")
 
     return X, y
 

@@ -15,19 +15,28 @@ def test_root_package_exposes_subpackages() -> None:
 def test_data_api() -> None:
     from jute_disease.data import (
         DataModule,
-        dl_train_transforms,
-        dl_val_transforms,
-        ml_train_transforms,
-        ml_val_transforms,
-        split_data,
+        ManifestDataset,
+        build_manifest,
+        check_overlap,
+        classical_pipeline,
+        create_pipeline,
+        derive_validation,
+        load_manifest,
+        write_manifest,
     )
 
-    assert DataModule is not None
-    assert dl_train_transforms is not None
-    assert dl_val_transforms is not None
-    assert ml_train_transforms is not None
-    assert ml_val_transforms is not None
-    assert split_data is not None
+    for name in (
+        DataModule,
+        ManifestDataset,
+        build_manifest,
+        check_overlap,
+        classical_pipeline,
+        create_pipeline,
+        derive_validation,
+        load_manifest,
+        write_manifest,
+    ):
+        assert name is not None
 
 
 def test_models_dl_api() -> None:

@@ -1,105 +1,104 @@
-"""Unit tests for curation: directory setup and train/val/test splitting."""
+"""Curation rules: exclusions, quarantine and provenance records."""
 
+import json
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
-from jute_disease.data import curation
+from jute_disease.config import CURATION_RULES_PATH
+from jute_disease.data.curation import (
+    UNASSIGNED_SOURCE,
+    CurationRules,
+    curate,
+    load_rules,
+    source_of,
+)
+from jute_disease.data.inventory import InventoryRecord
+from jute_disease.data.synthetic import SyntheticPlan
 
 
-def test_setup_data_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
-    by_class_dir = data_dir / "by_class"
-    ml_split_dir = data_dir / "ml_split"
-
-    (data_dir / "disease_classes.txt").write_text("class1\nclass2\n")
-
-    monkeypatch.setattr(curation, "DATA_DIR", data_dir)
-    monkeypatch.setattr(curation, "BY_CLASS_DIR", by_class_dir)
-    monkeypatch.setattr(curation, "ML_SPLIT_DIR", ml_split_dir)
-
-    curation.setup_data_directory()
-
-    assert (by_class_dir / "class1").exists()
-    assert (by_class_dir / "class2").exists()
-    assert (ml_split_dir / "train" / "class1").exists()
-    assert (ml_split_dir / "val" / "class2").exists()
+def test_shipped_rules_load_and_hash_is_stable() -> None:
+    rules = load_rules(CURATION_RULES_PATH)
+    assert len(rules.supported_labels) == 6
+    assert rules.digest() == load_rules(CURATION_RULES_PATH).digest()
+    assert rules.quarantine[0].filename_regex == "^IMG_20240502"
 
 
-def test_setup_data_directory_missing_classes_file(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+def test_quarantine_files_are_excluded_with_a_reason_and_preserved(
+    synthetic: SyntheticPlan, inventory: list[InventoryRecord], rules: CurationRules
 ) -> None:
-    """Missing disease_classes.txt must log an error and not crash."""
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
-
-    monkeypatch.setattr(curation, "DATA_DIR", data_dir)
-    monkeypatch.setattr(curation, "BY_CLASS_DIR", data_dir / "by_class")
-    monkeypatch.setattr(curation, "ML_SPLIT_DIR", data_dir / "ml_split")
-
-    curation.setup_data_directory()
-
-    assert "not found" in caplog.text
+    result = curate(inventory, rules)
+    excluded = {e.path: e for e in result.excluded}
+    assert set(excluded) == set(synthetic.quarantine_files)
+    assert all(e.kind == "quarantine" for e in excluded.values())
+    assert all("Mridha" in e.source for e in excluded.values())
+    assert len(result.admitted) + len(result.excluded) == len(inventory)
+    assert all((synthetic.root / p).is_file() for p in excluded)
 
 
-def _make_split_fixture(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, n_images: int = 4
-) -> Path:
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
-    by_class_dir = data_dir / "by_class"
-    by_class_dir.mkdir()
-    ml_split_dir = data_dir / "ml_split"
-
-    cls_dir = by_class_dir / "class1"
-    cls_dir.mkdir()
-    for i in range(n_images):
-        (cls_dir / f"img{i}.jpg").write_text("data")
-
-    monkeypatch.setattr(curation, "BY_CLASS_DIR", by_class_dir)
-    monkeypatch.setattr(curation, "ML_SPLIT_DIR", ml_split_dir)
-    monkeypatch.setattr(curation, "IMAGE_EXTENSIONS", [".jpg"])
-    monkeypatch.setattr(curation, "SPLITS", {"train": 0.5, "val": 0.25, "test": 0.25})
-    return ml_split_dir
-
-
-def test_split_data(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    ml_split_dir = _make_split_fixture(tmp_path, monkeypatch)
-
-    curation.split_data()
-
-    assert len(list((ml_split_dir / "train" / "class1").glob("*.jpg"))) == 2
-    assert len(list((ml_split_dir / "val" / "class1").glob("*.jpg"))) == 1
-    assert len(list((ml_split_dir / "test" / "class1").glob("*.jpg"))) == 1
-
-
-def test_split_data_skips_if_exists(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+def test_unsupported_and_excluded_labels_are_recorded(
+    inventory: list[InventoryRecord], rules: CurationRules
 ) -> None:
-    """split_data must be a no-op if the split dir already has content."""
-    import logging
-
-    ml_split_dir = _make_split_fixture(tmp_path, monkeypatch)
-    ml_split_dir.mkdir(parents=True)
-    # Put a file *inside* the split dir so iterdir() returns non-empty
-    (ml_split_dir / "sentinel").write_text("exists")
-
-    with caplog.at_level(logging.INFO):
-        curation.split_data()
-
-    assert "Skipping" in caplog.text
+    extra = replace(inventory[0], path="Alien/x.png", label="Alien", sha256="a" * 64)
+    flagged = replace(
+        inventory[1], path="Flagged/y.png", label="Flagged", sha256="b" * 64
+    )
+    custom = replace(rules, excluded_labels=(("Flagged", "label audit pending"),))
+    result = curate([*inventory, extra, flagged], custom)
+    kinds = {e.path: (e.kind, e.reason) for e in result.excluded}
+    assert kinds["Alien/x.png"][0] == "unsupported-label"
+    assert kinds["Flagged/y.png"] == ("excluded-label", "label audit pending")
 
 
-def test_split_data_force_overwrites(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+def test_dropping_a_whole_class_is_refused(
+    inventory: list[InventoryRecord], rules: CurationRules
 ) -> None:
-    """force=True must delete and re-create the split directory."""
-    ml_split_dir = _make_split_fixture(tmp_path, monkeypatch)
+    without = [r for r in inventory if r.label != "Dieback"]
+    with pytest.raises(ValueError, match="Dieback"):
+        curate(without, rules)
 
-    curation.split_data()
-    assert (ml_split_dir / "train" / "class1").exists()
 
-    # Run again with force — should complete without error
-    curation.split_data(force=True)
-    assert len(list((ml_split_dir / "train" / "class1").glob("*.jpg"))) == 2
+def test_sources_follow_the_first_matching_rule(rules: CurationRules) -> None:
+    def record(path: str, label: str) -> InventoryRecord:
+        return InventoryRecord(path, label, None, 1, 1, 1, "0" * 64, "0" * 64, (0,) * 8)
+
+    assert "Jannat" in source_of(record("Healthy/Healthy (3).jpg", "Healthy"), rules)
+    assert "Islam" in source_of(record("Healthy/Fresh-001.jpg", "Healthy"), rules)
+    assert "Mridha" in source_of(record("Healthy/IMG_20240502_1.jpg", "Healthy"), rules)
+    assert source_of(record("Mosaic/other.jpg", "Mosaic"), rules) == UNASSIGNED_SOURCE
+    # a rule scoped to a label does not leak into another label
+    assert (
+        source_of(record("Dieback/Fresh-1.jpg", "Dieback"), rules) == UNASSIGNED_SOURCE
+    )
+
+
+def test_summary_counts_balance(
+    inventory: list[InventoryRecord], rules: CurationRules
+) -> None:
+    summary = curate(inventory, rules).summary()
+    assert summary["admitted"] + summary["excluded"] == len(inventory)
+    assert sum(summary["admitted_by_label"].values()) == summary["admitted"]
+
+
+def test_bad_rules_files_raise(tmp_path: Path) -> None:
+    def write(**overrides: object) -> Path:
+        data = {"version": 1, "supported_labels": ["A"], **overrides}
+        path = tmp_path / "rules.json"
+        path.write_text(json.dumps(data))
+        return path
+
+    with pytest.raises(ValueError, match="version"):
+        load_rules(write(version=9))
+    with pytest.raises(ValueError, match="at least one"):
+        load_rules(write(supported_labels=[]))
+    with pytest.raises(ValueError, match="both supported and excluded"):
+        load_rules(write(excluded_labels={"A": "why"}))
+    with pytest.raises(Exception, match="unterminated|missing|nothing"):
+        load_rules(
+            write(
+                quarantine=[
+                    {"label": "A", "filename_regex": "(", "source": "s", "reason": "r"}
+                ]
+            )
+        )
