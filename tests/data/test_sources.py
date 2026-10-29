@@ -74,6 +74,12 @@ def test_find_source_root_descends_wrappers_and_rejects_other_trees(
         find_source_root(tmp_path)
 
 
+def test_find_source_root_ignores_hidden_marker_folders(tmp_path: Path) -> None:
+    (tmp_path / ".complete" / "datasets").mkdir(parents=True)
+    (tmp_path / "Package" / "train").mkdir(parents=True)
+    assert find_source_root(tmp_path) == tmp_path / "Package"
+
+
 def test_scan_source_accepts_the_pinned_counts(package: Path, spec: SourceSpec) -> None:
     assert len(scan_source(package, spec, workers=2)) > 0
 

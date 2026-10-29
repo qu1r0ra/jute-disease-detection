@@ -119,10 +119,15 @@ def verify_counts(records: list[InventoryRecord], spec: SourceSpec) -> None:
 
 
 def find_source_root(path: Path) -> Path:
-    """Descend single-folder wrappers until the official partitions are found."""
+    """Descend single-folder wrappers until the official partitions are found.
+
+    Hidden folders (such as the downloader's ``.complete`` marker) are ignored.
+    """
     current = Path(path)
     for _ in range(4):
-        children = [p for p in current.iterdir() if p.is_dir()]
+        children = [
+            p for p in current.iterdir() if p.is_dir() and not p.name.startswith(".")
+        ]
         if any(p.name in PARTITIONS for p in children):
             return current
         if len(children) != 1:
