@@ -88,7 +88,7 @@ Ensure you have the following installed on your local machine:
 This project automates data acquisition and experiment tracking via third-party APIs:
 
 1. **Jute dataset:** The unified six-class dataset is distributed as `data.zip` in this [Google Drive folder](https://drive.google.com/drive/folders/1WoQ-Xzy0Prl9lInHW5JpGX4tpE9YDUua?usp=sharing). Unzip it into the project root so that `data/by_class/` exists. See [References](#9-references) for the three source datasets it merges.
-2. **Kaggle API:** Only needed to download the PlantVillage (Hughes & Salathé, 2015; Mohanty et al., 2016) and PlantDoc (Singh et al., 2020) pretraining datasets (`just data`). Ensure you have a `kaggle.json` in `~/.kaggle/`.
+2. **Kaggle API:** Only needed to download the PlantVillage (Hughes & Salathé, 2015; Mohanty et al., 2016) and PlantDoc (Singh et al., 2020) pretraining datasets (`just data-download`, which pins the Kaggle package versions). Ensure you have a `kaggle.json` in `~/.kaggle/`.
 3. **Weights & Biases (WandB):** Used for experiment logs and interactive dashboards. Run `wandb login` before starting deep learning training.
 
 The unified jute dataset merges three public sources. The repository code is Apache-2.0; the data keeps its original terms:
@@ -149,11 +149,16 @@ Alternatively, `just` drives the same experiments from the command line (see `ju
 To retrain the models from the command line instead of the notebooks:
 
 1. Install dependencies (`uv sync`) and unzip `data.zip` so that `data/by_class/` exists ([3.2](#32-data--platform-credentials)).
-2. Create the stratified 70/15/15 split (seed 42) and download the PlantVillage/PlantDoc pretraining data:
+2. Freeze the leakage-controlled 70/15/15 split (seed 42) and download the PlantVillage/PlantDoc pretraining data:
 
    ```bash
-   just data
+   just freeze --image-root <path-to-original-images>   # curation, identity groups, manifest and receipt
+   just freeze-cache                                      # optional bounded train/val image cache and its decision
+   just data-download
+   just freeze-source plantdoc data/external/plantdoc --package-version 7
    ```
+
+   The freeze writes `artifacts/freeze/target/` (manifest plus a receipt that hashes every input). Training reads partitions only through that manifest, and a directory without its receipt is never treated as a completed freeze.
 
 3. Point experiment tracking at your own W&B account. The configs log to the `grade-descent` entity, so either edit `entity` in the `WandbLogger` block of the files under `configs/historical/`, or run offline with `WANDB_MODE=offline`.
 4. Smoke-test the pipeline, then train:

@@ -12,7 +12,6 @@ from jute_disease.data.inventory import inventory_digest, read_inventory
 from jute_disease.data.manifest import load_manifest
 from jute_disease.data.synthetic import make_synthetic_data
 
-
 pytestmark = pytest.mark.slow
 
 

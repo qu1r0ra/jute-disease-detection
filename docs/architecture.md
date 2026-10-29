@@ -36,8 +36,8 @@ The project exposes a single console entry point, `jute-disease` (`jute_disease.
 
 - **`jute-disease train dl fit|test`**: The deep learning engine. Arguments are forwarded to the **Lightning CLI**, which drives training and testing from configuration files.
 - **`jute-disease train ml --all`**: Classical ML training over every classifier and feature combination. It drives the pipeline in `src/jute_disease/training/engines/ml/`.
-- **Other commands**: `data` (setup, split, download, synthetic), `train` (baselines, cv, grid, pretrain), and `evaluate` (aggregate, ml, predict). `jute-disease --help` lists them all.
-- Commands planned in open issues (`freeze`, `queue`, `profile`, and `evaluate` on its own) exit non-zero and name the issue that owns them.
+- **Other commands**: `data` (download, synthetic), `freeze` (target, cache, source), `train` (baselines, cv, grid, pretrain), and `evaluate` (aggregate, ml, predict). `jute-disease --help` lists them all.
+- Commands planned in open issues (`queue`, `profile`, and `evaluate` on its own) exit non-zero and name the issue that owns them.
 
 ### 3. Deep Learning Service (Lightning + Timm)
 
@@ -58,8 +58,11 @@ Classical ML models are integrated using a custom adapter pattern to unify them 
 
 ### 5. Data Management & Reproducibility
 
+- **Freeze** (`jute-disease freeze`): fingerprints the original images (byte, decoded-pixel and perceptual hashes), applies the curation rules and the identity policy, and writes a seed-42 group-aware 70/15/15 manifest. A receipt written last hashes every dependency (inventory, rules, reviews, identity, preprocessing) with the manifest and partition digests and per-class support. A manifest without a matching receipt is never loaded, and a different completed freeze is only replaced with `--force`.
+- **Readers**: `ManifestDataset` / `open_partition` read frozen partitions in stable image-id order, from the originals or from the lossless image cache. A requested cache never falls back to the originals.
+- **Sources**: PlantVillage and PlantDoc are recorded as pinned packages (exact counts, version and licence caveats), get a grouped validation split, and lose any image that matches the frozen target validation or test images.
 - **DataModule**:
-  - Handles dataset splitting (Train/Val/Test) with fixed seeds.
+  - Serves manifest partitions (or a synthetic tree), with fixed seeds.
   - Supports **K-Fold Cross-Validation** via `set_fold()`.
   - Implements **Weighted Random Sampling** to handle class imbalance.
 - **Transforms**: Uses a factory pattern (`create_pipeline`) via **Albumentations** for robust and deterministic data augmentation. Supports both global/fixed preprocessing for ML and resolution-parameterized preprocessing for DL.
