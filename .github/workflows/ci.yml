@@ -71,13 +71,13 @@ jobs:
 
       - name: Build synthetic dataset and split
         run: |
-          uv run python scripts/make_synthetic_data.py
-          uv run python src/jute_disease/data/utils.py split
+          uv run jute-disease data synthetic
+          uv run jute-disease data split
 
       - name: Train one batch (fast_dev_run)
         run: >
-          uv run python scripts/train_dl.py fit
-          --config configs/baselines/mobilenet_v2.yaml
+          uv run jute-disease train dl fit
+          --config configs/historical/baselines/mobilenet_v2.yaml
           --trainer.fast_dev_run=True
           --trainer.logger=null
           --trainer.accelerator=cpu

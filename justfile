@@ -1,0 +1,98 @@
+# Task runner for the study workflow. Each recipe wraps one `jute-disease` command.
+# List recipes with `just --list`; the commands behind them are in `jute-disease --help`.
+
+default:
+    @just --list
+
+# Environment
+
+setup:
+    uv sync --all-groups
+
+# Data
+
+data:
+    uv run jute-disease data init
+
+data-setup:
+    uv run jute-disease data setup
+
+data-split:
+    uv run jute-disease data split
+
+data-download:
+    uv run jute-disease data download
+
+synthetic:
+    uv run jute-disease data synthetic
+
+# Pretraining on external data
+
+pretrain:
+    uv run jute-disease train pretrain --data_dir data/external/plantvillage --output_path artifacts/checkpoints/pretrained/mobilenet_v2-plantvillage.ckpt --epochs 5
+
+# Classical ML
+
+train-ml:
+    uv run jute-disease train ml --all
+
+test-ml classifier="rf" feature="crafted":
+    uv run jute-disease evaluate ml --classifier {{classifier}} --feature_type {{feature}}
+
+# Deep learning
+
+train-dl:
+    uv run jute-disease train baselines
+
+train-dl-single model="mobilenet_v2":
+    uv run jute-disease train baselines --config configs/historical/baselines/{{model}}.yaml
+
+train-dl-check:
+    uv run jute-disease train dl fit --config configs/historical/baselines/mobilenet_v2.yaml --trainer.fast_dev_run=True
+
+train-cv folds="5":
+    uv run jute-disease train cv configs/historical/baselines/mobilenet_v2.yaml --folds {{folds}}
+
+train-dl-512:
+    uv run jute-disease train dl fit --config configs/historical/experiments/mobilenet_v2_512.yaml
+
+# Grid search
+
+grid-search:
+    uv run jute-disease train grid configs/historical/grid/mobilenet_v2_grid.yaml
+
+grid-search-check:
+    uv run jute-disease train grid configs/historical/grid/mobilenet_v2_grid.yaml --fast-dev-run
+
+grid-search-finetune:
+    uv run jute-disease train grid configs/historical/grid/mobilenet_v2_finetune_grid.yaml --base-config configs/historical/baselines/mobilenet_v2.yaml
+
+# Aggregation
+
+aggregate exps:
+    uv run jute-disease evaluate aggregate --exp-names {{exps}}
+
+# Quality and tests
+
+test:
+    uv run pytest
+
+test-all:
+    uv run pytest -m ""
+
+lint:
+    uv run ruff check .
+
+format:
+    uv run ruff check --fix . && uv run ruff format .
+
+sync-nb:
+    uv run jupytext --sync "notebooks/*/*.py"
+
+# Cleanup
+
+clean:
+    rm -rf .coverage htmlcov lightning_logs wandb .pytest_cache .ruff_cache
+
+clean-artifacts:
+    rm -rf artifacts/ml_models artifacts/checkpoints artifacts/features
