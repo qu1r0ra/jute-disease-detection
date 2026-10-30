@@ -28,5 +28,4 @@ wandb/
 # Private context and agent guidance
 .context/
 .claude/
-AGENTS.md
-CLAUDE.md
+/docs/research/
