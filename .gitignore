@@ -29,3 +29,4 @@ wandb/
 .context/
 .claude/
 /docs/research/
+/paper/
