@@ -25,8 +25,7 @@ artifacts/
 lightning_logs/
 wandb/
 
-# Private context and agent guidance
+# Private working context and research
 .context/
 .claude/
-AGENTS.md
-CLAUDE.md
+/docs/research/
