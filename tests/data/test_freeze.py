@@ -146,6 +146,38 @@ def test_source_intake_rejects_a_version_outside_the_source_pin(tmp_path: Path) 
         )
 
 
+@pytest.mark.parametrize("digest", ["", "not-a-digest", "0" * 63, "g" * 64])
+def test_source_intake_validates_the_digest_before_scanning(
+    tmp_path: Path, digest: str
+) -> None:
+    with pytest.raises(SourceMismatchError, match="digest"):
+        intake_source(
+            "plantdoc",
+            tmp_path / "missing-package",
+            tmp_path / "missing-freeze",
+            package_version=7,
+            package_digest=digest,
+        )
+
+
+def test_source_intake_rejects_an_unreadable_leaf_map(
+    synthetic: SyntheticPlan, rules_path: Path, tmp_path: Path
+) -> None:
+    output = tmp_path / "freeze"
+    _freeze(synthetic, rules_path, output)
+    leaf_map = tmp_path / "leaf.json"
+    leaf_map.write_text("{not json", encoding="utf-8")
+    with pytest.raises(FreezeBlockedError, match="Leaf map"):
+        intake_source(
+            "plantdoc",
+            tmp_path / "missing-package",
+            output,
+            package_version=7,
+            package_digest="0" * 64,
+            leaf_map_path=leaf_map,
+        )
+
+
 def test_source_intake_rejects_a_package_with_other_counts(
     synthetic: SyntheticPlan, rules_path: Path, tmp_path: Path
 ) -> None:

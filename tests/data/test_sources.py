@@ -152,7 +152,7 @@ def test_derived_validation_repeats_for_a_seed_and_validates_arguments(
     assert [r.image_id for r in first.val] == [r.image_id for r in again.val]
     with pytest.raises(ValueError, match="fraction"):
         derive_validation(records, fraction=1.5)
-    with pytest.raises(ValueError, match="train"):
+    with pytest.raises(SourceMismatchError, match="train"):
         derive_validation([r for r in records if r.source_partition == "test"])
 
 
@@ -196,6 +196,40 @@ def test_provenance_records_identity_counts_and_version_rules(
     assert result["source"]["license_evidence"] == ["fixture"]
     with pytest.raises(SourceMismatchError, match="version"):
         provenance(spec, records, 4, split, None)
+
+
+def test_provenance_keeps_unverified_identity_and_terms_as_blockers(
+    records: list[InventoryRecord], spec: SourceSpec
+) -> None:
+    split = derive_validation(records, seed=42)
+    blocked = provenance(spec, records, 3, split, None)["readiness"]
+    assert blocked["ready"] is False
+    assert blocked["blockers"] == [
+        "Publisher identity has not been independently verified",
+        "Source terms have not been verified",
+    ]
+    cleared = replace(
+        spec,
+        publisher_identity_evidence=("fixture evidence",),
+        publisher_identity_verified=True,
+        terms_verified=True,
+    )
+    assert provenance(cleared, records, 3, split, None)["readiness"] == {
+        "ready": True,
+        "blockers": [],
+    }
+    claimed = replace(spec, publisher_identity_verified=True)
+    assert provenance(claimed, records, 3, split, None)["readiness"]["blockers"][
+        0
+    ].startswith("Publisher identity")
+
+
+def test_a_source_with_an_empty_partition_is_a_mismatch(
+    spec: SourceSpec, tmp_path: Path
+) -> None:
+    (tmp_path / "train").mkdir()
+    with pytest.raises(SourceMismatchError, match="No images"):
+        scan_source(tmp_path, spec, workers=1)
 
 
 def _near_copy(record: InventoryRecord, tmp_path: Path) -> InventoryRecord:

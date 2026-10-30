@@ -100,6 +100,21 @@ PLANTVILLAGE = SourceSpec(
 )
 
 
+def readiness_blockers(spec: SourceSpec) -> tuple[str, ...]:
+    """Return what still prevents a source from feeding pretraining.
+
+    A caller-supplied package version and digest only show that the bytes match
+    the expected package; they never establish the publisher's identity or the
+    terms. Both stay blocked until the tracked spec carries that evidence.
+    """
+    blockers = []
+    if not spec.publisher_identity_verified or not spec.publisher_identity_evidence:
+        blockers.append("Publisher identity has not been independently verified")
+    if not spec.terms_verified:
+        blockers.append("Source terms have not been verified")
+    return tuple(blockers)
+
+
 def observed_counts(records: list[InventoryRecord]) -> dict[str, PartitionCounts]:
     """Return class and image counts per official partition."""
     labels: dict[str, set[str]] = {}
@@ -150,8 +165,18 @@ def find_source_root(path: Path) -> Path:
 def scan_source(
     root: Path, spec: SourceSpec, workers: int = 4
 ) -> list[InventoryRecord]:
-    """Fingerprint a source package and verify it against ``spec``."""
-    records = build_inventory(find_source_root(root), workers=workers)
+    """Fingerprint a source package and verify it against ``spec``.
+
+    Raises:
+        SourceMismatchError: the package layout, images or counts do not match.
+    """
+    source_root = find_source_root(root)
+    try:
+        records = build_inventory(source_root, workers=workers)
+    except ValueError as error:
+        raise SourceMismatchError(
+            f"{spec.name} package is unusable: {error}"
+        ) from error
     verify_counts(records, spec)
     return records
 
@@ -230,14 +255,15 @@ def derive_validation(
     groups are assigned to one side.
 
     Raises:
-        ValueError: ``fraction`` is not in (0, 1), or there are no training images.
+        ValueError: ``fraction`` is not in (0, 1).
+        SourceMismatchError: there are no official training images.
     """
     if not 0 < fraction < 1:
         raise ValueError(f"fraction must be in (0, 1), got {fraction}")
     official = tuple(r for r in records if r.source_partition in ("test", "val"))
     training = [r for r in records if r.source_partition == "train"]
     if not training:
-        raise ValueError("The source has no official train partition")
+        raise SourceMismatchError("The source has no official train partition")
     resolution = resolve_identity(training, ())
     retained = list(resolution.retained)
     ids = [r.image_id for r in retained]
@@ -433,6 +459,10 @@ def provenance(
             name: asdict(counts) for name, counts in observed_counts(records).items()
         },
         "split": split.summary(),
+        "readiness": {
+            "ready": not readiness_blockers(spec),
+            "blockers": list(readiness_blockers(spec)),
+        },
         "overlap": None if overlap is None else overlap.summary(),
         "leaf_map": None
         if leaf_map is None

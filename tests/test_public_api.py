@@ -24,7 +24,12 @@ def test_data_api() -> None:
         SOURCES,
         TARGET_DIR,
         DataModule,
+        FreezeBlockedError,
         ManifestDataset,
+        OverlapReport,
+        SourceMismatchError,
+        SourceSpec,
+        SourceSplit,
         SyntheticPlan,
         build_inventory,
         build_manifest,
@@ -32,6 +37,7 @@ def test_data_api() -> None:
         classical_pipeline,
         create_pipeline,
         derive_validation,
+        drop_overlap,
         file_sha256,
         find_candidates,
         find_source_root,
@@ -45,6 +51,7 @@ def test_data_api() -> None:
         observed_counts,
         probe_cache,
         provenance,
+        readiness_blockers,
         scan_source,
         verify_counts,
         write_manifest,
@@ -55,12 +62,17 @@ def test_data_api() -> None:
         DEFAULT_MAX_BYTES,
         DECISION_FILE,
         DataModule,
+        FreezeBlockedError,
         INVENTORY_FILE,
         ManifestDataset,
+        OverlapReport,
         PLANTDOC,
         PLANTVILLAGE,
         REPORT_FILE,
         SOURCES,
+        SourceMismatchError,
+        SourceSpec,
+        SourceSplit,
         SyntheticPlan,
         TARGET_DIR,
         build_manifest,
@@ -69,6 +81,7 @@ def test_data_api() -> None:
         classical_pipeline,
         create_pipeline,
         derive_validation,
+        drop_overlap,
         file_sha256,
         find_candidates,
         find_source_root,
@@ -82,11 +95,17 @@ def test_data_api() -> None:
         observed_counts,
         probe_cache,
         provenance,
+        readiness_blockers,
         scan_source,
         verify_counts,
         write_manifest,
     ):
         assert name is not None
+
+    from jute_disease import data
+
+    assert all(hasattr(data, name) for name in data.__all__)
+    assert len(set(data.__all__)) == len(data.__all__)
 
 
 def test_models_dl_api() -> None:

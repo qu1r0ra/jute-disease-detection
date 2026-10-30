@@ -26,6 +26,8 @@ from jute_disease.data import (
     DEFAULT_MAX_BYTES,
     SOURCES,
     DataModule,
+    FreezeBlockedError,
+    SourceMismatchError,
     download_plant_doc,
     download_plant_village,
     freeze_target,
@@ -111,7 +113,7 @@ def _freeze_source(args: argparse.Namespace) -> None:
             seed=args.seed,
             workers=args.workers,
         )
-    except (ValueError, FileNotFoundError) as error:
+    except (FreezeBlockedError, SourceMismatchError, FileNotFoundError) as error:
         raise SystemExit(f"source intake blocked: {error}") from error
     _print_json(result)
 

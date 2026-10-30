@@ -15,6 +15,7 @@ None of them fits a model or reads test pixels for any purpose but fingerprintin
 
 import hashlib
 import json
+import re
 from dataclasses import replace
 from pathlib import Path
 
@@ -63,6 +64,7 @@ from jute_disease.data.sources import (
     find_source_root,
     leaf_constraints,
     provenance,
+    readiness_blockers,
     scan_source,
 )
 from jute_disease.data.transforms import PreprocessingSpec
@@ -70,6 +72,7 @@ from jute_disease.data.transforms import PreprocessingSpec
 TARGET_DIR = "target"
 INVENTORY_FILE = "inventory.jsonl"
 REPORT_FILE = "freeze_report.json"
+_SHA256 = re.compile(r"[0-9a-f]{64}")
 SOURCES = {"plantdoc": PLANTDOC, "plantvillage": PLANTVILLAGE}
 
 
@@ -221,18 +224,43 @@ def load_source_manifest(
         raise FreezeBlockedError("Source intake URL differs from the pinned source")
     if report.get("package_inventory_digest") != dependencies["source_inventory"]:
         raise FreezeBlockedError("Source intake inventory differs from its manifest")
-    if not spec.publisher_identity_verified or not spec.publisher_identity_evidence:
-        raise FreezeBlockedError(
-            "Publisher identity has not been independently verified"
-        )
-    if not spec.terms_verified:
-        raise FreezeBlockedError("Source terms have not been verified")
+    if blockers := readiness_blockers(spec):
+        raise FreezeBlockedError("; ".join(blockers))
 
     image_root = Path(image_root)
     for entry in (*manifest.partition("train"), *manifest.partition("val")):
         if file_sha256(image_root / entry.path) != entry.image_id:
             raise SourceMismatchError(f"Source content changed: {entry.path}")
     return manifest
+
+
+def _check_package_identity(
+    spec: SourceSpec, package_version: int, package_digest: str
+) -> str:
+    """Validate the caller's package pin and return the normalized digest."""
+    if package_version != spec.version:
+        raise SourceMismatchError(
+            f"{spec.name} package version {package_version} differs from "
+            f"the pinned version {spec.version}"
+        )
+    digest = package_digest.strip().lower()
+    if not _SHA256.fullmatch(digest):
+        raise SourceMismatchError(
+            f"Package digest must be a 64-character hex SHA-256: {package_digest!r}"
+        )
+    return digest
+
+
+def _read_leaf_map(path: Path | None) -> dict | None:
+    if path is None:
+        return None
+    try:
+        leaf_map = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise FreezeBlockedError(f"Leaf map is unreadable: {path}") from error
+    if not isinstance(leaf_map, dict):
+        raise FreezeBlockedError(f"Leaf map is not a JSON object: {path}")
+    return leaf_map
 
 
 def intake_source(
@@ -248,6 +276,10 @@ def intake_source(
 ) -> dict:
     """Record a source package and check it against the frozen target.
 
+    The package version and inventory digest are required and checked before the
+    source is scanned. They pin the package bytes only; publisher identity and
+    terms stay a separate readiness gate recorded in the report.
+
     Raises:
         KeyError: ``name`` is not a known source.
         FreezeBlockedError: the target or source intake prerequisites are invalid.
@@ -255,11 +287,8 @@ def intake_source(
         FileNotFoundError: the target has not been frozen yet.
     """
     spec: SourceSpec = SOURCES[name.lower()]
-    if package_version != spec.version:
-        raise SourceMismatchError(
-            f"{spec.name} package version {package_version} differs from "
-            f"the pinned version {spec.version}"
-        )
+    expected_digest = _check_package_identity(spec, package_version, package_digest)
+    leaf_map = _read_leaf_map(leaf_map_path)
     output_dir = Path(output_dir)
     manifest = load_manifest(output_dir / TARGET_DIR)
     held_out = {
@@ -276,16 +305,11 @@ def intake_source(
 
     records = scan_source(source_root, spec, workers=workers)
     digest = inventory_digest(records)
-    if digest != package_digest.lower():
+    if digest != expected_digest:
         raise SourceMismatchError(
-            f"Package inventory digest mismatch: expected {package_digest!r}, "
+            f"Package inventory digest mismatch: expected {expected_digest!r}, "
             f"observed {digest}"
         )
-    leaf_map = (
-        None
-        if leaf_map_path is None
-        else json.loads(Path(leaf_map_path).read_text(encoding="utf-8"))
-    )
     train_records = [r for r in records if r.source_partition == "train"]
     extra = () if leaf_map is None else leaf_constraints(train_records, leaf_map)
     split = derive_validation(records, seed=seed, extra_constraints=extra)

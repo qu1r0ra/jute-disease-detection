@@ -60,7 +60,7 @@ Classical ML models are integrated using a custom adapter pattern to unify them 
 
 - **Freeze** (`jute-disease freeze`): fingerprints the original images (byte, decoded-pixel and perceptual hashes), applies the curation rules and the identity policy, and writes a seed-42 group-aware 70/15/15 manifest. A receipt written last hashes every dependency (inventory, rules, reviews, identity, preprocessing) with the manifest and partition digests and per-class support. A manifest without a matching receipt is never loaded, and a different completed freeze is only replaced with `--force`.
 - **Readers**: `ManifestDataset` / `open_partition` read frozen partitions in stable image-id order, from the originals or from the lossless image cache. A requested cache never falls back to the originals.
-- **Sources**: PlantVillage and PlantDoc are recorded as pinned packages (exact counts, version and licence caveats), get a grouped validation split, and lose any image that matches the frozen target validation or test images.
+- **Sources**: PlantVillage and PlantDoc are recorded as pinned packages (exact counts, version and licence caveats), get a grouped validation split, and lose any image that matches the frozen target validation or test images. Intake requires the package version and inventory digest, validated before scanning; they pin bytes, not publisher identity, so the report's `readiness` block stays blocked until independent identity evidence and verified terms are recorded.
 - **DataModule**:
   - Serves manifest partitions (or a synthetic tree), with fixed seeds.
   - Supports **K-Fold Cross-Validation** via `set_fold()`.

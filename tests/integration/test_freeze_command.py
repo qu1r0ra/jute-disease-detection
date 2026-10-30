@@ -8,9 +8,12 @@ from pathlib import Path
 import pytest
 
 from jute_disease.config import CURATION_RULES_PATH
-from jute_disease.data.inventory import inventory_digest, read_inventory
-from jute_disease.data.manifest import load_manifest
-from jute_disease.data.synthetic import make_synthetic_data
+from jute_disease.data import (
+    inventory_digest,
+    load_manifest,
+    make_synthetic_data,
+    read_inventory,
+)
 
 pytestmark = pytest.mark.slow
 
@@ -122,3 +125,40 @@ def test_regression_a_changed_input_changes_its_dependency_hash(
     new = json.loads(moved.stdout)["receipt"]["dependencies"]
     assert old["rules"] != new["rules"]
     assert old["inventory"] == new["inventory"]
+
+
+def _source(inputs: dict[str, Path], *extra: str) -> subprocess.CompletedProcess:
+    return _run(
+        "freeze",
+        "source",
+        "plantdoc",
+        str(inputs["base"] / "no-such-package"),
+        "--output",
+        str(inputs["base"] / "no-such-freeze"),
+        *extra,
+    )
+
+
+def test_source_command_requires_both_package_pins(inputs: dict[str, Path]) -> None:
+    no_digest = _source(inputs, "--package-version", "7")
+    no_version = _source(inputs, "--package-digest", "0" * 64)
+    assert no_digest.returncode == no_version.returncode == 2
+    assert "--package-digest" in no_digest.stderr
+    assert "--package-version" in no_version.stderr
+
+
+@pytest.mark.parametrize(
+    ("args", "message"),
+    [
+        (("--package-version", "6", "--package-digest", "0" * 64), "pinned version"),
+        (("--package-version", "7", "--package-digest", "xyz"), "digest"),
+    ],
+)
+def test_source_command_rejects_invalid_pins_before_scanning(
+    inputs: dict[str, Path], args: tuple[str, ...], message: str
+) -> None:
+    result = _source(inputs, *args)
+    assert result.returncode != 0
+    assert "source intake blocked" in result.stderr
+    assert message in result.stderr
+    assert not (inputs["base"] / "no-such-freeze").exists()

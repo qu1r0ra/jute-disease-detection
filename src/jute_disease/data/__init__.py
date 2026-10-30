@@ -79,6 +79,7 @@ from jute_disease.data.sources import (
     leaf_key,
     observed_counts,
     provenance,
+    readiness_blockers,
     scan_source,
     verify_counts,
 )
@@ -154,6 +155,7 @@ __all__ = [
     "probe_cache",
     "provenance",
     "read_inventory",
+    "readiness_blockers",
     "receipt_for",
     "resolve_identity",
     "scan_source",
