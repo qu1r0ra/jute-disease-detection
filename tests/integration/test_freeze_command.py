@@ -1,0 +1,164 @@
+"""The shared freeze command, run as a user would, on the synthetic fixture."""
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+from jute_disease.config import CURATION_RULES_PATH
+from jute_disease.data import (
+    inventory_digest,
+    load_manifest,
+    make_synthetic_data,
+    read_inventory,
+)
+
+pytestmark = pytest.mark.slow
+
+
+def _run(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, "-m", "jute_disease.cli", *args],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+@pytest.fixture(scope="module")
+def inputs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Path]:
+    base = tmp_path_factory.mktemp("freeze-command")
+    make_synthetic_data(base / "images", per_class=20, quarantine_count=4)
+    rules = json.loads(CURATION_RULES_PATH.read_text(encoding="utf-8"))
+    rules["min_support"] = 2
+    (base / "rules.json").write_text(json.dumps(rules), encoding="utf-8")
+    (base / "reviews.json").write_text(
+        json.dumps({"version": 1, "decisions": []}), encoding="utf-8"
+    )
+    return {
+        "images": base / "images",
+        "rules": base / "rules.json",
+        "reviews": base / "reviews.json",
+        "base": base,
+    }
+
+
+def _freeze(inputs: dict[str, Path], name: str, *extra: str):
+    out = inputs["base"] / name
+    result = _run(
+        "freeze",
+        "target",
+        "--image-root",
+        str(inputs["images"]),
+        "--rules",
+        str(inputs["rules"]),
+        "--reviews",
+        str(inputs["reviews"]),
+        "--output",
+        str(out),
+        "--workers",
+        "2",
+        *extra,
+    )
+    return out, result
+
+
+def test_freeze_command_writes_a_verifiable_receipt(inputs: dict[str, Path]) -> None:
+    out, result = _freeze(inputs, "first")
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    manifest = load_manifest(out / "target")
+    receipt = report["receipt"]
+    assert receipt["manifest_digest"] == manifest.digest()
+    assert receipt["seed"] == 42
+    assert receipt["fractions"] == {"train": 0.7, "val": 0.15, "test": 0.15}
+    dependencies = receipt["dependencies"]
+    assert {"inventory", "rules", "reviews", "identity", "preprocessing"} <= set(
+        dependencies
+    )
+    assert dependencies["inventory"] == inventory_digest(
+        read_inventory(out / "inventory.jsonl")
+    )
+
+
+def test_lineage_a_second_process_reproduces_the_same_freeze(
+    inputs: dict[str, Path],
+) -> None:
+    first_out, first = _freeze(inputs, "lineage-a")
+    second_out, second = _freeze(inputs, "lineage-b")
+    assert first.returncode == second.returncode == 0
+    assert json.loads(first.stdout)["receipt"] == json.loads(second.stdout)["receipt"]
+    for name in ("manifest.json", "receipt.json"):
+        assert (first_out / "target" / name).read_bytes() == (
+            second_out / "target" / name
+        ).read_bytes()
+
+
+def test_regression_a_different_freeze_is_not_replaced_without_force(
+    inputs: dict[str, Path],
+) -> None:
+    out, first = _freeze(inputs, "guarded")
+    assert first.returncode == 0
+    before = (out / "target" / "receipt.json").read_bytes()
+    _, refused = _freeze(inputs, "guarded", "--seed", "7")
+    assert refused.returncode != 0
+    assert "--force" in refused.stderr
+    assert (out / "target" / "receipt.json").read_bytes() == before
+    _, forced = _freeze(inputs, "guarded", "--seed", "7", "--force")
+    assert forced.returncode == 0
+    assert (out / "target" / "receipt.json").read_bytes() != before
+
+
+def test_regression_a_changed_input_changes_its_dependency_hash(
+    inputs: dict[str, Path],
+) -> None:
+    _, base = _freeze(inputs, "dep-base")
+    rules = json.loads(inputs["rules"].read_text(encoding="utf-8"))
+    rules["min_support"] = 3
+    changed = inputs["base"] / "rules-changed.json"
+    changed.write_text(json.dumps(rules), encoding="utf-8")
+    other = {**inputs, "rules": changed}
+    _, moved = _freeze(other, "dep-moved")
+    old = json.loads(base.stdout)["receipt"]["dependencies"]
+    new = json.loads(moved.stdout)["receipt"]["dependencies"]
+    assert old["rules"] != new["rules"]
+    assert old["inventory"] == new["inventory"]
+
+
+def _source(inputs: dict[str, Path], *extra: str) -> subprocess.CompletedProcess:
+    return _run(
+        "freeze",
+        "source",
+        "plantdoc",
+        str(inputs["base"] / "no-such-package"),
+        "--output",
+        str(inputs["base"] / "no-such-freeze"),
+        *extra,
+    )
+
+
+def test_source_command_requires_both_package_pins(inputs: dict[str, Path]) -> None:
+    no_digest = _source(inputs, "--package-version", "7")
+    no_version = _source(inputs, "--package-digest", "0" * 64)
+    assert no_digest.returncode == no_version.returncode == 2
+    assert "--package-digest" in no_digest.stderr
+    assert "--package-version" in no_version.stderr
+
+
+@pytest.mark.parametrize(
+    ("args", "message"),
+    [
+        (("--package-version", "6", "--package-digest", "0" * 64), "pinned version"),
+        (("--package-version", "7", "--package-digest", "xyz"), "digest"),
+    ],
+)
+def test_source_command_rejects_invalid_pins_before_scanning(
+    inputs: dict[str, Path], args: tuple[str, ...], message: str
+) -> None:
+    result = _source(inputs, *args)
+    assert result.returncode != 0
+    assert "source intake blocked" in result.stderr
+    assert message in result.stderr
+    assert not (inputs["base"] / "no-such-freeze").exists()

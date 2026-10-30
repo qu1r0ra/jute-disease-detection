@@ -69,17 +69,31 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-groups
 
-      - name: Build synthetic dataset and split
+      - name: Build synthetic dataset and freeze manifest
         run: |
           uv run jute-disease data synthetic
-          uv run jute-disease data split
+          uv run python - <<'PY'
+          import json
+          from pathlib import Path
+
+          rules = json.loads(Path("configs/data/curation_rules.json").read_text())
+          rules["min_support"] = 2
+          Path("artifacts/smoke-curation-rules.json").write_text(
+              json.dumps(rules), encoding="utf-8"
+          )
+          PY
+          uv run jute-disease freeze target --image-root artifacts/synthetic --rules artifacts/smoke-curation-rules.json
 
       - name: Train one batch (fast_dev_run)
         run: >
           uv run jute-disease train dl fit
           --config configs/historical/baselines/mobilenet_v2.yaml
+          --data.data_dir=null
+          --data.manifest_dir=artifacts/freeze/target
+          --data.image_root=artifacts/synthetic
           --trainer.fast_dev_run=True
           --trainer.logger=null
           --trainer.accelerator=cpu
+          --model.feature_extractor.pretrained=false
           --model.compile_model=false
           --data.num_workers=0

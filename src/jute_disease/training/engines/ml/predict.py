@@ -4,7 +4,8 @@ from typing import Any
 
 from PIL import Image
 
-from jute_disease.config import ML_SPLIT_DIR
+from jute_disease.config import MANIFEST_DIR
+from jute_disease.data import load_manifest
 from jute_disease.models.ml import (
     BaseFeatureExtractor,
     CraftedFeatureExtractor,
@@ -90,9 +91,10 @@ def predict_ml(argv: list[str] | None = None) -> None:
 
     # Try to get class names from the training directory if it exists
     class_names: list[str] | None = None
-    train_dir = ML_SPLIT_DIR / "train"
-    if train_dir.exists():
-        class_names = sorted([d.name for d in train_dir.iterdir() if d.is_dir()])
+    try:
+        class_names = list(load_manifest(MANIFEST_DIR).labels)
+    except FileNotFoundError:
+        class_names = None
 
     if class_names and prediction < len(class_names):
         result = class_names[prediction]

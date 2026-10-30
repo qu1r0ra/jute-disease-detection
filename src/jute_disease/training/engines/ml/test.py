@@ -3,10 +3,9 @@ import os
 import torch
 import wandb
 from sklearn.metrics import classification_report
-from torchvision.datasets import ImageFolder
 
-from jute_disease.config import DEFAULT_SEED, ML_SPLIT_DIR, WANDB_ENTITY, WANDB_PROJECT
-from jute_disease.data import ml_val_transforms
+from jute_disease.config import DEFAULT_SEED, WANDB_ENTITY, WANDB_PROJECT
+from jute_disease.data import classical_pipeline, open_partition
 from jute_disease.evaluation.metrics import EVAL_METRICS, format_metrics
 from jute_disease.models.ml import (
     FEATURE_EXTRACTORS,
@@ -40,16 +39,15 @@ def test_ml(
     extractor = extractor_cls()
 
     # Load Test Data
-    test_dir = ML_SPLIT_DIR / "test"
-    if not test_dir.exists():
-        logger.error(f"Test directory not found at {test_dir}")
+    try:
+        test_ds = open_partition("test", classical_pipeline())
+    except FileNotFoundError as error:
+        logger.error(f"No completed freeze to evaluate against: {error}")
         return
-
-    test_ds = ImageFolder(root=test_dir, transform=ml_val_transforms)
     class_names = test_ds.classes
 
     # Extract Features
-    X_test, y_test = extract_features(test_ds, extractor=extractor, cache_name="test")
+    X_test, y_test = extract_features(test_ds, extractor=extractor)
 
     # Predict and Evaluate
     logger.info("Running predictions on test set...")

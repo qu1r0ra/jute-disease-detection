@@ -3,10 +3,9 @@ import os
 import numpy as np
 import torch
 import wandb
-from torchvision.datasets import ImageFolder
 
-from jute_disease.config import DEFAULT_SEED, ML_SPLIT_DIR, WANDB_ENTITY, WANDB_PROJECT
-from jute_disease.data import ml_train_transforms, ml_val_transforms
+from jute_disease.config import DEFAULT_SEED, WANDB_ENTITY, WANDB_PROJECT
+from jute_disease.data import classical_pipeline, open_partition
 from jute_disease.evaluation.metrics import EVAL_METRICS, format_metrics
 from jute_disease.models.ml import (
     FEATURE_EXTRACTORS,
@@ -45,15 +44,15 @@ def train_ml(
     extractor_cls = FEATURE_EXTRACTORS[feature_type]
     extractor = extractor_cls()
 
-    train_ds = ImageFolder(root=ML_SPLIT_DIR / "train", transform=ml_train_transforms)
-    val_ds = ImageFolder(root=ML_SPLIT_DIR / "val", transform=ml_val_transforms)
-    test_ds = ImageFolder(root=ML_SPLIT_DIR / "test", transform=ml_val_transforms)
-
-    X_train, y_train = extract_features(
-        train_ds, extractor=extractor, cache_name="train"
+    # Classical features use the same deterministic preprocessing in every
+    # partition; the frozen manifest alone decides which image is where.
+    train_ds, val_ds, test_ds = (
+        open_partition(name, classical_pipeline()) for name in ("train", "val", "test")
     )
-    X_val, y_val = extract_features(val_ds, extractor=extractor, cache_name="val")
-    X_test, y_test = extract_features(test_ds, extractor=extractor, cache_name="test")
+
+    X_train, y_train = extract_features(train_ds, extractor=extractor)
+    X_val, y_val = extract_features(val_ds, extractor=extractor)
+    X_test, y_test = extract_features(test_ds, extractor=extractor)
 
     logger.info(f"Training {classifier}...")
     classifier_cls = ML_CLASSIFIERS[classifier]
