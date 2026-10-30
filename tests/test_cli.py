@@ -11,11 +11,7 @@ from jute_disease.cli import build_parser, main
 
 # Forwarded commands (train dl, train pretrain, evaluate predict) are routed by main().
 RESOLVABLE_COMMANDS = [
-    ["data", "setup"],
-    ["data", "split"],
-    ["data", "split", "--force"],
     ["data", "download"],
-    ["data", "init"],
     ["data", "synthetic", "--per-class", "2", "--size", "8"],
     ["train", "ml"],
     ["train", "ml", "--all", "--classifiers", "rf", "--feature-types", "crafted"],
@@ -24,10 +20,21 @@ RESOLVABLE_COMMANDS = [
     ["train", "grid", "configs/historical/grid/mobilenet_v2_grid.yaml"],
     ["evaluate", "aggregate", "--exp-names", "a"],
     ["evaluate", "ml", "--classifier", "rf"],
+    ["freeze", "target"],
+    ["freeze", "cache", "--budget-seconds", "5"],
+    [
+        "freeze",
+        "source",
+        "plantdoc",
+        "some/dir",
+        "--package-version",
+        "7",
+        "--package-digest",
+        "0" * 64,
+    ],
 ]
 
 PLANNED_COMMANDS = [
-    (["freeze"], "#718"),
     (["queue"], "#720"),
     (["profile"], "#721"),
     (["evaluate"], "#721"),
@@ -82,6 +89,18 @@ def test_planned_command_exits_nonzero_naming_owner(
 def test_missing_command_is_a_usage_error() -> None:
     with pytest.raises(SystemExit) as excinfo:
         main([])
+    assert excinfo.value.code == 2
+
+
+@pytest.mark.parametrize("missing", ["--package-version", "--package-digest"])
+def test_source_intake_requires_both_package_identity_inputs(missing: str) -> None:
+    argv = ["freeze", "source", "plantdoc", "source-root"]
+    if missing != "--package-version":
+        argv.extend(["--package-version", "7"])
+    if missing != "--package-digest":
+        argv.extend(["--package-digest", "0" * 64])
+    with pytest.raises(SystemExit) as excinfo:
+        build_parser().parse_args(argv)
     assert excinfo.value.code == 2
 
 

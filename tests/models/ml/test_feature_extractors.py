@@ -57,47 +57,94 @@ def test_crafted_extractor_pil(sample_pil_image: Image.Image) -> None:
     assert features.shape[0] > 0
 
 
-def test_extract_features_logic(tmp_path) -> None:
-    from unittest.mock import MagicMock
+class _Dataset:
+    """A tiny dataset with an identity, like ManifestDataset."""
 
-    import numpy as np
+    def __init__(self, identity: dict[str, str] | None, length: int = 2) -> None:
+        if identity is not None:
+            self.identity = identity
+        self.length = length
+        self.reads = 0
 
-    from jute_disease.models.ml.features import extract_features
+    def __len__(self) -> int:
+        return self.length
 
-    # Mock dataset
-    dataset = MagicMock()
-    dataset.__len__.return_value = 2
+    def __getitem__(self, index: int):
+        self.reads += 1
+        return np.full((8, 8, 3), index, dtype=np.uint8), index % 2
 
-    # Dummy image and label
-    img = np.zeros((32, 32, 3), dtype=np.uint8)
-    label = 0
 
-    def get_item_mock(idx: int):
-        return (img, label)
+IDENTITY = {
+    "manifest": "m1",
+    "partition": "train",
+    "source": "original",
+    "transform": "size=8",
+    "deterministic": "true",
+}
 
-    dataset.__getitem__.side_effect = get_item_mock
 
-    extractor = RawPixelFeatureExtractor(img_size=32)
-
-    # Test without cache
-    x_feats, y = extract_features(dataset, extractor, cache_name=None)
-    assert x_feats.shape == (2, 32 * 32 * 3)
-    assert y.shape == (2,)
-
-    # Test with cache saving
+def test_extract_features_without_identity_never_caches(tmp_path, monkeypatch) -> None:
     import jute_disease.models.ml.features as features_module
 
-    old_dir = features_module.ML_FEATURES_DIR
-    features_module.ML_FEATURES_DIR = tmp_path
+    monkeypatch.setattr(features_module, "ML_FEATURES_DIR", tmp_path)
+    dataset = _Dataset(None)
+    x, y = features_module.extract_features(dataset, RawPixelFeatureExtractor(8))
+    assert x.shape == (2, 8 * 8 * 3) and y.tolist() == [0, 1]
+    assert not list(tmp_path.iterdir())
 
-    try:
-        x_feats2, y2 = extract_features(dataset, extractor, cache_name="test")
-        assert x_feats2.shape == (2, 32 * 32 * 3)
-        assert (tmp_path / "rawpixelfeatureextractor_test_X.npy").exists()
 
-        # Test with cache loading
-        dataset.__getitem__.side_effect = Exception("Should not be called")
-        x_feats3, y3 = extract_features(dataset, extractor, cache_name="test")
-        assert x_feats3.shape == (2, 32 * 32 * 3)
-    finally:
-        features_module.ML_FEATURES_DIR = old_dir
+def test_feature_cache_hits_and_is_keyed_by_every_input(tmp_path, monkeypatch) -> None:
+    import jute_disease.models.ml.features as features_module
+
+    monkeypatch.setattr(features_module, "ML_FEATURES_DIR", tmp_path)
+    extract = features_module.extract_features
+    extractor = RawPixelFeatureExtractor(8)
+
+    first = _Dataset(IDENTITY)
+    extract(first, extractor)
+    assert first.reads == 2
+
+    again = _Dataset(IDENTITY)
+    extract(again, extractor)
+    assert again.reads == 0  # served from the cache
+
+    for changed in (
+        _Dataset({**IDENTITY, "manifest": "m2"}),
+        _Dataset({**IDENTITY, "transform": "size=16"}),
+        _Dataset(IDENTITY, length=3),
+    ):
+        extract(changed, extractor)
+        assert changed.reads == len(changed)  # different inputs recompute
+    other = _Dataset(IDENTITY)
+    extract(other, RawPixelFeatureExtractor(16))
+    assert other.reads == 2  # different extractor settings recompute
+
+
+def test_feature_cache_ignores_a_stale_sidecar_and_random_transforms(
+    tmp_path, monkeypatch
+) -> None:
+    import json
+
+    import jute_disease.models.ml.features as features_module
+
+    monkeypatch.setattr(features_module, "ML_FEATURES_DIR", tmp_path)
+    extract = features_module.extract_features
+    extractor = RawPixelFeatureExtractor(8)
+    extract(_Dataset(IDENTITY), extractor)
+
+    (sidecar,) = tmp_path.glob("*.json")
+    meta = json.loads(sidecar.read_text())
+    sidecar.write_text(json.dumps({**meta, "length": 99}))
+    stale = _Dataset(IDENTITY)
+    extract(stale, extractor)
+    assert stale.reads == 2
+
+    sidecar.unlink()
+    no_sidecar = _Dataset(IDENTITY)
+    extract(no_sidecar, extractor)
+    assert no_sidecar.reads == 2
+
+    augmented = _Dataset({**IDENTITY, "deterministic": "false"})
+    extract(augmented, extractor)
+    extract(augmented, extractor)
+    assert augmented.reads == 4  # random augmentation is never cached

@@ -14,20 +14,98 @@ def test_root_package_exposes_subpackages() -> None:
 
 def test_data_api() -> None:
     from jute_disease.data import (
+        DECISION_FILE,
+        DEFAULT_BUDGET_SECONDS,
+        DEFAULT_MAX_BYTES,
+        INVENTORY_FILE,
+        PLANTDOC,
+        PLANTVILLAGE,
+        REPORT_FILE,
+        SOURCES,
+        TARGET_DIR,
         DataModule,
-        dl_train_transforms,
-        dl_val_transforms,
-        ml_train_transforms,
-        ml_val_transforms,
-        split_data,
+        FreezeBlockedError,
+        ManifestDataset,
+        OverlapReport,
+        SourceMismatchError,
+        SourceSpec,
+        SourceSplit,
+        SyntheticPlan,
+        build_inventory,
+        build_manifest,
+        check_overlap,
+        classical_pipeline,
+        create_pipeline,
+        derive_validation,
+        drop_overlap,
+        file_sha256,
+        find_candidates,
+        find_source_root,
+        freeze_target,
+        intake_source,
+        inventory_digest,
+        leaf_constraints,
+        leaf_key,
+        load_manifest,
+        load_source_manifest,
+        observed_counts,
+        probe_cache,
+        provenance,
+        readiness_blockers,
+        scan_source,
+        verify_counts,
+        write_manifest,
     )
 
-    assert DataModule is not None
-    assert dl_train_transforms is not None
-    assert dl_val_transforms is not None
-    assert ml_train_transforms is not None
-    assert ml_val_transforms is not None
-    assert split_data is not None
+    for name in (
+        DEFAULT_BUDGET_SECONDS,
+        DEFAULT_MAX_BYTES,
+        DECISION_FILE,
+        DataModule,
+        FreezeBlockedError,
+        INVENTORY_FILE,
+        ManifestDataset,
+        OverlapReport,
+        PLANTDOC,
+        PLANTVILLAGE,
+        REPORT_FILE,
+        SOURCES,
+        SourceMismatchError,
+        SourceSpec,
+        SourceSplit,
+        SyntheticPlan,
+        TARGET_DIR,
+        build_manifest,
+        build_inventory,
+        check_overlap,
+        classical_pipeline,
+        create_pipeline,
+        derive_validation,
+        drop_overlap,
+        file_sha256,
+        find_candidates,
+        find_source_root,
+        freeze_target,
+        intake_source,
+        inventory_digest,
+        leaf_constraints,
+        leaf_key,
+        load_source_manifest,
+        load_manifest,
+        observed_counts,
+        probe_cache,
+        provenance,
+        readiness_blockers,
+        scan_source,
+        verify_counts,
+        write_manifest,
+    ):
+        assert name is not None
+
+    from jute_disease import data
+
+    assert all(hasattr(data, name) for name in data.__all__)
+    assert len(set(data.__all__)) == len(data.__all__)
 
 
 def test_models_dl_api() -> None:
@@ -82,7 +160,13 @@ def test_training_api() -> None:
         ROOT_DIR,
         SPLITS,
     )
-    from jute_disease.training import get_logger, seed_everything, setup_wandb
+    from jute_disease.training import (
+        get_logger,
+        pretrain_main,
+        seed_everything,
+        setup_wandb,
+        source_data_module,
+    )
 
     assert ROOT_DIR is not None
     assert DATA_DIR is not None
@@ -93,5 +177,7 @@ def test_training_api() -> None:
     assert isinstance(DEFAULT_SEED, int)
     assert isinstance(SPLITS, dict)
     assert get_logger is not None
+    assert pretrain_main is not None
     assert seed_everything is not None
     assert setup_wandb is not None
+    assert source_data_module is not None

@@ -4,30 +4,36 @@ from pathlib import Path
 
 import pytest
 
-from jute_disease.data.download import (
-    prepare_dataset_subsets,
-)
+from jute_disease.data import stage_source
+from jute_disease.data.download import package_version
 
 
-def test_prepare_dataset_subsets(tmp_path: Path) -> None:
-    """Test consolidating subsets into by_class directory."""
+def test_stage_source_preserves_official_layout(tmp_path: Path) -> None:
+    """Official partitions are copied as published, never flattened or renamed."""
     raw_dir = tmp_path / "raw"
     target_dir = tmp_path / "target"
 
-    # Create mock raw structure: raw/train/apple/img1.jpg, raw/val/apple/img2.jpg
     for subset in ["train", "val"]:
         subset_dir = raw_dir / subset / "apple"
         subset_dir.mkdir(parents=True)
-        (subset_dir / "img1.jpg").write_text("data")
+        (subset_dir / "img1.jpg").write_text(subset)
+    (raw_dir / "notes.py").write_text("print('not an image')")
 
-    prepare_dataset_subsets(raw_dir, target_dir)
+    stage_source(raw_dir, target_dir)
 
-    # Should result in target/apple/train_img1.jpg and target/apple/val_img1.jpg
-    assert (target_dir / "apple" / "train_img1.jpg").exists()
-    assert (target_dir / "apple" / "val_img1.jpg").exists()
+    assert (target_dir / "train" / "apple" / "img1.jpg").read_text() == "train"
+    assert (target_dir / "val" / "apple" / "img1.jpg").read_text() == "val"
+    assert not (target_dir / "notes.py").exists()
 
 
-def test_prepare_dataset_subsets_skips_if_exists(
+def test_package_version_is_read_from_the_download_path() -> None:
+    path = "C:/cache/kagglehub/datasets/o/d/versions/7"
+    assert package_version(path) == 7
+    assert package_version(r"C:\cache\versions\12\train") == 12
+    assert package_version("C:/somewhere/else") is None
+
+
+def test_stage_source_skips_if_exists(
     tmp_path: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
     """Test preparation skips if target directory already exists and is not empty."""
@@ -41,12 +47,12 @@ def test_prepare_dataset_subsets_skips_if_exists(
     from jute_disease.data import download
 
     with caplog.at_level(logging.INFO):
-        download.prepare_dataset_subsets(raw_dir, target_dir)
+        download.stage_source(raw_dir, target_dir)
 
     assert "already exists" in caplog.text
 
 
-def test_prepare_dataset_subsets_missing_folder(
+def test_stage_source_warns_without_images(
     tmp_path: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
     """Test preparation logs warning if subset folder is missing."""
@@ -59,6 +65,6 @@ def test_prepare_dataset_subsets_missing_folder(
     from jute_disease.data import download
 
     with caplog.at_level(logging.WARNING):
-        download.prepare_dataset_subsets(raw_dir, target_dir)
+        download.stage_source(raw_dir, target_dir)
 
     assert "No images found" in caplog.text

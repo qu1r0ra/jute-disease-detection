@@ -8,6 +8,9 @@ BY_CLASS_DIR = DATA_DIR / "by_class"
 ML_SPLIT_DIR = DATA_DIR / "ml_split"
 PLANTDOC_DIR = DATA_DIR / "external" / "plantdoc"
 PLANTVILLAGE_DIR = DATA_DIR / "external" / "plantvillage"
+SOURCE_INVENTORY_DIR = DATA_DIR / "recovered_original_split" / "ml_split"
+CURATION_RULES_PATH = ROOT_DIR / "configs" / "data" / "curation_rules.json"
+IDENTITY_REVIEWS_PATH = ROOT_DIR / "configs" / "data" / "identity_reviews.json"
 
 
 ARTIFACTS_DIR = ROOT_DIR / "artifacts"
@@ -15,6 +18,9 @@ LOGS_DIR = ARTIFACTS_DIR / "logs"
 CHECKPOINTS_DIR = ARTIFACTS_DIR / "checkpoints"
 ML_MODELS_DIR = ARTIFACTS_DIR / "ml_models"
 ML_FEATURES_DIR = ARTIFACTS_DIR / "features"
+FREEZE_DIR = ARTIFACTS_DIR / "freeze"
+MANIFEST_DIR = FREEZE_DIR / "target"
+IMAGE_CACHE_DIR = ARTIFACTS_DIR / "image_cache"
 
 RESULTS_DIR = ROOT_DIR / "results"
 SUBMITTED_DIR = RESULTS_DIR / "submitted"
@@ -37,7 +43,15 @@ DEFAULT_LR = 0.001
 DEFAULT_WEIGHT_DECAY = 0.01
 
 # Task configurations
-NUM_CLASSES = 6
+CLASS_NAMES = (
+    "Cercospora Leaf Spot",
+    "Dieback",
+    "General Damage",
+    "Healthy",
+    "Mosaic",
+    "Stem Rot",
+)
+NUM_CLASSES = len(CLASS_NAMES)
 
 # Weights & Biases
 WANDB_ENTITY = "grade-descent"

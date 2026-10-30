@@ -7,16 +7,22 @@ from lightning.pytorch import Trainer
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, TQDMProgressBar
 from lightning.pytorch.loggers import WandbLogger
 
-from jute_disease.data import DataModule
+from jute_disease.data import (
+    FreezeBlockedError,
+    SourceMismatchError,
+)
 from jute_disease.models.dl import Classifier, TimmBackbone
 from jute_disease.training.logger import get_logger
 from jute_disease.training.seed import seed_everything
+from jute_disease.training.source import source_data_module
 
 logger = get_logger(__name__)
 
 
 def train_pretext_task(
-    data_dir: Path | str,
+    manifest_dir: Path | str,
+    image_root: Path | str,
+    target_manifest_dir: Path | str,
     output_path: Path | str,
     pretrained: bool = True,
     base_backbone_weights: dict[str, torch.Tensor] | None = None,
@@ -31,10 +37,9 @@ def train_pretext_task(
     """
     seed_everything(seed)
 
-    # Data
-    logger.info(f"Initializing DataModule for {data_dir}...")
-    dm = DataModule(data_dir=data_dir, val_split=0.2, batch_size=batch_size, seed=seed)
-    dm.setup()
+    dm = source_data_module(
+        manifest_dir, image_root, target_manifest_dir, batch_size, seed
+    )
 
     num_classes = dm.num_classes
     logger.info(f"Found {num_classes} classes.")
@@ -102,7 +107,16 @@ def train_pretext_task(
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--data_dir", type=str, required=True, help="Path to dataset root"
+        "--manifest_dir",
+        type=str,
+        required=True,
+        help="Completed source manifest directory",
+    )
+    parser.add_argument(
+        "--image_root", required=True, help="Original source package root"
+    )
+    parser.add_argument(
+        "--target_manifest_dir", required=True, help="Frozen target manifest directory"
     )
     parser.add_argument(
         "--output_path", type=str, required=True, help="Where to save the final .ckpt"
@@ -151,12 +165,17 @@ def main(argv: list[str] | None = None) -> None:
         else:
             logger.warning("No 'feature_extractor' keys found in base checkpoint.")
 
-    train_pretext_task(
-        data_dir=args.data_dir,
-        output_path=args.output_path,
-        pretrained=True,
-        base_backbone_weights=backbone_weights,
-        epochs=args.epochs,
-        batch_size=args.batch_size,
-        model_name=args.model_name,
-    )
+    try:
+        train_pretext_task(
+            manifest_dir=args.manifest_dir,
+            image_root=args.image_root,
+            target_manifest_dir=args.target_manifest_dir,
+            output_path=args.output_path,
+            pretrained=True,
+            base_backbone_weights=backbone_weights,
+            epochs=args.epochs,
+            batch_size=args.batch_size,
+            model_name=args.model_name,
+        )
+    except (FreezeBlockedError, SourceMismatchError, FileNotFoundError) as error:
+        parser.error(f"Source pretraining blocked: {error}")

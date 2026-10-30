@@ -4,9 +4,12 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import torch
 from PIL import Image
 
-from jute_disease.data import DataModule
+from jute_disease.data import DataModule, Manifest, write_manifest
+from jute_disease.data.manifest import RECEIPT_FILE
+from jute_disease.data.synthetic import SyntheticPlan
 
 
 @pytest.fixture
@@ -60,41 +63,18 @@ def test_datamodule_dataloaders(mock_dataset_root: Path) -> None:
     assert len(next(iter(test_loader))[0]) == 4
 
 
-def test_datamodule_kfold_setup(mock_dataset_root: Path) -> None:
-    # K-fold setup now merges 'train' and 'val' subfolders
-    # Total samples = 10 (train) + 10 (val) = 20
-    # 5 folds -> 16 training, 4 validation
-    dm = DataModule(
-        data_dir=mock_dataset_root,
-        batch_size=2,
-        k_fold=5,
-        fold_index=0,
-        pin_memory=False,
-    )
-    dm.setup(stage="fit")
-
-    assert dm.jute_train is not None
-    assert dm.jute_val is not None
-    assert len(dm.jute_train) == 16
-    assert len(dm.jute_val) == 4
-    assert dm.num_classes == 2
+def test_data_dir_rejects_kfold(mock_dataset_root: Path) -> None:
+    with pytest.raises(ValueError, match="group-aware"):
+        DataModule(data_dir=mock_dataset_root, k_fold=5)
 
 
-def test_datamodule_set_fold(mock_dataset_root: Path) -> None:
-    """Test that set_fold switches the active subsets and indices."""
-    dm = DataModule(
-        data_dir=mock_dataset_root, k_fold=5, fold_index=0, pin_memory=False
-    )
-    dm.setup(stage="fit")
-
-    assert hasattr(dm.jute_train, "indices")
-    idx0 = dm.jute_train.indices.copy()  # type: ignore
-    dm.set_fold(1)
-    idx1 = dm.jute_train.indices.copy()  # type: ignore
-
-    assert not np.array_equal(idx0, idx1)
-    assert dm.hparams.fold_index == 1
-    assert len(dm.jute_train) == 16  # type: ignore
+def test_source_argument_is_required_and_exclusive(mock_dataset_root: Path) -> None:
+    with pytest.raises(ValueError, match="exactly one"):
+        DataModule()
+    with pytest.raises(ValueError, match="exactly one"):
+        DataModule(data_dir=mock_dataset_root, manifest_dir=mock_dataset_root)
+    with pytest.raises(ValueError, match="image_root"):
+        DataModule(manifest_dir=mock_dataset_root)
 
 
 def test_datamodule_weighted_sampler(mock_dataset_root: Path) -> None:
@@ -149,3 +129,96 @@ def test_datamodule_custom_resolution(mock_dataset_root: Path) -> None:
     imgs, _ = batch
 
     assert imgs.shape[2:] == (512, 512)
+
+
+# --- Frozen-manifest mode ---
+
+
+@pytest.fixture(scope="module")
+def frozen_dir(
+    tmp_path_factory: pytest.TempPathFactory, synthetic: SyntheticPlan, frozen: Manifest
+) -> Path:
+    directory = tmp_path_factory.mktemp("freeze")
+    write_manifest(frozen, directory)
+    return directory
+
+
+def _manifest_module(
+    frozen_dir: Path, synthetic: SyntheticPlan, **kwargs
+) -> DataModule:
+    return DataModule(
+        manifest_dir=frozen_dir,
+        image_root=synthetic.root,
+        batch_size=4,
+        pin_memory=False,
+        num_workers=0,
+        image_size=32,
+        **kwargs,
+    )
+
+
+def test_manifest_mode_serves_exactly_the_frozen_partitions(
+    frozen_dir: Path, synthetic: SyntheticPlan, frozen: Manifest
+) -> None:
+    dm = _manifest_module(frozen_dir, synthetic)
+    dm.setup()
+    assert len(dm.jute_train) == len(frozen.partition("train"))
+    assert len(dm.jute_val) == len(frozen.partition("val"))
+    assert len(dm.jute_test) == len(frozen.partition("test"))
+    assert dm.classes == list(frozen.labels)
+    images, _ = next(iter(dm.train_dataloader()))
+    assert images.shape[1:] == (3, 32, 32)
+
+
+def test_manifest_mode_refuses_a_directory_without_receipt(
+    tmp_path: Path, synthetic: SyntheticPlan, frozen: Manifest
+) -> None:
+    write_manifest(frozen, tmp_path)
+    (tmp_path / RECEIPT_FILE).unlink()
+    dm = _manifest_module(tmp_path, synthetic)
+    with pytest.raises((FileNotFoundError, ValueError)):
+        dm.setup()
+
+
+def test_manifest_folds_are_group_aware_and_cover_train_and_val(
+    frozen_dir: Path, synthetic: SyntheticPlan, frozen: Manifest
+) -> None:
+    dm = _manifest_module(frozen_dir, synthetic, k_fold=3, fold_index=0)
+    dm.setup(stage="fit")
+    pool = len(frozen.partition("train")) + len(frozen.partition("val"))
+    seen: set[int] = set()
+    for fold in range(3):
+        dm.set_fold(fold)
+        train, val = set(dm.jute_train.indices), set(dm.jute_val.indices)
+        assert not train & val
+        assert len(train | val) == pool
+        seen |= val
+        groups = np.array(
+            dm._pool_train.parts[0].groups + dm._pool_train.parts[1].groups
+        )
+        assert not set(groups[list(train)]) & set(groups[list(val)])
+    assert len(seen) == pool
+    with pytest.raises(ValueError, match="out of range"):
+        dm.set_fold(3)
+
+
+def test_manifest_loaders_repeat_for_a_seed_and_differ_for_another(
+    frozen_dir: Path, synthetic: SyntheticPlan
+) -> None:
+    def first_batch(seed: int):
+        dm = _manifest_module(frozen_dir, synthetic, seed=seed)
+        dm.setup(stage="fit")
+        return next(iter(dm.train_dataloader()))
+
+    one, two, other = first_batch(1), first_batch(1), first_batch(2)
+    assert torch.equal(one[0], two[0]) and torch.equal(one[1], two[1])
+    assert not torch.equal(one[1], other[1]) or not torch.equal(one[0], other[0])
+
+
+def test_manifest_weighted_sampler_balances_classes(
+    frozen_dir: Path, synthetic: SyntheticPlan, frozen: Manifest
+) -> None:
+    dm = _manifest_module(frozen_dir, synthetic, use_weighted_sampler=True)
+    dm.setup(stage="fit")
+    assert dm.sampler is not None
+    assert len(dm.sampler) == len(frozen.partition("train"))
