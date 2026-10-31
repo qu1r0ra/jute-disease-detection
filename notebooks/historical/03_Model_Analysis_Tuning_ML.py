@@ -1,5 +1,5 @@
 # %% [markdown]
-# <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/Imman-patch/notebooks/reproducibility/03_Model_Analysis_Tuning_ML.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/qu1r0ra/jute-related-image-evaluation/blob/Imman-patch/notebooks/reproducibility/03_Model_Analysis_Tuning_ML.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown]
 # # **IV. EXPERIMENTS AND RESULTS**
@@ -11,8 +11,8 @@
 # ## Environment Setup
 
 # %%
-# !git clone https://github.com/qu1r0ra/jute-disease-detection.git
-# %cd jute-disease-detection
+# !git clone https://github.com/qu1r0ra/jute-related-image-evaluation.git
+# %cd jute-related-image-evaluation
 
 
 # %pip install uv
@@ -47,7 +47,7 @@ drive.mount("/content/drive")
 # %ls
 
 # %%
-# %cd jute-disease-detection/
+# %cd jute-related-image-evaluation/
 
 # %%
 # make sure that the current directory is as

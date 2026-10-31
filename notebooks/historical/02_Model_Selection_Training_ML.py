@@ -1,5 +1,5 @@
 # %% [markdown]
-# <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/Immern-patch-1/notebooks/reproducibility/02_Model_Selection_Training_ML.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/qu1r0ra/jute-related-image-evaluation/blob/Immern-patch-1/notebooks/reproducibility/02_Model_Selection_Training_ML.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown]
 # # Classical ML Model Selection and Training (Local)
@@ -13,8 +13,8 @@
 # # Environment Setup
 
 # %%
-# !git clone https://github.com/qu1r0ra/jute-disease-detection.git
-# %cd jute-disease-detection
+# !git clone https://github.com/qu1r0ra/jute-related-image-evaluation.git
+# %cd jute-related-image-evaluation
 
 # %pip install uv
 # !uv pip install --system -e .
@@ -45,7 +45,7 @@ drive.mount("/content/drive")
 # 2. Update `DATA_ZIP_PATH` below to the path where you stored the file. If you uploaded it to the root of _My Drive_, you can set it to **"/content/drive/MyDrive/data.zip"**.
 
 # %%
-# %cd jute-disease-detection
+# %cd jute-related-image-evaluation
 
 # %%
 from pathlib import Path

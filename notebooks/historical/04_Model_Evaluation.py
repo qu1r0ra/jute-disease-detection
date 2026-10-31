@@ -1,5 +1,5 @@
 # %% [markdown]
-# <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/main/notebooks/reproducibility/04_Model_Evaluation.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/qu1r0ra/jute-related-image-evaluation/blob/main/notebooks/reproducibility/04_Model_Evaluation.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown]
 # # Final Model Evaluation
@@ -13,8 +13,8 @@
 #
 
 # %%
-# !git clone https://github.com/qu1r0ra/jute-disease-detection.git
-# %cd jute-disease-detection
+# !git clone https://github.com/qu1r0ra/jute-related-image-evaluation.git
+# %cd jute-related-image-evaluation
 
 
 # %pip install uv
@@ -34,7 +34,7 @@ from google.colab import drive
 drive.mount("/content/drive")
 
 # %%
-# %cd jute-disease-detection/
+# %cd jute-related-image-evaluation/
 
 # %%
 # make sure that the current directory is as

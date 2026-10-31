@@ -1378,7 +1378,7 @@ wheels = [
 ]
 
 [[package]]
-name = "jute-disease-detection"
+name = "jute-related-image-evaluation"
 version = "1.0.0"
 source = { editable = "." }
 dependencies = [

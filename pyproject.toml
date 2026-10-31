@@ -1,5 +1,5 @@
 [project]
-name = "jute-disease-detection"
+name = "jute-related-image-evaluation"
 version = "1.0.0"
 description = "Deep Learning Exploration for Jute Leaf Disease Detection"
 license = "Apache-2.0"

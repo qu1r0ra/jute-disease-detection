@@ -1,5 +1,5 @@
 # %% [markdown]
-# <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/main/notebooks/reproducibility/02_Model_Selection_Training_DL.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/qu1r0ra/jute-related-image-evaluation/blob/main/notebooks/reproducibility/02_Model_Selection_Training_DL.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown]
 # # Deep Learning - Model Selection and Training
@@ -36,8 +36,8 @@
 # Let's first clone the GitHub repository containing the code then install its dependencies.
 
 # %%
-# !git clone https://github.com/qu1r0ra/jute-disease-detection.git
-# %cd jute-disease-detection
+# !git clone https://github.com/qu1r0ra/jute-related-image-evaluation.git
+# %cd jute-related-image-evaluation
 
 # %pip install uv
 # !uv pip install --system -e .
@@ -75,7 +75,7 @@ drive.mount("/content/drive")
 # Let's unzip `data.zip` which contains our merged Jute leaf disease data.
 
 # %%
-# %cd jute-disease-detection
+# %cd jute-related-image-evaluation
 
 # %%
 from pathlib import Path
