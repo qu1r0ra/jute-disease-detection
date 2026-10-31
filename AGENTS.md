@@ -1,5 +1,7 @@
 # Project instructions
 
+- For manuscript writing, revision, figures, tables, or reporting review, read `docs/writing-guide.md`.
+
 - For coding or delivery, read `docs/agents/coding.md`.
 - For research planning or experiments, read `docs/agents/research-context.md`.
 
