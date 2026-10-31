@@ -15,3 +15,5 @@
 - Optional ignored `docs/research/README.md` may index literature and methods. Link canonical evidence instead of duplicating reports. Ordinary work in a fresh checkout must not depend on private notes.
 
 - Manuscript editing and builds: read optional ignored `paper/README.md` when present; fresh checkouts need not contain it.
+
+- For discovering, acquiring or inspecting candidate datasets, read `docs/agents/data-collection.md`.
