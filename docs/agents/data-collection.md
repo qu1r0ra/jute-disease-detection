@@ -1,5 +1,7 @@
 # Data collection for feasibility
 
+Status: the owner closed acquisition on 2026-10-31 after J23's final retrieval attempt; J10 is dropped after repeated download failures. Add a source only with a new owner decision. Cohort and rights decisions live in issue #105.
+
 This describes the current source-gathering approach, not an approved dataset, experiment, or manuscript claim. The owner directed a fresh, broad collection on 2026-10-31, including the sources cited in the repository and informal public releases. Keep the historical collection and test-exposure evidence as reference.
 
 1. Discover and record downloadable dataset releases, including possible mirrors and derivatives; individual web and social-media photos are outside the active search. Cover jute disease, general leaf, pest and thermal sources; retain other crops bundled in relevant releases. Document search terms, dates, coverage and access failures; describe the search limits rather than claiming internet-wide completeness.

@@ -22,6 +22,9 @@
 
 Benchmarking classical machine learning and transfer learning on a merged six-class jute leaf disease dataset. Created for CSC713M (Machine Learning for MSCS); the short paper was submitted to IEEE HNICEM 2026 ([PDF](docs/hnicem2026-paper.pdf), [full paper](https://drive.google.com/file/d/1DbaQ4TWEHChkLTLvpzntbUxhkBkSmQ5o/view?usp=drive_link)).
 
+> [!NOTE]
+> This README documents the original course study. A revised study of how related-image controls affect measured performance is being planned in [issue 98](https://github.com/qu1r0ra/jute-disease-detection/issues/98); its results are not reported here.
+
 ## Table of Contents <!-- omit from toc -->
 
 - [1. Introduction](#1-introduction)
@@ -54,7 +57,7 @@ A high-level overview of the repository organization:
 ```text
 .
 ├── configs/
-│   └── historical/     # Lightning CLI and grid search configs for the reported runs
+│   └── historical/     # Lightning CLI and grid search configs for the reported runs (superseded record)
 ├── data/               # Dataset storage (git-ignored) and the tracked class list
 ├── docs/               # Architecture notes and the submitted paper
 ├── notebooks/
