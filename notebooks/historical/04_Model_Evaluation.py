@@ -1,5 +1,5 @@
 # %% [markdown]
-# <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/main/notebooks/reproducibility/04_Model_Evaluation.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/qu1r0ra/jute-related-image-evaluation/blob/main/notebooks/reproducibility/04_Model_Evaluation.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown]
 # # Final Model Evaluation
@@ -13,8 +13,8 @@
 #
 
 # %%
-# !git clone https://github.com/qu1r0ra/jute-disease-detection.git
-# %cd jute-disease-detection
+# !git clone https://github.com/qu1r0ra/jute-related-image-evaluation.git
+# %cd jute-related-image-evaluation
 
 
 # %pip install uv
@@ -34,7 +34,7 @@ from google.colab import drive
 drive.mount("/content/drive")
 
 # %%
-# %cd jute-disease-detection/
+# %cd jute-related-image-evaluation/
 
 # %%
 # make sure that the current directory is as
@@ -90,7 +90,7 @@ import wandb
 api = wandb.Api()
 
 ENTITY = "grade-descent"
-PROJECT = "jute-disease-detection"
+PROJECT = "jute-related-image-evaluation"
 
 comparison_runs = {"Random Forest": "w6593daw", "MobileNet V2": "af60c7b9"}
 
@@ -154,7 +154,7 @@ warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 
 api = wandb.Api()
 ENTITY = "grade-descent"
-PROJECT = "jute-disease-detection"
+PROJECT = "jute-related-image-evaluation"
 
 rf_model_path = f"{ENTITY}/{PROJECT}/rf-champion:latest"
 dl_artifact_path = f"{ENTITY}/{PROJECT}/run-af60c7b9-test_conf_mat_table:latest"
@@ -356,7 +356,7 @@ from jute_disease.utils.constants import IMAGE_SIZE
 
 api = wandb.Api()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-PROJECT_PATH = "grade-descent/jute-disease-detection"
+PROJECT_PATH = "grade-descent/jute-related-image-evaluation"
 TEST_DATA_DIR = Path("data/ml_split/test")
 
 

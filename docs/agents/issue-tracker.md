@@ -1,6 +1,6 @@
 # Issue tracker
 
-- Use GitHub Issues in `qu1r0ra/jute-disease-detection` as the repository-native tracker. Pass `--repo qu1r0ra/jute-disease-detection` explicitly to issue commands.
+- Use GitHub Issues in `qu1r0ra/jute-related-image-evaluation` as the repository-native tracker. Pass `--repo qu1r0ra/jute-related-image-evaluation` explicitly to issue commands.
 
 - Find the live map and implementation specs by their labels. Use native child issues and blocker relationships.
 - If no canonical repository-native map/spec exists, wait for approved tracker setup or migration before creating or mutating implementation issues. Configuring this destination does not perform or authorize migration. Keep one canonical queue; do not create a parallel local or external queue.

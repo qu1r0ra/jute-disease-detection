@@ -1,4 +1,4 @@
-# jute-disease-detection <!-- omit from toc -->
+# jute-related-image-evaluation <!-- omit from toc -->
 
 <div align="center">
   <img src="./results/submitted/figures/dl/grad_cam.png" width="800px" alt="Grad-CAM Interpretability">
@@ -20,7 +20,10 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23414231.svg)](https://doi.org/10.5281/zenodo.23414231) ![Year, Term, Course](https://img.shields.io/badge/AY2526--T2-CSC713M-blue)
 ![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white) ![uv](https://img.shields.io/badge/uv-DE5FE9?logo=uv&logoColor=white) ![PyTorch](https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white) ![Lightning](https://img.shields.io/badge/Lightning-792ee5?logo=lightning&logoColor=white) ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikitlearn&logoColor=white) ![Jupyter](https://img.shields.io/badge/Jupyter-f37626?logo=jupyter&logoColor=white) ![Weights & Biases](https://img.shields.io/badge/WandB-FFBE00?logo=weightsandbiases&logoColor=white)
 
-Benchmarking classical machine learning and transfer learning on a merged six-class jute leaf disease dataset. Created for CSC713M (Machine Learning for MSCS); the short paper was submitted to IEEE HNICEM 2026 ([PDF](docs/hnicem2026-paper.pdf), [full paper](https://drive.google.com/file/d/1DbaQ4TWEHChkLTLvpzntbUxhkBkSmQ5o/view?usp=drive_link)).
+Benchmarking classical machine learning and transfer learning on a merged six-class jute leaf disease dataset. Created for CSC713M (Machine Learning for MSCS); the short paper was submitted to IEEE HNICEM 2026 and withdrawn before publication ([PDF](docs/hnicem2026-paper.pdf), [full paper](https://drive.google.com/file/d/1DbaQ4TWEHChkLTLvpzntbUxhkBkSmQ5o/view?usp=drive_link)).
+
+> [!NOTE]
+> This README documents the original course study. A revised study of how related-image controls affect measured performance is being planned in [issue 98](https://github.com/qu1r0ra/jute-related-image-evaluation/issues/98); its results are not reported here.
 
 ## Table of Contents <!-- omit from toc -->
 
@@ -45,7 +48,7 @@ Our experiments compare classical ML models such as **Random Forest** and **Supp
 
 Beyond benchmarking, this project also investigates **fine-tuning on related plant disease datasets, input resolution effects, feature-space analysis with t-SNE/UMAP, error analysis, and Grad-CAM interpretability**. The results suggest that confusion between **Mosaic** and **Cercospora Leaf Spot** remains a key challenge, likely due to visual similarity and dataset limitations, motivating future work in improved preprocessing and multi-label disease recognition.
 
-Our short paper, **"Benchmarking Classical Machine Learning and Transfer Learning for Data-Constrained Jute Leaf Disease Classification"**, was submitted to IEEE HNICEM 2026 ([PDF](docs/hnicem2026-paper.pdf)). The [full paper with additional visualizations](https://drive.google.com/file/d/1DbaQ4TWEHChkLTLvpzntbUxhkBkSmQ5o/view?usp=drive_link) covers the complete results.
+Our short paper, **"Benchmarking Classical Machine Learning and Transfer Learning for Data-Constrained Jute Leaf Disease Classification"**, was submitted to IEEE HNICEM 2026 and withdrawn before publication ([PDF](docs/hnicem2026-paper.pdf)). The [full paper with additional visualizations](https://drive.google.com/file/d/1DbaQ4TWEHChkLTLvpzntbUxhkBkSmQ5o/view?usp=drive_link) covers the complete results.
 
 ## 2. Project Structure
 
@@ -54,7 +57,7 @@ A high-level overview of the repository organization:
 ```text
 .
 ├── configs/
-│   └── historical/     # Lightning CLI and grid search configs for the reported runs
+│   └── historical/     # Lightning CLI and grid search configs for the reported runs (superseded record)
 ├── data/               # Dataset storage (git-ignored) and the tracked class list
 ├── docs/               # Architecture notes and the submitted paper
 ├── notebooks/
@@ -104,13 +107,13 @@ The unified jute dataset merges three public sources. The repository code is Apa
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/qu1r0ra/jute-disease-detection
+   git clone https://github.com/qu1r0ra/jute-related-image-evaluation
    ```
 
 2. Navigate to the project root and install all dependencies:
 
    ```bash
-   cd jute-disease-detection
+   cd jute-related-image-evaluation
    uv sync
    ```
 
@@ -155,8 +158,8 @@ To retrain the models from the command line instead of the notebooks:
    just freeze --image-root <path-to-original-images>   # curation, identity groups, manifest and receipt
    just freeze-cache                                      # optional bounded train/val image cache and its decision
    just data-download                                      # optional source-package acquisition
-   just freeze-source plantdoc data/external/plantdoc --package-version 7 --package-digest <pinned-inventory-sha256>
-   just freeze-source plantvillage data/external/plantvillage --package-version 1 --package-digest <pinned-inventory-sha256>
+   just freeze-source plantdoc data/external/plantdoc --package-version 7 --package-digest 06f9782c9be1e9d6c707845c3f07b183c75e7421dbb112a88d60cb2d512ad1fd
+   just freeze-source plantvillage data/external/plantvillage --package-version 1 --package-digest d6db080933a47f289fb15bc60c8c42ef1c17c7656d3700d4133e6d313fdf471a
    ```
 
    The freeze writes `artifacts/freeze/target/` (manifest plus a receipt that hashes every input). Training reads partitions only through that manifest, and a directory without its receipt is never treated as a completed freeze. The target candidate audit and its unresolved human-review limitation are recorded in [`results/corrected/identity-audit.md`](results/corrected/identity-audit.md).
@@ -181,7 +184,7 @@ To retrain the models from the command line instead of the notebooks:
 
 Deep learning runs can also be driven directly through the Lightning CLI, for example `uv run jute-disease train dl fit --config configs/historical/baselines/mobilenet_v2.yaml`. On Windows without a C++ compiler, `torch.compile` fails; add `--model.compile_model=false` to that command.
 
-Checkpoints are written to `artifacts/checkpoints/` and CSV logs to `artifacts/logs/`. Source intake requires the pinned Kaggle version and an expected inventory digest. The digest and version are caller-supplied pins that check package bytes only; they do not establish who published the package. The intake report's `readiness` block lists any open blockers, and the tracked source record must also contain independent publisher-identity evidence and verified terms before a source manifest can be opened for pretraining. PlantDoc and PlantVillage currently lack that evidence, so `just pretrain` is blocked for both optional arms. At execution, the loader also rechecks the tracked source pin, intake lineage, target manifest and retained training/validation bytes. Training on a GPU is recommended for the deep learning runs; the classical ML pipeline runs on CPU.
+Checkpoints are written to `artifacts/checkpoints/` and CSV logs to `artifacts/logs/`. Source intake checks the package version and inventory SHA-256 against tracked PlantDoc and PlantVillage pins, then checks target overlap and records its source manifest. The owner authorized both downloaded packages for internal research use in this project. Their intake reports retain the unresolved publisher-identity and terms caveats; this approval does not establish a publisher or license, and it does not authorize redistribution. At execution, the loader rechecks the tracked source pin, owner-use readiness, intake lineage, target manifest and retained training/validation bytes. Training on a GPU is recommended for the deep learning runs; the classical ML pipeline runs on CPU.
 
 ## 6. Benchmarked Performance
 
@@ -197,7 +200,7 @@ Model selection used validation metrics. Results come from a single stratified 7
 
 ### Pretrained Weights
 
-The best MobileNetV2 (learning rate 0.01, weight decay 0.05, frozen backbone, 91.39% test accuracy) is attached to the [v1.0.0 release](https://github.com/qu1r0ra/jute-disease-detection/releases/tag/v1.0.0) as `mobilenet_v2_jute.pt` (SHA-256 `f172c2668378f6a59376928f3d55e1562e289dd954c29b74e5054c978edcad9d`). It is the Weights & Biases `best` checkpoint of run `af60c7b9` as a plain `state_dict`. Class indices follow `data/disease_classes.txt`. The architecture is MobileNetV2 (Sandler et al., 2018), loaded through the timm library (Wightman, 2019).
+The best MobileNetV2 (learning rate 0.01, weight decay 0.05, frozen backbone, 91.39% test accuracy) is attached to the [v1.0.0 release](https://github.com/qu1r0ra/jute-related-image-evaluation/releases/tag/v1.0.0) as `mobilenet_v2_jute.pt` (SHA-256 `f172c2668378f6a59376928f3d55e1562e289dd954c29b74e5054c978edcad9d`). It is the Weights & Biases `best` checkpoint of run `af60c7b9` as a plain `state_dict`. Class indices follow `data/disease_classes.txt`. The architecture is MobileNetV2 (Sandler et al., 2018), loaded through the timm library (Wightman, 2019).
 
 ```python
 import torch
@@ -239,8 +242,8 @@ If you find this research or codebase useful in your own work, please consider c
   author={Bunyi, Christian Joseph and Umali, Immanuel},
   booktitle={IEEE 2026 International Conference on Humanoid, Nanotechnology, Information Technology, Communication and Control, Environment, and Management (HNICEM)},
   year={2026},
-  note={Submitted},
-  url={https://github.com/qu1r0ra/jute-disease-detection}
+  note={Submitted to IEEE HNICEM 2026; withdrawn before publication},
+  url={https://github.com/qu1r0ra/jute-related-image-evaluation}
 }
 ```
 

@@ -4,6 +4,7 @@
 
 - For coding or delivery, read `docs/agents/coding.md`.
 - For research planning or experiments, read `docs/agents/research-context.md`.
+- For the legacy repository, package or W&B names, historical W&B runs, or reproducing the original study, read `docs/legacy-names.md`.
 
 ## Agent skills
 

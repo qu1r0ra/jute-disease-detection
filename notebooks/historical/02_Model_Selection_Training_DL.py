@@ -1,5 +1,5 @@
 # %% [markdown]
-# <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/main/notebooks/reproducibility/02_Model_Selection_Training_DL.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/qu1r0ra/jute-related-image-evaluation/blob/main/notebooks/reproducibility/02_Model_Selection_Training_DL.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown]
 # # Deep Learning - Model Selection and Training
@@ -36,8 +36,8 @@
 # Let's first clone the GitHub repository containing the code then install its dependencies.
 
 # %%
-# !git clone https://github.com/qu1r0ra/jute-disease-detection.git
-# %cd jute-disease-detection
+# !git clone https://github.com/qu1r0ra/jute-related-image-evaluation.git
+# %cd jute-related-image-evaluation
 
 # %pip install uv
 # !uv pip install --system -e .
@@ -75,7 +75,7 @@ drive.mount("/content/drive")
 # Let's unzip `data.zip` which contains our merged Jute leaf disease data.
 
 # %%
-# %cd jute-disease-detection
+# %cd jute-related-image-evaluation
 
 # %%
 from pathlib import Path
@@ -174,7 +174,7 @@ else:
 # !uv run python scripts/train_all_dl.py
 
 # %% [markdown]
-# At this point, we have finished training the DL baselines. If training went well, you should have obtained results similar to ours, which can be viewed [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/Baseline%20DL%20Models/workspace).
+# At this point, we have finished training the DL baselines. If training went well, you should have obtained results similar to ours, which can be viewed [here](https://wandb.ai/grade-descent/jute-related-image-evaluation/groups/Baseline%20DL%20Models/workspace).
 #
 # Looking at the validation accuracy graph:
 #
@@ -267,7 +267,7 @@ download_plant_doc()
 # !uv run python scripts/run_grid_search.py configs/grid/mobilenet_v2_grid.yaml
 
 # %% [markdown]
-# Our results for the MobileNet V2 grid search can be viewed [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/MobileNet%20V2%20Grid/workspace).
+# Our results for the MobileNet V2 grid search can be viewed [here](https://wandb.ai/grade-descent/jute-related-image-evaluation/groups/MobileNet%20V2%20Grid/workspace).
 #
 # Looking at the graph of validation accuracy over global steps:
 #
@@ -317,7 +317,7 @@ else:
 # !uv run python scripts/train_dl_512.py
 
 # %% [markdown]
-# Our results can be viewed [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/MobileNet%20V2%20512px/workspace). They will be compared against their 256x256 pixel counterparts in the [next DL notebook](./03_Model_Analysis_Tuning_DL.py).
+# Our results can be viewed [here](https://wandb.ai/grade-descent/jute-related-image-evaluation/groups/MobileNet%20V2%20512px/workspace). They will be compared against their 256x256 pixel counterparts in the [next DL notebook](./03_Model_Analysis_Tuning_DL.py).
 
 # %% [markdown]
 # ## References

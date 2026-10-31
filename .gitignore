@@ -29,3 +29,5 @@ wandb/
 .context/
 .claude/
 /docs/research/
+/docs/hnicem2026-paper-source/
+/paper/

@@ -9,7 +9,7 @@
 #
 # **Note:**
 #
-# This notebook must be executed in your local machine while using the `jute-disease-detection (3.11.14)(Python 3.11.14)` kernel.
+# This notebook must be executed in your local machine while using the `jute-related-image-evaluation (3.11.14)(Python 3.11.14)` kernel.
 
 # %% [markdown]
 # ## 1. Environment Setup

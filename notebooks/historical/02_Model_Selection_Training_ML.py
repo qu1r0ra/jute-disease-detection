@@ -1,5 +1,5 @@
 # %% [markdown]
-# <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/Immern-patch-1/notebooks/reproducibility/02_Model_Selection_Training_ML.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/qu1r0ra/jute-related-image-evaluation/blob/Immern-patch-1/notebooks/reproducibility/02_Model_Selection_Training_ML.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown]
 # # Classical ML Model Selection and Training (Local)
@@ -13,8 +13,8 @@
 # # Environment Setup
 
 # %%
-# !git clone https://github.com/qu1r0ra/jute-disease-detection.git
-# %cd jute-disease-detection
+# !git clone https://github.com/qu1r0ra/jute-related-image-evaluation.git
+# %cd jute-related-image-evaluation
 
 # %pip install uv
 # !uv pip install --system -e .
@@ -45,7 +45,7 @@ drive.mount("/content/drive")
 # 2. Update `DATA_ZIP_PATH` below to the path where you stored the file. If you uploaded it to the root of _My Drive_, you can set it to **"/content/drive/MyDrive/data.zip"**.
 
 # %%
-# %cd jute-disease-detection
+# %cd jute-related-image-evaluation
 
 # %%
 from pathlib import Path
@@ -166,7 +166,7 @@ os.environ["WANDB_API_KEY"] = ""
 
 # %% [markdown]
 # ## 3. Results and Model Selection
-# We can see our results from the training in [here](https://wandb.ai/grade-descent/jute-disease-detection/table). Run the code below to see the validation results from our original run of the training process.
+# We can see our results from the training in [here](https://wandb.ai/grade-descent/jute-related-image-evaluation/table). Run the code below to see the validation results from our original run of the training process.
 
 # %%
 import pandas as pd
@@ -187,7 +187,7 @@ runs_to_track = {
 }
 
 ENTITY = "grade-descent"
-PROJECT = "jute-disease-detection"
+PROJECT = "jute-related-image-evaluation"
 
 
 def get_summary_metrics(run_dict):

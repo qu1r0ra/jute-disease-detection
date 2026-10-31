@@ -9,7 +9,7 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.19.1
 #   kernelspec:
-#     display_name: jute-disease-detection (3.11.14)
+#     display_name: jute-related-image-evaluation (3.11.14)
 #     language: python
 #     name: python3
 # ---

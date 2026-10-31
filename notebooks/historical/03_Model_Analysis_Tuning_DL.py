@@ -1,5 +1,5 @@
 # %% [markdown]
-# <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/main/notebooks/reproducibility/03_Model_Analysis_Tuning_DL.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/qu1r0ra/jute-related-image-evaluation/blob/main/notebooks/reproducibility/03_Model_Analysis_Tuning_DL.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown]
 # # Deep Learning - Model Analysis and Fine-Tuning
@@ -40,8 +40,8 @@
 # Let's run the environment setup again. Refer to the [previous notebook](./02_Model_Selection_Training_DL.ipynb) for detailed instructions and remarks.
 
 # %%
-# !git clone https://github.com/qu1r0ra/jute-disease-detection.git
-# %cd jute-disease-detection
+# !git clone https://github.com/qu1r0ra/jute-related-image-evaluation.git
+# %cd jute-related-image-evaluation
 
 # %pip install uv
 # !uv pip install --system -e .
@@ -63,7 +63,7 @@ from google.colab import drive
 drive.mount("/content/drive")
 
 # %%
-# %cd jute-disease-detection
+# %cd jute-related-image-evaluation
 
 # %%
 from pathlib import Path
@@ -931,7 +931,7 @@ plt.show()
 # - **Learning Rate**: `0.01`, `0.005`, `0.001`, `0.0005`, `0.0001`
 # - **Extended Patience**: `early_stopping_patience` raised to 20.
 #
-# Our results can be found [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/MobileNet%20V2%20Finetune%20Grid/workspace).
+# Our results can be found [here](https://wandb.ai/grade-descent/jute-related-image-evaluation/groups/MobileNet%20V2%20Finetune%20Grid/workspace).
 #
 # > **Note:** While our Part 1 baseline and resolution experiments used a weight decay of **0.01**, our Part 2 grid search used **0.05**. This inconsistency was a genuine oversight which we only realized after the experiment's conclusion. Nevertheless, we proceeded with comparing them in the following sections.
 

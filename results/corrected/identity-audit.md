@@ -32,10 +32,8 @@ identity; chains may link endpoints that do not match directly. Six-class suppor
 Manifest SHA-256: `300769862d3e3c7c11e176afed63f8c2a0f38ed873d71c20e3b93d74c22ed25f`.
 
 The archived sample contact sheets and alignment comparisons do not establish
-individual adjudication decisions or a timed 60-minute review. The owner dropped the human identity review by decision. No adjudication
-decisions or review timing exist, so candidate identity rests on the automated
-pHash rule (Hamming distance 6 or less) and the quarantine rules. The residual
-false-merge and false-split risk is a recorded limitation. Consequently,
+individual adjudication decisions or a timed 60-minute review. The review file
+contains no decisions; elapsed human review time is unavailable. Consequently,
 unresolved same-label candidates retain distinct IDs with shared-partition
 constraints, and unresolved cross-label candidates are quarantined. Neither the
 sample inspection nor these fingerprints establishes expert label validation or

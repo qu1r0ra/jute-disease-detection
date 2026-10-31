@@ -1,5 +1,5 @@
 # %% [markdown]
-# <a href="https://colab.research.google.com/github/qu1r0ra/jute-disease-detection/blob/Imman-patch/notebooks/reproducibility/03_Model_Analysis_Tuning_ML.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+# <a href="https://colab.research.google.com/github/qu1r0ra/jute-related-image-evaluation/blob/Imman-patch/notebooks/reproducibility/03_Model_Analysis_Tuning_ML.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
 # %% [markdown]
 # # **IV. EXPERIMENTS AND RESULTS**
@@ -11,8 +11,8 @@
 # ## Environment Setup
 
 # %%
-# !git clone https://github.com/qu1r0ra/jute-disease-detection.git
-# %cd jute-disease-detection
+# !git clone https://github.com/qu1r0ra/jute-related-image-evaluation.git
+# %cd jute-related-image-evaluation
 
 
 # %pip install uv
@@ -47,7 +47,7 @@ drive.mount("/content/drive")
 # %ls
 
 # %%
-# %cd jute-disease-detection/
+# %cd jute-related-image-evaluation/
 
 # %%
 # make sure that the current directory is as
@@ -152,7 +152,7 @@ else:
     print("API key not found.")
 
 api = wandb.Api()
-project_path = "grade-descent/jute-disease-detection"
+project_path = "grade-descent/jute-related-image-evaluation"
 summary_list = []
 
 for model_type, run_id in target_runs.items():
@@ -560,7 +560,7 @@ def plot_top_ml_errors(model_name, preds, probs, targets, dataset, top_k=20):
 
 
 # show images
-VAL_DIR = "/content/jute-disease-detection/data/ml_split/val"
+VAL_DIR = "/content/jute-related-image-evaluation/data/ml_split/val"
 
 ml_transform = transforms.Compose(
     [
@@ -1001,7 +1001,7 @@ for param, value in baseline_params.items():
 #     run_rf_tuning()
 
 # %% [markdown]
-# By this point, we have successfully tuned our RF model. A previous WANDB run may be accessed through this link: [WANDB Run](https://wandb.ai/grade-descent/jute-disease-detection/runs/w6593daw?nw=nwuserimmanumali12).
+# By this point, we have successfully tuned our RF model. A previous WANDB run may be accessed through this link: [WANDB Run](https://wandb.ai/grade-descent/jute-related-image-evaluation/runs/w6593daw?nw=nwuserimmanumali12).
 
 # %%
 import ast
@@ -1397,7 +1397,7 @@ tuned_rf_metrics_df = generate_metrics_table(
 run = wandb.init(project=WANDB_PROJECT, job_type="evaluation")
 
 artifact = run.use_artifact(
-    "grade-descent/jute-disease-detection/svm-champion:latest", type="model"
+    "grade-descent/jute-related-image-evaluation/svm-champion:latest", type="model"
 )
 artifact_dir = artifact.download()
 
