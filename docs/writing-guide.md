@@ -80,7 +80,7 @@ No recognized plant-disease ML checklist, universal equal-tuning-budget rule or 
 
 ## Humanizer
 
-On for manuscript prose. Apply its editing patterns while preserving scientific meaning, quotations, citations, equations, metric names and definitions. If the skill is unavailable, use this local fallback: remove empty staging, inflated claims, redundant recaps and decorative phrasing while preserving necessary content.
+Activate Humanizer only when the user invokes `follow-writing-guide` or explicitly requests Humanizer. Once activated, it is on for manuscript prose. Apply its editing patterns while preserving scientific meaning, quotations, citations, equations, metric names and definitions. If the skill is unavailable, use this local fallback: remove empty staging, inflated claims, redundant recaps and decorative phrasing while preserving necessary content.
 
 Collisions: the uncertainty disclosures and bounded claims in the authoritative rules take precedence over deleting qualifiers or repetition. The flexible progression must not force Humanizer pattern 2, One-line closers and dramatic fragments. Parallel comparison language may deliberately repeat technical terms; preserve the meaning while removing empty repetition. Meaningful qualifications survive pattern 9, Stacked qualifiers. Preference/convention wording yields to Humanizer where there is a stylistic conflict; scientific facts remain intact.
 
