@@ -6,7 +6,7 @@ A focused empirical ML paper about jute disease image classification for PCSC re
 
 ## Precedence
 
-`requirement` > `authoritative guideline` > `empirical` > `convention` > `preference`. A higher grade wins a conflict within its actual scope. This guide owns writing and reporting; the study's protocol and canonical issues own scientific decisions. For manuscript editing/builds, read `paper/README.md` when present for build and source-preservation procedures. That private file may be absent from a fresh checkout.
+`requirement` > `authoritative guideline` > `empirical` > `convention` > `preference`. A higher grade wins a conflict within its actual scope. This guide owns writing and reporting; the study's protocol and canonical issues own scientific decisions. For manuscript editing/builds, read `paper/README.md` when present for build and source-preservation procedures. That private file may be absent from a fresh checkout. Read `.context/writing-context.md` when present for private authoring preferences.
 
 ## Rules
 
@@ -77,14 +77,6 @@ No PCSC 2027 requirement is verified. Before submission, verify the applicable c
 Coverage: `partial`. The PCSC 2027 submission gate above remains open: only historical 2026 pages were verified, and the organizer site failed secure access. This does not establish that a 2027 call is absent.
 
 No recognized plant-disease ML checklist, universal equal-tuning-budget rule or direct test of these writing interventions on PCSC reviewers was verified. Apply the general guidance within each rule's stated scope. The bank entry retains the search and access-failure record; inaccessible sources support no retained rule.
-
-## Humanizer
-
-Activate Humanizer only when the user invokes `follow-writing-guide` or explicitly requests Humanizer. Once activated, it is on for manuscript prose. Apply its editing patterns while preserving scientific meaning, quotations, citations, equations, metric names and definitions. If the skill is unavailable, use this local fallback: remove empty staging, inflated claims, redundant recaps and decorative phrasing while preserving necessary content.
-
-Collisions: the uncertainty disclosures and bounded claims in the authoritative rules take precedence over deleting qualifiers or repetition. The flexible progression must not force Humanizer pattern 2, One-line closers and dramatic fragments. Parallel comparison language may deliberately repeat technical terms; preserve the meaning while removing empty repetition. Meaningful qualifications survive pattern 9, Stacked qualifiers. Preference/convention wording yields to Humanizer where there is a stylistic conflict; scientific facts remain intact.
-
-Protection: Humanizer never rewrites the wording or effect of a requirement or authoritative guideline rule. It may edit the surrounding manuscript prose only while preserving that rule's effect.
 
 ## Deviation rule
 
