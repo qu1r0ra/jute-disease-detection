@@ -12,8 +12,8 @@ authors:
     orcid: "https://orcid.org/0009-0009-6703-0144"
   - family-names: "Umali"
     given-names: "Immanuel"
-url: "https://github.com/qu1r0ra/jute-disease-detection"
-repository-code: "https://github.com/qu1r0ra/jute-disease-detection"
+url: "https://github.com/qu1r0ra/jute-related-image-evaluation"
+repository-code: "https://github.com/qu1r0ra/jute-related-image-evaluation"
 abstract: "A research codebase and accompanying study on classical machine learning and deep learning methods for jute leaf disease classification using a unified small-scale dataset built from multiple open-access sources."
 keywords:
   - "jute"

@@ -1,6 +1,6 @@
 # 1. Evaluate related-image policies under two test views
 
-Status: accepted, 2026-10-31. Canonical protocol: [issue 105](https://github.com/qu1r0ra/jute-disease-detection/issues/105#issuecomment-6543607838).
+Status: accepted, 2026-10-31. Canonical protocol: [issue 105](https://github.com/qu1r0ra/jute-related-image-evaluation/issues/105#issuecomment-6543607838).
 
 ## Context
 
@@ -22,6 +22,6 @@ A class-stratified, family-disjoint tuning reserve sits outside every final spli
 
 ## Consequences
 
-- The number of target fits doubles; [issue 106](https://github.com/qu1r0ra/jute-disease-detection/issues/106) handles the budget, and EfficientNet-B5 was dropped from the main matrix partly for this reason.
+- The number of target fits doubles; [issue 106](https://github.com/qu1r0ra/jute-related-image-evaluation/issues/106) handles the budget, and EfficientNet-B5 was dropped from the main matrix partly for this reason.
 - Each pool must hold enough families per class for a protected test, policy-native splits and the tuning reserve. Retained support is verified per view and split, and shortfalls return to the owner.
 - Results report the two views separately; neither view alone supports the full claim.

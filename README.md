@@ -1,4 +1,4 @@
-# jute-disease-detection <!-- omit from toc -->
+# jute-related-image-evaluation <!-- omit from toc -->
 
 <div align="center">
   <img src="./results/submitted/figures/dl/grad_cam.png" width="800px" alt="Grad-CAM Interpretability">
@@ -23,7 +23,7 @@
 Benchmarking classical machine learning and transfer learning on a merged six-class jute leaf disease dataset. Created for CSC713M (Machine Learning for MSCS); the short paper was submitted to IEEE HNICEM 2026 and withdrawn before publication ([PDF](docs/hnicem2026-paper.pdf), [full paper](https://drive.google.com/file/d/1DbaQ4TWEHChkLTLvpzntbUxhkBkSmQ5o/view?usp=drive_link)).
 
 > [!NOTE]
-> This README documents the original course study. A revised study of how related-image controls affect measured performance is being planned in [issue 98](https://github.com/qu1r0ra/jute-disease-detection/issues/98); its results are not reported here.
+> This README documents the original course study. A revised study of how related-image controls affect measured performance is being planned in [issue 98](https://github.com/qu1r0ra/jute-related-image-evaluation/issues/98); its results are not reported here.
 
 ## Table of Contents <!-- omit from toc -->
 
@@ -107,13 +107,13 @@ The unified jute dataset merges three public sources. The repository code is Apa
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/qu1r0ra/jute-disease-detection
+   git clone https://github.com/qu1r0ra/jute-related-image-evaluation
    ```
 
 2. Navigate to the project root and install all dependencies:
 
    ```bash
-   cd jute-disease-detection
+   cd jute-related-image-evaluation
    uv sync
    ```
 
@@ -200,7 +200,7 @@ Model selection used validation metrics. Results come from a single stratified 7
 
 ### Pretrained Weights
 
-The best MobileNetV2 (learning rate 0.01, weight decay 0.05, frozen backbone, 91.39% test accuracy) is attached to the [v1.0.0 release](https://github.com/qu1r0ra/jute-disease-detection/releases/tag/v1.0.0) as `mobilenet_v2_jute.pt` (SHA-256 `f172c2668378f6a59376928f3d55e1562e289dd954c29b74e5054c978edcad9d`). It is the Weights & Biases `best` checkpoint of run `af60c7b9` as a plain `state_dict`. Class indices follow `data/disease_classes.txt`. The architecture is MobileNetV2 (Sandler et al., 2018), loaded through the timm library (Wightman, 2019).
+The best MobileNetV2 (learning rate 0.01, weight decay 0.05, frozen backbone, 91.39% test accuracy) is attached to the [v1.0.0 release](https://github.com/qu1r0ra/jute-related-image-evaluation/releases/tag/v1.0.0) as `mobilenet_v2_jute.pt` (SHA-256 `f172c2668378f6a59376928f3d55e1562e289dd954c29b74e5054c978edcad9d`). It is the Weights & Biases `best` checkpoint of run `af60c7b9` as a plain `state_dict`. Class indices follow `data/disease_classes.txt`. The architecture is MobileNetV2 (Sandler et al., 2018), loaded through the timm library (Wightman, 2019).
 
 ```python
 import torch
@@ -243,7 +243,7 @@ If you find this research or codebase useful in your own work, please consider c
   booktitle={IEEE 2026 International Conference on Humanoid, Nanotechnology, Information Technology, Communication and Control, Environment, and Management (HNICEM)},
   year={2026},
   note={Submitted to IEEE HNICEM 2026; withdrawn before publication},
-  url={https://github.com/qu1r0ra/jute-disease-detection}
+  url={https://github.com/qu1r0ra/jute-related-image-evaluation}
 }
 ```
 

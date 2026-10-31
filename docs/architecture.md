@@ -1,6 +1,6 @@
 # Project Architecture
 
-This document describes the architectural design and directory structure of the `jute-disease-detection` project. It serves as a guide for developers and contributors to understand the core components and their interactions.
+This document describes the architectural design and directory structure of the `jute-related-image-evaluation` repository (Python package `jute_disease`). It serves as a guide for developers and contributors to understand the core components and their interactions.
 
 ## Directory Structure Overview
 
