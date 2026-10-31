@@ -2,11 +2,11 @@
 
 ## Use case
 
-A focused empirical ML paper about jute disease image classification for PCSC reviewers. Explain the comparison and its supported conclusions clearly. A skeptical reader should identify what was compared, what the evidence supports and where uncertainty remains. Keep the existing seven sections: Introduction; Related work; Data and related-image controls; Experimental design; Results; Discussion and limitations; Conclusion. PCSC 2027 is tentative, with no fixed deadline and no verified future submission rules. Study protocol and canonical issues own experiment choices; this guide owns writing and reporting. Stable, null and negative outcomes remain valid.
+A focused empirical ML paper about jute disease image classification for PCSC reviewers. A skeptical reader should identify what was compared, what the evidence supports and where uncertainty remains. Keep the existing seven sections: Introduction; Related work; Data and related-image controls; Experimental design; Results; Discussion and limitations; Conclusion. PCSC 2027 is tentative, with no fixed deadline.
 
 ## Precedence
 
-`requirement` > `authoritative guideline` > `empirical` > `convention` > `preference`. A higher grade wins a conflict within its actual scope. This guide imposes no NeurIPS submission obligation or PCSC 2027 rule. Read the study's owning protocol/issues for scientific decisions. For manuscript editing/builds, read optional ignored `paper/README.md` when present; a fresh checkout need not contain it. It owns build and source-preservation procedures.
+`requirement` > `authoritative guideline` > `empirical` > `convention` > `preference`. A higher grade wins a conflict within its actual scope. This guide owns writing and reporting; the study's protocol and canonical issues own scientific decisions. For manuscript editing/builds, read `paper/README.md` when present for build and source-preservation procedures. That private file may be absent from a fresh checkout.
 
 ## Rules
 
@@ -55,11 +55,10 @@ No PCSC 2027 requirement is verified. Before submission, verify the applicable c
 
 10. **Use a flexible context-evidence-implication progression (preference).** Within the existing seven sections, orient the reader, present the relevant evidence and explain the local implication. Organize Results around comparisons. Add material that benefits the argument; no paragraph formula, sentence count or favorable outcome is required.
     Source: [Mensh and Kording](https://pmc.ncbi.nlm.nih.gov/articles/PMC5619685/), Rule 3. "Stick to the context-content-conclusion (C-C-C) scheme."
-    Author confirmed flexible adoption on 2026-10-31.
 
 11. **Edit for continuity and parallel comparison (preference).** Put familiar context before new details, keep subjects near verbs, and use consistent terms and parallel wording for comparable descriptions. Preserve necessary definitions, meaningful uncertainty and deliberate repetition.
     Source: [Gopen and Swan](https://www.cs.tufts.edu/comp/150FP/archive/george-gopen/sci.html), sentence structure. "grammatical subjects should be followed as soon as possible by their verbs."
-    Expert editing advice, not a controlled comprehension result; author confirmed flexible adoption on 2026-10-31.
+    Expert editing advice, not a controlled comprehension result.
 
 12. **Use exemplars as optional reporting patterns (preference).** Borrow techniques only where they fit the actual evidence: disclose the coverage of relationship information, name evaluation-policy inputs and sources of variation, and connect diagnostics to concrete errors without treating proposed causes as observations. For a diagnostic example, report the actual method, input/settings and sample-selection policy, separating observations from proposed explanations and stating the limits of any checks performed. These are reporting applications, not findings tested by the saliency studies. Examples impose neither experimental controls nor mandatory figures/tables; the owning project protocol determines frozen inputs and prespecified samples.
     Source: the three field exemplars in Techniques; author confirmed flexible adoption on 2026-10-31. Their individual techniques are conventions, and this project's optional use is preference.
@@ -69,22 +68,15 @@ No PCSC 2027 requirement is verified. Before submission, verify the applicable c
 
 ## Techniques
 
-- Mohanty, Hughes and Salathe, [Using Deep Learning for Image-Based Plant Disease Detection](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2016.01419/full), Frontiers (2016), CC BY, Methods / Measurement of performance: partial same-leaf mappings are described explicitly. Technique: report the scope of grouping information, not just the existence of a safeguard. A short attributed excerpt is captured; no figures are reproduced.
-- Xiang, Shi and Zhu, [Quantifying the reliability gap](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2026.1826962/full), Frontiers (2026), CC BY, Methods section 2.1: separates policies with and without labeled target calibration data, re-estimates calibration per repeat and bounds cropped-image classification. Technique: name each policy's information access and the variation actually repeated. Original inspected passage: re-estimated temperature and thresholds on each repeat. Link and notes only.
-- Wei et al., [A Large-Scale In-the-wild Dataset for Plant Disease Segmentation](https://www.nature.com/articles/s41597-025-06513-4), Scientific Data (2026), CC BY-NC-ND 4.0 with possible separate third-party terms, Technical Validation / Failure case analysis: spatially correct predictions can score zero IoU after misclassification. Technique: tie a metric to an actual failure mode and distinguish localization from class correctness. Segmentation is outside this paper's classification task; no performance claim transfers. Link and notes only.
-- The accessible PCSC 2026 waste-classification comparison (Torayno et al., official short-paper volume, pp. 15 to 19) contains inconsistent test descriptions and validation counts. It is contextual venue evidence, not a recommended comparison template. All rights reserved; no capture or figures.
+- Mohanty, Hughes and Salathe, [Using Deep Learning for Image-Based Plant Disease Detection](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2016.01419/full), Frontiers (2016), CC BY, Methods / Measurement of performance: report the coverage of same-leaf mappings, as the authors do for their partial mappings.
+- Xiang, Shi and Zhu, [Quantifying the reliability gap](https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2026.1826962/full), Frontiers (2026), CC BY, Methods section 2.1: name each policy's information access and repeated variation. The authors distinguish access to labeled target calibration data, recalibrate per repeat and bound their task to cropped-image classification.
+- Wei et al., [A Large-Scale In-the-wild Dataset for Plant Disease Segmentation](https://www.nature.com/articles/s41597-025-06513-4), Scientific Data (2026), CC BY-NC-ND 4.0 with possible separate third-party terms, Technical Validation / Failure case analysis: tie metrics to concrete failures. Spatially correct predictions can score zero IoU after misclassification. This segmentation example illustrates diagnostic reporting; its performance findings do not transfer to classification.
 
 ## Coverage and open questions
 
-Coverage: `partial`. All four sweep lanes returned evidence; the one gap-fill round used three topic groups. No worker lane was blocked. Venue coverage remains incomplete because the organizer site failed secure TLS inspection and the archive returned unrelated content. No PCSC 2027 requirement was verified; named pages checked were the official 2026 home and papers pages and CSP home. Their silence is not proof that a 2027 call does not exist.
+Coverage: `partial`. The PCSC 2027 submission gate above remains open: only historical 2026 pages were verified, and the organizer site failed secure access. This does not establish that a 2027 call is absent.
 
-- Verify the future call, track and template before submission; review anonymity, limits, reference/appendix treatment, disclosures and deadlines remain open. Historical sources: https://pcsc2026.uic.edu.ph/ and https://pcsc2026.uic.edu.ph/papers; inaccessible https://csp.org.ph/.
-- No recognized plant-disease ML checklist or universal equal-tuning-budget rule was verified. General disclosure guidance is a scoped transfer.
-- No experiment here tests these writing interventions on PCSC reviewers. Uncertainty and display studies support bounded findings; project applications remain flexible.
-- Belia and the Powers et al. table/graph study remained inaccessible; neither supports a retained rule. Gap-fill corrected the sweep's mistaken attribution of the latter to Benbasat and Dexter. Plant fluorescence and salinity-checklist pages were challenged/denied; their provisions are not used.
-- Diagnostic evidence does not settle scientific protocol or validate this project's maps. Dataset rights, final analysis choices, result-to-claim checks and private-source recovery stay with their existing owners.
-
-Search record: PCSC 2027 call/CSP official-site searches; plant disease reporting checklist/related-image leakage/tuning-budget searches; saliency sanity checks and follow-up; Belia error bars, original table/graph title, Correll uncertainty encoding and Hink grables. All retained sources were inspected 2026-10-31; failed/snippet-only leads remain gaps rather than verified evidence.
+No recognized plant-disease ML checklist, universal equal-tuning-budget rule or direct test of these writing interventions on PCSC reviewers was verified. Apply the general guidance within each rule's stated scope. The bank entry retains the search and access-failure record; inaccessible sources support no retained rule.
 
 ## Humanizer
 
@@ -98,7 +90,7 @@ Protection: Humanizer never rewrites the wording or effect of a requirement or a
 
 The author may deviate from a convention or preference with a one-line reason in the draft. A deviation from a requirement or authoritative guideline needs explicit author approval for that passage. Empirical rules apply within their documented scope; a display or editing recommendation inferred beyond a study is a flexible preference, not a new empirical obligation.
 
-Author decisions, confirmed 2026-10-31: narrative progression and prose editing are flexible defaults; add what benefits the paper. Presentation patterns are optional, informed by research, and require neither both formats nor additional experiments. Stable, null and negative findings are valid; no favorable outcome is presumed. These choices are easy to reverse and do not warrant an ADR.
+Author confirmed flexible narrative, prose and presentation defaults on 2026-10-31. Add what benefits the paper; display choices require no additional experiments.
 
 ## Provenance
 
@@ -117,4 +109,4 @@ The project guide is self-contained; the wiki is maintenance provenance.
 | Diagnostics use frozen checkpoints/prespecified samples and settings; avoid unsupported localization/generalization/leakage claims | kept: protocol process; reflected in reporting | docs/agents/research-context.md |
 | Research index and active private manuscript workflow are optional on-demand context | kept: routing/process | docs/agents/research-context.md |
 
-No prior project prose-style rule is retired or moved. AGENTS.md adds only the authorized guide pointer. Build/source rules remain in paper/README.md when available. External scientific disclosure obligations, if applicable, must be verified independently of delivery prose conventions.
+Verify any external scientific disclosure obligations independently of delivery prose conventions.
