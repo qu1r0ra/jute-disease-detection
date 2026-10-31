@@ -10,7 +10,7 @@ trainer:
   logger:
     - class_path: lightning.pytorch.loggers.WandbLogger
       init_args:
-        project: jute-disease-detection
+        project: jute-related-image-evaluation
         entity: grade-descent
         name: efficientnet_b7
         log_model: true

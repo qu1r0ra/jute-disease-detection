@@ -90,7 +90,7 @@ import wandb
 api = wandb.Api()
 
 ENTITY = "grade-descent"
-PROJECT = "jute-disease-detection"
+PROJECT = "jute-related-image-evaluation"
 
 comparison_runs = {"Random Forest": "w6593daw", "MobileNet V2": "af60c7b9"}
 
@@ -154,7 +154,7 @@ warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 
 api = wandb.Api()
 ENTITY = "grade-descent"
-PROJECT = "jute-disease-detection"
+PROJECT = "jute-related-image-evaluation"
 
 rf_model_path = f"{ENTITY}/{PROJECT}/rf-champion:latest"
 dl_artifact_path = f"{ENTITY}/{PROJECT}/run-af60c7b9-test_conf_mat_table:latest"
@@ -356,7 +356,7 @@ from jute_disease.utils.constants import IMAGE_SIZE
 
 api = wandb.Api()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-PROJECT_PATH = "grade-descent/jute-disease-detection"
+PROJECT_PATH = "grade-descent/jute-related-image-evaluation"
 TEST_DATA_DIR = Path("data/ml_split/test")
 
 

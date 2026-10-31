@@ -174,7 +174,7 @@ else:
 # !uv run python scripts/train_all_dl.py
 
 # %% [markdown]
-# At this point, we have finished training the DL baselines. If training went well, you should have obtained results similar to ours, which can be viewed [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/Baseline%20DL%20Models/workspace).
+# At this point, we have finished training the DL baselines. If training went well, you should have obtained results similar to ours, which can be viewed [here](https://wandb.ai/grade-descent/jute-related-image-evaluation/groups/Baseline%20DL%20Models/workspace).
 #
 # Looking at the validation accuracy graph:
 #
@@ -267,7 +267,7 @@ download_plant_doc()
 # !uv run python scripts/run_grid_search.py configs/grid/mobilenet_v2_grid.yaml
 
 # %% [markdown]
-# Our results for the MobileNet V2 grid search can be viewed [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/MobileNet%20V2%20Grid/workspace).
+# Our results for the MobileNet V2 grid search can be viewed [here](https://wandb.ai/grade-descent/jute-related-image-evaluation/groups/MobileNet%20V2%20Grid/workspace).
 #
 # Looking at the graph of validation accuracy over global steps:
 #
@@ -317,7 +317,7 @@ else:
 # !uv run python scripts/train_dl_512.py
 
 # %% [markdown]
-# Our results can be viewed [here](https://wandb.ai/grade-descent/jute-disease-detection/groups/MobileNet%20V2%20512px/workspace). They will be compared against their 256x256 pixel counterparts in the [next DL notebook](./03_Model_Analysis_Tuning_DL.py).
+# Our results can be viewed [here](https://wandb.ai/grade-descent/jute-related-image-evaluation/groups/MobileNet%20V2%20512px/workspace). They will be compared against their 256x256 pixel counterparts in the [next DL notebook](./03_Model_Analysis_Tuning_DL.py).
 
 # %% [markdown]
 # ## References

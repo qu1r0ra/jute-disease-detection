@@ -55,7 +55,7 @@ NUM_CLASSES = len(CLASS_NAMES)
 
 # Weights & Biases
 WANDB_ENTITY = "grade-descent"
-WANDB_PROJECT = "jute-disease-detection"
+WANDB_PROJECT = "jute-related-image-evaluation"
 
 # Visualization defaults
 DPI = 300

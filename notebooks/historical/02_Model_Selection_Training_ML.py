@@ -166,7 +166,7 @@ os.environ["WANDB_API_KEY"] = ""
 
 # %% [markdown]
 # ## 3. Results and Model Selection
-# We can see our results from the training in [here](https://wandb.ai/grade-descent/jute-disease-detection/table). Run the code below to see the validation results from our original run of the training process.
+# We can see our results from the training in [here](https://wandb.ai/grade-descent/jute-related-image-evaluation/table). Run the code below to see the validation results from our original run of the training process.
 
 # %%
 import pandas as pd
@@ -187,7 +187,7 @@ runs_to_track = {
 }
 
 ENTITY = "grade-descent"
-PROJECT = "jute-disease-detection"
+PROJECT = "jute-related-image-evaluation"
 
 
 def get_summary_metrics(run_dict):
